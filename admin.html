@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>총관리자 어드민 - 안기모</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/umd/lucide.min.js"></script>
+<style>
+  :root{
+    --blue-900:#0A2A5E;--blue-700:#0F47C2;--blue-600:#1B5CFF;--blue-100:#E9F0FF;--blue-050:#F4F8FF;
+    --ink-900:#191F28;--ink-500:#6B7684;--ink-200:#E5E8EB;--red-500:#FF4B4B;--green-500:#16A34A;
+    --radius-lg:16px;--radius-md:12px;--radius-sm:8px;--shadow-card:0 2px 10px rgba(10,42,94,.06);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink-900);background:#F7F9FC;line-height:1.5;display:flex;min-height:100vh}
+  a{text-decoration:none;color:inherit} ul{list-style:none}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+  /* 사이드바 */
+  .sidebar{width:240px;background:var(--blue-900);color:#fff;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .sidebar .logo{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;padding:22px 20px;letter-spacing:-.5px}
+  .sidebar .logo .mark{width:26px;height:26px;background:#fff;color:var(--blue-900);border-radius:8px;display:flex;align-items:center;justify-content:center}
+  .sidebar .role-tag{margin:0 20px 16px;background:rgba(255,255,255,.12);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .sidebar nav{flex:1;overflow-y:auto}
+  .sidebar nav a{display:flex;align-items:center;gap:11px;padding:12px 20px;font-size:14px;font-weight:600;opacity:.65;border-left:3px solid transparent}
+  .sidebar nav a i{width:17px;height:17px}
+  .sidebar nav a:hover{opacity:1}
+  .sidebar nav a.on{opacity:1;background:rgba(255,255,255,.08);border-left-color:var(--blue-600)}
+  .sidebar nav .grp{padding:16px 20px 6px;font-size:11px;font-weight:700;opacity:.4;letter-spacing:1px}
+  .sidebar .bottom{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:13px;opacity:.7;display:flex;justify-content:space-between;align-items:center}
+  /* 메인 */
+  .main{flex:1;min-width:0}
+  .topbar{background:#fff;border-bottom:1px solid var(--ink-200);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  .topbar h1{font-size:17px;font-weight:800;letter-spacing:-.3px}
+  .topbar .user{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600}
+  .topbar .user .av{width:32px;height:32px;border-radius:50%;background:var(--blue-100);color:var(--blue-600);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+  .content{padding:26px 28px;max-width:1200px}
+  /* 통계 카드 */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .stat-card{background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:20px}
+  .stat-card .lb{font-size:13px;color:var(--ink-500);font-weight:600;display:flex;align-items:center;gap:6px}
+  .stat-card .lb i{width:15px;height:15px;color:var(--blue-600)}
+  .stat-card .num{font-size:26px;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+  .stat-card .num small{font-size:13px;font-weight:600;color:var(--ink-500);margin-left:3px}
+  .stat-card .diff{font-size:12px;font-weight:700;color:var(--blue-600);margin-top:4px}
+  .stat-card.alert{border-color:var(--blue-600);background:var(--blue-050)}
+  /* 패널/테이블 */
+  .panel{background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-md);margin-top:20px;overflow:hidden}
+  .panel .p-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--ink-200)}
+  .panel .p-head h2{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+  .panel .p-head h2 .cnt{background:var(--blue-600);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+  .panel .p-head a{font-size:13px;color:var(--ink-500);font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:var(--blue-050);color:var(--ink-500);font-weight:700;text-align:left;padding:10px 16px;white-space:nowrap}
+  td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
+  .badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
+  .badge.blue{background:var(--blue-100);color:var(--blue-700)}
+  .badge.wait{background:#FFF4E5;color:#B45309}
+  .badge.ok{background:#E8F7EE;color:var(--green-500)}
+  .badge.red{background:#FEE2E2;color:#B91C1C}
+  .btn{font-size:12px;font-weight:700;padding:7px 14px;border-radius:var(--radius-sm)}
+  .btn.pri{background:var(--blue-600);color:#fff}.btn.pri:hover{background:var(--blue-700)}
+  .btn.line{border:1px solid var(--ink-200);color:var(--ink-500)}.btn.line:hover{border-color:var(--blue-600);color:var(--blue-600)}
+  .btn.danger{border:1px solid #FCA5A5;color:#B91C1C}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .list-item{padding:14px 20px;border-top:1px solid var(--ink-200);font-size:13px}
+  .list-item:first-of-type{border-top:none}
+  .list-item .t{font-weight:700;font-size:14px}
+  .list-item .m{color:var(--ink-500);margin-top:3px;font-size:12px}
+  .notice-strip{margin-top:20px;background:var(--blue-050);border:1px solid var(--blue-100);border-radius:var(--radius-md);padding:14px 18px;font-size:13px;display:flex;align-items:center;gap:10px}
+  .notice-strip i{width:17px;height:17px;color:var(--blue-600);flex-shrink:0}
+  .notice-strip b{color:var(--blue-700)}
+  @media (max-width:1100px){.stat-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}
+  @media (max-width:800px){.sidebar{display:none}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><span class="mark"><i data-lucide="scale" style="width:15px;height:15px"></i></span>안기모</div>
+  <div class="role-tag"><i data-lucide="shield-check" style="width:13px;height:13px"></i>총관리자</div>
+  <nav>
+    <a href="#" class="on"><i data-lucide="layout-dashboard"></i>대시보드</a>
+    <div class="grp">회원</div>
+    <a href="#"><i data-lucide="users"></i>회원 관리</a>
+    <a href="#"><i data-lucide="badge-check"></i>변호사 관리 <span class="badge red" style="margin-left:auto">4</span></a>
+    <div class="grp">게시판</div>
+    <a href="#"><i data-lucide="message-square-text"></i>상담 관리</a>
+    <a href="#"><i data-lucide="messages-square"></i>커뮤니티 관리</a>
+    <a href="#"><i data-lucide="file-check"></i>콘텐츠 관리</a>
+    <div class="grp">광고/운영</div>
+    <a href="#"><i data-lucide="image"></i>배너 관리</a>
+    <a href="#"><i data-lucide="building-2"></i>로펌 광고 관리</a>
+    <a href="#"><i data-lucide="flag"></i>신고/문의</a>
+    <a href="#"><i data-lucide="bar-chart-3"></i>통계</a>
+    <a href="#"><i data-lucide="scroll-text"></i>운영 로그</a>
+  </nav>
+  <div class="bottom"><span>사이트 바로가기</span><i data-lucide="external-link" style="width:14px;height:14px"></i></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <h1>대시보드</h1>
+    <div class="user"><span class="av">김</span>김OO 관리자 <i data-lucide="chevron-down" style="width:14px;height:14px;color:var(--ink-500)"></i></div>
+  </div>
+  <div class="content">
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="lb"><i data-lucide="users"></i>총 회원</div><div class="num">6,214<small>명</small></div><div class="diff">오늘 +32</div></div>
+      <div class="stat-card"><div class="lb"><i data-lucide="briefcase"></i>변호사 회원</div><div class="num">128<small>명</small></div><div class="diff">이번 달 +9</div></div>
+      <div class="stat-card"><div class="lb"><i data-lucide="message-square-text"></i>오늘 상담글</div><div class="num">47<small>건</small></div><div class="diff">답변률 89%</div></div>
+      <div class="stat-card alert"><div class="lb"><i data-lucide="badge-check"></i>변호사 승인 대기</div><div class="num">4<small>건</small></div><div class="diff">확인 필요</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><h2>변호사 승인 대기 <span class="cnt">4</span></h2><a href="#">변호사 관리 →</a></div>
+      <table>
+        <tr><th>신청일</th><th>이름</th><th>등록번호</th><th>소속</th><th>서류</th><th>상태</th><th></th></tr>
+        <tr><td>07.04</td><td><b>신OO</b></td><td>2024-OOOOO</td><td>법무법인 OO</td><td><button class="btn line">서류 2건 보기</button></td><td><span class="badge wait">대기</span></td><td><button class="btn pri">승인</button> <button class="btn danger">반려</button></td></tr>
+        <tr><td>07.04</td><td><b>송OO</b></td><td>2023-OOOOO</td><td>OO법률사무소</td><td><button class="btn line">서류 2건 보기</button></td><td><span class="badge wait">대기</span></td><td><button class="btn pri">승인</button> <button class="btn danger">반려</button></td></tr>
+        <tr><td>07.03</td><td><b>오OO</b></td><td>2022-OOOOO</td><td>개인 개업</td><td><button class="btn line">서류 3건 보기</button></td><td><span class="badge wait">대기</span></td><td><button class="btn pri">승인</button> <button class="btn danger">반려</button></td></tr>
+      </table>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="p-head"><h2>포스트 검수 대기 <span class="cnt">6</span></h2><a href="#">콘텐츠 관리 →</a></div>
+        <div class="list-item"><div class="t">[법률가이드] 경찰 조사 전 꼭 알아야 할 5가지</div><div class="m">김OO 변호사 · 어제 제출 &nbsp;<button class="btn pri">승인</button> <button class="btn danger">반려</button></div></div>
+        <div class="list-item"><div class="t">[해결사례] 전세사기 피해 보증금 전액 회수</div><div class="m">이OO 변호사 · 어제 제출 &nbsp;<button class="btn pri">승인</button> <button class="btn danger">반려</button></div></div>
+        <div class="list-item"><div class="t">[에세이] 10년차 이혼 변호사가 본 조정의 기술</div><div class="m">박OO 변호사 · 2일 전 제출 &nbsp;<button class="btn pri">승인</button> <button class="btn danger">반려</button></div></div>
+      </div>
+      <div class="panel">
+        <div class="p-head"><h2>최근 신고 <span class="cnt">3</span></h2><a href="#">신고/문의 →</a></div>
+        <div class="list-item"><div class="t"><span class="badge red">커뮤니티 글</span> 특정 변호사 비방성 게시글</div><div class="m">신고 사유: 명예훼손 우려 · 25분 전</div></div>
+        <div class="list-item"><div class="t"><span class="badge red">댓글</span> 광고성 도배 댓글</div><div class="m">신고 사유: 스팸/광고 · 1시간 전</div></div>
+        <div class="list-item"><div class="t"><span class="badge red">상담 답변</span> 부적절한 광고성 답변</div><div class="m">신고 사유: 스팸/광고 · 3시간 전</div></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><h2>배너 현황</h2><a href="#">배너 관리 →</a></div>
+      <table>
+        <tr><th>위치</th><th>제목</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
+        <tr><td>메인 히어로</td><td><b>법률 문제의 시작부터 끝까지</b></td><td>07.01 ~ 07.31</td><td>1</td><td><span class="badge ok">노출중</span></td><td><button class="btn line">수정</button></td></tr>
+        <tr><td>메인 히어로</td><td><b>첫 상담 100% 지원 이벤트</b></td><td>07.01 ~ 07.15</td><td>2</td><td><span class="badge ok">노출중</span></td><td><button class="btn line">수정</button></td></tr>
+        <tr><td>메인 히어로</td><td><b>변호사 회원 모집</b></td><td>08.01 ~</td><td>3</td><td><span class="badge wait">대기</span></td><td><button class="btn line">수정</button></td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+</body>
+</html>
