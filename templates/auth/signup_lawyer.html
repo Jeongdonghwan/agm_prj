@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}변호사 가입 신청 | {{ site_name }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap" style="max-width:560px">
+  <div class="auth-card wide">
+    <h1 class="auth-title">변호사 가입 신청</h1>
+    <p class="auth-sub">관리자 승인 후 프로필 관리와 상담 답변을 시작할 수 있어요</p>
+
+    <form class="auth-form" method="post" enctype="multipart/form-data">
+      <div>
+        <label>이메일 <span class="req">*</span></label>
+        <input type="email" name="email" value="{{ form.get('email', '') }}" placeholder="email@example.com" required autofocus>
+      </div>
+      <div>
+        <label>비밀번호 <span class="req">*</span></label>
+        <input type="password" name="password" placeholder="8자 이상" required minlength="8">
+      </div>
+      <div>
+        <label>비밀번호 확인 <span class="req">*</span></label>
+        <input type="password" name="password2" placeholder="비밀번호 재입력" required>
+      </div>
+      <div>
+        <label>실명 <span class="req">*</span></label>
+        <input type="text" name="name" value="{{ form.get('name', '') }}" placeholder="실명" required>
+      </div>
+      <div>
+        <label>휴대폰 번호 <span class="req">*</span></label>
+        <input type="tel" name="phone" value="{{ form.get('phone', '') }}" placeholder="010-0000-0000" required>
+      </div>
+      <div>
+        <label>변호사 등록번호 <span class="req">*</span></label>
+        <input type="text" name="license_no" value="{{ form.get('license_no', '') }}" placeholder="예: 제2024-00000호" required>
+      </div>
+      <div>
+        <label>소속 (로펌·사무소명) <span class="req">*</span></label>
+        <input type="text" name="firm_name" value="{{ form.get('firm_name', '') }}" placeholder="예: 법무법인 OO / 개인 개업" required>
+      </div>
+      <div>
+        <label>인증 서류 업로드 <span class="req">*</span></label>
+        <input type="file" name="verification_files" accept=".jpg,.jpeg,.png,.pdf" multiple required>
+        <div class="hint">변호사 신분증, 자격 증명 등 (jpg / png / pdf, 여러 장 가능, 최대 10MB)</div>
+      </div>
+      <button class="btn-submit" type="submit">가입 신청하기</button>
+    </form>
+
+    <div class="info-box">
+      <b>승인 절차 안내</b><br>
+      제출하신 서류는 관리자 검토 후 승인됩니다. 승인 전에는 로그인 시 "승인 대기 중" 안내만 표시되며,
+      승인이 완료되면 변호사 어드민에서 프로필을 등록할 수 있습니다. 서류는 관리자만 열람할 수 있습니다.
+    </div>
+
+    <div class="auth-foot">
+      이미 계정이 있으신가요? <a href="{{ url_for('auth.login', tab='lawyer') }}">변호사 로그인</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

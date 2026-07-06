@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}어드민 - {{ site_name }}{% endblock %}</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% block styles %}{% endblock %}
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><span class="mark"><i data-lucide="scale" style="width:15px;height:15px"></i></span>{{ site_name }}</div>
+  {% block role_tag %}{% endblock %}
+  <nav>
+    {% block sidebar_nav %}{% endblock %}
+  </nav>
+  <div class="bottom"><a href="{{ url_for('main.index') }}" style="display:flex;justify-content:space-between;align-items:center;flex:1"><span>사이트 바로가기</span><i data-lucide="external-link" style="width:14px;height:14px"></i></a></div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <h1>{% block topbar_title %}대시보드{% endblock %}</h1>
+    <div class="user">
+      {% if current_user %}
+      <span class="av">{{ current_user.name[0] if current_user.name else '?' }}</span>{{ current_user.name }}
+      <a href="{{ url_for('auth.logout') }}" style="font-size:12px;color:var(--ink-500)">로그아웃</a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="content">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+<script>lucide.createIcons();</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

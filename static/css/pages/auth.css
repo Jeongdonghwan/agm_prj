@@ -1,0 +1,39 @@
+/* ===== 로그인/가입 (신규 제작 — tokens.css 기반) ===== */
+.auth-wrap{max-width:440px;margin:48px auto 40px;padding:0 20px}
+.auth-card{background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-lg);padding:36px 32px;box-shadow:var(--shadow-card)}
+.auth-card.wide{max-width:560px}
+.auth-title{font-size:22px;font-weight:800;letter-spacing:-.5px;text-align:center}
+.auth-sub{margin-top:6px;font-size:13px;color:var(--ink-500);text-align:center}
+
+/* 탭 (일반/변호사) */
+.auth-tabs{display:flex;gap:8px;margin:22px 0 6px;background:var(--blue-050);border-radius:999px;padding:5px}
+.auth-tabs a{flex:1;text-align:center;font-size:14px;font-weight:700;color:var(--ink-500);padding:10px 0;border-radius:999px}
+.auth-tabs a.on{background:var(--blue-900);color:#fff}
+
+.auth-form{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+.auth-form label{font-size:12.5px;font-weight:700;color:var(--ink-500)}
+.auth-form label .req{color:var(--red-500)}
+.auth-form input[type=text],
+.auth-form input[type=email],
+.auth-form input[type=password],
+.auth-form input[type=tel]{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none;margin-top:5px}
+.auth-form input:focus{outline:2px solid var(--blue-600);background:#fff}
+.auth-form .hint{font-size:12px;color:var(--ink-500);margin-top:3px}
+.auth-form input[type=file]{margin-top:6px;font-size:13px}
+
+.btn-submit{width:100%;background:var(--blue-600);color:#fff;font-size:15px;font-weight:800;padding:14px 0;border-radius:var(--radius-md);margin-top:8px}
+.btn-submit:hover{background:var(--blue-700)}
+.auth-foot{margin-top:18px;text-align:center;font-size:13px;color:var(--ink-500)}
+.auth-foot a{color:var(--blue-600);font-weight:700}
+
+/* 변호사 가입 안내 박스 */
+.info-box{background:var(--blue-050);border-radius:var(--radius-md);padding:14px 16px;font-size:12.5px;color:var(--ink-500);line-height:1.7;margin-top:14px}
+.info-box b{color:var(--blue-700)}
+
+/* 승인 대기 */
+.pending-icon{width:64px;height:64px;border-radius:20px;background:var(--blue-050);display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.pending-icon i{width:30px;height:30px;color:var(--blue-600)}
+
+/* 관리자 로그인 단독 페이지 */
+body.admin-login{background:var(--blue-900);display:flex;align-items:center;justify-content:center;min-height:100vh}
+body.admin-login .auth-card{border:none;width:400px}

@@ -1,0 +1,44 @@
+{% extends "base_admin.html" %}
+
+{% block title %}총관리자 어드민 - {{ site_name }}{% endblock %}
+
+{% block role_tag %}
+<div class="role-tag"><i data-lucide="shield-check" style="width:13px;height:13px"></i>총관리자</div>
+{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="on"><i data-lucide="layout-dashboard"></i>대시보드</a>
+<div class="grp">회원</div>
+<a href="#"><i data-lucide="users"></i>회원 관리</a>
+<a href="#"><i data-lucide="badge-check"></i>변호사 관리 {% if stats.pending_lawyers %}<span class="badge red" style="margin-left:auto">{{ stats.pending_lawyers }}</span>{% endif %}</a>
+<div class="grp">게시판</div>
+<a href="#"><i data-lucide="message-square-text"></i>상담 관리</a>
+<a href="#"><i data-lucide="messages-square"></i>커뮤니티 관리</a>
+<a href="#"><i data-lucide="file-check"></i>콘텐츠 관리</a>
+<div class="grp">광고/운영</div>
+<a href="#"><i data-lucide="image"></i>배너 관리</a>
+<a href="#"><i data-lucide="building-2"></i>로펌 광고 관리</a>
+<a href="#"><i data-lucide="flag"></i>신고/문의</a>
+<a href="#"><i data-lucide="bar-chart-3"></i>통계</a>
+<a href="#"><i data-lucide="scroll-text"></i>운영 로그</a>
+{% endblock %}
+
+{% block content %}
+<div class="stat-grid">
+  <div class="stat-card"><div class="lb"><i data-lucide="users"></i>총 회원</div><div class="num">{{ '{:,}'.format(stats.total_users) }}<small>명</small></div><div class="diff">일반회원</div></div>
+  <div class="stat-card"><div class="lb"><i data-lucide="briefcase"></i>변호사 회원</div><div class="num">{{ '{:,}'.format(stats.total_lawyers) }}<small>명</small></div><div class="diff">활동 중</div></div>
+  <div class="stat-card"><div class="lb"><i data-lucide="message-square-text"></i>오늘 상담글</div><div class="num">{{ stats.today_consultations }}<small>건</small></div><div class="diff">오늘 접수</div></div>
+  <div class="stat-card{% if stats.pending_lawyers %} alert{% endif %}"><div class="lb"><i data-lucide="badge-check"></i>변호사 승인 대기</div><div class="num">{{ stats.pending_lawyers }}<small>건</small></div><div class="diff">{% if stats.pending_lawyers %}확인 필요{% else %}대기 없음{% endif %}</div></div>
+</div>
+
+<div class="two-col">
+  <div class="panel">
+    <div class="p-head"><h2>포스트 검수 대기 <span class="cnt">{{ stats.pending_posts }}</span></h2><a href="#">콘텐츠 관리 →</a></div>
+    <div class="list-item"><div class="m">변호사 승인·포스트 검수 화면은 Phase 3에서 구현됩니다.</div></div>
+  </div>
+  <div class="panel">
+    <div class="p-head"><h2>최근 신고 <span class="cnt">{{ stats.new_reports }}</span></h2><a href="#">신고/문의 →</a></div>
+    <div class="list-item"><div class="m">신고 처리 화면은 Phase 4에서 구현됩니다.</div></div>
+  </div>
+</div>
+{% endblock %}

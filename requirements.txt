@@ -1,0 +1,7 @@
+Flask>=3.1.2
+Flask-SQLAlchemy>=3.1.1
+SQLAlchemy>=2.0.43
+PyMySQL>=1.1.1
+bcrypt>=4.3.0
+Flask-Caching>=2.3.1
+python-dotenv>=1.1.0

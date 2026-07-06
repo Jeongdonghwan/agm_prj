@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page_title }} | {{ site_name }}{% endblock %}
+
+{% block content %}
+<div class="wrap" style="padding:80px 20px;text-align:center">
+  <div style="width:64px;height:64px;border-radius:20px;background:var(--blue-050);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+    <i data-lucide="construction" style="width:30px;height:30px;color:var(--blue-600)"></i>
+  </div>
+  <h1 style="font-size:24px;font-weight:800;letter-spacing:-.5px">{{ page_title }}</h1>
+  <p style="margin-top:10px;font-size:14px;color:var(--ink-500)">이 페이지는 Phase {{ phase }}에서 구현 예정입니다.</p>
+  <a href="{{ url_for('main.index') }}" style="display:inline-flex;align-items:center;gap:6px;margin-top:24px;background:var(--blue-050);color:var(--blue-700);font-size:13px;font-weight:700;padding:12px 26px;border-radius:999px">홈으로 돌아가기</a>
+</div>
+{% endblock %}

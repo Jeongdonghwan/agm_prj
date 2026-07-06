@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ site_name }} - 법률 문제, 변호사와 바로 연결{% endblock %}</title>
+{% block meta %}{% endblock %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+{% block styles %}{% endblock %}
+</head>
+<body>
+
+{% block top_strip %}{% endblock %}
+
+<header class="site">
+  <div class="wrap header-top">
+    <a href="{{ url_for('main.index') }}" class="logo"><span class="mark"><i data-lucide="scale" style="width:17px;height:17px"></i></span>{{ site_name }}</a>
+    <div class="search"><i data-lucide="search" style="width:17px;height:17px;color:var(--blue-600)"></i><input placeholder="어떤 법률 문제가 있으신가요?"></div>
+    <div class="h-utils">
+      {% if current_user %}
+        {% if current_user.role == 'lawyer' %}
+          <a class="lnk" href="{{ url_for('lawyer_admin.dashboard') }}">변호사 어드민</a>
+        {% elif current_user.role == 'admin' %}
+          <a class="lnk" href="{{ url_for('admin.dashboard') }}">관리자</a>
+        {% else %}
+          <a class="lnk" href="{{ url_for('mypage.home') }}">마이페이지</a>
+        {% endif %}
+        <a class="lnk" href="{{ url_for('auth.logout') }}">로그아웃</a>
+        <a class="lnk" href="#">고객센터</a>
+      {% else %}
+        <a class="lnk" href="{{ url_for('auth.login') }}">로그인</a>
+        <a class="lnk" href="{{ url_for('auth.signup') }}">회원가입</a>
+        <a class="lnk" href="#">고객센터</a>
+      {% endif %}
+      <a class="btn-write" href="{{ url_for('community.list_') }}">글쓰기 <i data-lucide="chevron-down"></i></a>
+    </div>
+  </div>
+  <nav class="gnb wrap">
+    <ul>
+      <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
+      <li><a href="{{ url_for('main.index') }}" class="{% if active_menu == 'home' %}active{% endif %}">홈</a></li>
+      <li><a href="{{ url_for('lawyers.find') }}" class="{% if active_menu == 'lawyers' %}active{% endif %}">변호사</a></li>
+      <li><a href="{{ url_for('contents.firms') }}" class="{% if active_menu == 'firms' %}active{% endif %}">로펌</a></li>
+      <li><a href="{{ url_for('counsel.list_') }}" class="{% if active_menu == 'counsel' %}active{% endif %}">상담사례</a></li>
+      <li><a href="{{ url_for('contents.posts') }}" class="{% if active_menu == 'posts' %}active{% endif %}">변호사포스트</a></li>
+      <li><a href="{{ url_for('contents.cases') }}" class="{% if active_menu == 'cases' %}active{% endif %}">판례돋보기</a></li>
+      <li><a href="{{ url_for('contents.news') }}" class="{% if active_menu == 'news' %}active{% endif %}">안기모뉴스</a></li>
+    </ul>
+  </nav>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-stack">
+    {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer class="site">
+  <div class="wrap">
+    <a href="{{ url_for('main.index') }}" class="logo"><span class="mark"><i data-lucide="scale" style="width:14px;height:14px"></i></span>{{ site_name }}</a>
+    <div class="foot-links">
+      <a href="#">회사소개</a><a href="#">이용약관</a><a href="#">개인정보처리방침</a><a href="#">공지사항</a><a href="#">제휴문의</a>
+    </div>
+    <div class="info">
+      상호: {{ site_name }} | 대표: OOO | 사업자등록번호: 000-00-00000<br>
+      주소: 인천광역시 OO구 OO로 000 | 이메일: contact@angimo.co.kr<br>
+      © 2026 {{ site_name_en }}. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+<script>lucide.createIcons();</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,73 @@
+/* ===== 어드민 공통 (시안 admin.html / lawyer-admin.html) ===== */
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Pretendard',-apple-system,sans-serif;color:var(--ink-900);background:#F7F9FC;line-height:1.5;display:flex;min-height:100vh}
+a{text-decoration:none;color:inherit}
+ul{list-style:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+:root{--green-500:#16A34A}
+
+/* 사이드바 */
+.sidebar{width:240px;background:var(--blue-900);color:#fff;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar .logo{display:flex;align-items:center;gap:8px;font-size:19px;font-weight:800;padding:22px 20px;letter-spacing:-.5px}
+.sidebar .logo .mark{width:26px;height:26px;background:#fff;color:var(--blue-900);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.sidebar .role-tag{margin:0 20px 16px;background:rgba(255,255,255,.12);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
+.sidebar nav{flex:1;overflow-y:auto}
+.sidebar nav a{display:flex;align-items:center;gap:11px;padding:12px 20px;font-size:14px;font-weight:600;opacity:.65;border-left:3px solid transparent}
+.sidebar nav a i{width:17px;height:17px}
+.sidebar nav a:hover{opacity:1}
+.sidebar nav a.on{opacity:1;background:rgba(255,255,255,.08);border-left-color:var(--blue-600)}
+.sidebar nav .grp{padding:16px 20px 6px;font-size:11px;font-weight:700;opacity:.4;letter-spacing:1px}
+.sidebar .bottom{padding:16px 20px;border-top:1px solid rgba(255,255,255,.1);font-size:13px;opacity:.7;display:flex;justify-content:space-between;align-items:center}
+
+/* 메인 */
+.main{flex:1;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid var(--ink-200);padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar h1{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.topbar .user{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600}
+.topbar .user .av{width:32px;height:32px;border-radius:50%;background:var(--blue-100);color:var(--blue-600);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px}
+.content{padding:26px 28px;max-width:1200px}
+
+/* 통계 카드 */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:20px}
+.stat-card .lb{font-size:13px;color:var(--ink-500);font-weight:600;display:flex;align-items:center;gap:6px}
+.stat-card .lb i{width:15px;height:15px;color:var(--blue-600)}
+.stat-card .num{font-size:26px;font-weight:800;margin-top:8px;letter-spacing:-.5px}
+.stat-card .num small{font-size:13px;font-weight:600;color:var(--ink-500);margin-left:3px}
+.stat-card .diff{font-size:12px;font-weight:700;color:var(--blue-600);margin-top:4px}
+.stat-card.alert{border-color:var(--blue-600);background:var(--blue-050)}
+
+/* 패널/테이블 */
+.panel{background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-md);margin-top:20px;overflow:hidden}
+.panel .p-head{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--ink-200)}
+.panel .p-head h2{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+.panel .p-head h2 .cnt{background:var(--blue-600);color:#fff;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px}
+.panel .p-head a{font-size:13px;color:var(--ink-500);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--blue-050);color:var(--ink-500);font-weight:700;text-align:left;padding:10px 16px;white-space:nowrap}
+td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
+.badge{display:inline-block;font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
+.badge.blue{background:var(--blue-100);color:var(--blue-700)}
+.badge.wait{background:#FFF4E5;color:#B45309}
+.badge.ok{background:#E8F7EE;color:var(--green-500)}
+.badge.red{background:#FEE2E2;color:#B91C1C}
+.btn{font-size:12px;font-weight:700;padding:7px 14px;border-radius:var(--radius-sm)}
+.btn.pri{background:var(--blue-600);color:#fff}.btn.pri:hover{background:var(--blue-700)}
+.btn.line{border:1px solid var(--ink-200);color:var(--ink-500)}.btn.line:hover{border-color:var(--blue-600);color:var(--blue-600)}
+.btn.danger{border:1px solid #FCA5A5;color:#B91C1C}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.list-item{padding:14px 20px;border-top:1px solid var(--ink-200);font-size:13px}
+.list-item:first-of-type{border-top:none}
+.list-item .t{font-weight:700;font-size:14px}
+.list-item .m{color:var(--ink-500);margin-top:3px;font-size:12px}
+.notice-strip{margin-top:20px;background:var(--blue-050);border:1px solid var(--blue-100);border-radius:var(--radius-md);padding:14px 18px;font-size:13px;display:flex;align-items:center;gap:10px}
+.notice-strip i{width:17px;height:17px;color:var(--blue-600);flex-shrink:0}
+.notice-strip b{color:var(--blue-700)}
+
+/* Flash */
+.flash{border-radius:var(--radius-md);padding:12px 16px;font-size:13.5px;font-weight:600;margin-bottom:12px}
+.flash.error{background:#FFF0F0;color:#C43030;border:1px solid #FFD9D9}
+.flash.success{background:var(--blue-050);color:var(--blue-700);border:1px solid var(--blue-100)}
+
+@media (max-width:1100px){.stat-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}
+@media (max-width:800px){.sidebar{display:none}}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}회원가입 | {{ site_name }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1 class="auth-title">회원가입</h1>
+    <p class="auth-sub">가입 즉시 상담글 작성과 커뮤니티를 이용할 수 있어요</p>
+
+    <form class="auth-form" method="post">
+      <div>
+        <label>이메일 <span class="req">*</span></label>
+        <input type="email" name="email" value="{{ form.get('email', '') }}" placeholder="email@example.com" required autofocus>
+      </div>
+      <div>
+        <label>비밀번호 <span class="req">*</span></label>
+        <input type="password" name="password" placeholder="8자 이상" required minlength="8">
+      </div>
+      <div>
+        <label>비밀번호 확인 <span class="req">*</span></label>
+        <input type="password" name="password2" placeholder="비밀번호 재입력" required>
+      </div>
+      <div>
+        <label>휴대폰 번호 <span class="req">*</span></label>
+        <input type="tel" name="phone" value="{{ form.get('phone', '') }}" placeholder="010-0000-0000" required>
+      </div>
+      <div>
+        <label>이름</label>
+        <input type="text" name="name" value="{{ form.get('name', '') }}" placeholder="이름 (선택)">
+      </div>
+      <div>
+        <label>닉네임</label>
+        <input type="text" name="nickname" value="{{ form.get('nickname', '') }}" placeholder="닉네임 (선택 — 커뮤니티 이용 시 필요)">
+        <div class="hint">닉네임은 나중에 커뮤니티 이용 시 설정할 수도 있어요.</div>
+      </div>
+      <button class="btn-submit" type="submit">가입하기</button>
+    </form>
+
+    <div class="auth-foot">
+      변호사이신가요? <a href="{{ url_for('auth.signup_lawyer') }}">변호사 가입 신청</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

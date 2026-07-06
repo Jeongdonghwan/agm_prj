@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}승인 대기 중 | {{ site_name }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card" style="text-align:center">
+    {% if current_user.status == 'rejected' %}
+    <div class="pending-icon"><i data-lucide="file-x"></i></div>
+    <h1 class="auth-title">가입 신청이 반려되었습니다</h1>
+    <p class="auth-sub" style="margin-top:12px">
+      {% if current_user.status_reason %}반려 사유: {{ current_user.status_reason }}{% else %}자세한 사유는 고객센터로 문의해주세요.{% endif %}
+    </p>
+    {% else %}
+    <div class="pending-icon"><i data-lucide="hourglass"></i></div>
+    <h1 class="auth-title">승인 대기 중입니다</h1>
+    <p class="auth-sub" style="margin-top:12px">
+      제출하신 서류를 관리자가 검토하고 있습니다.<br>
+      승인이 완료되면 변호사 어드민을 이용할 수 있습니다.
+    </p>
+    {% endif %}
+    <a href="{{ url_for('main.index') }}" style="display:inline-block;margin-top:24px;background:var(--blue-050);color:var(--blue-700);font-size:13px;font-weight:700;padding:12px 26px;border-radius:999px">홈으로 돌아가기</a>
+  </div>
+</div>
+{% endblock %}

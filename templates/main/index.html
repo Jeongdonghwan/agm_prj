@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block meta %}
+<meta name="description" content="분야별 전문 변호사 찾기, 온라인 상담사례, 판례돋보기까지 — 법률 문제의 시작부터 끝까지 안기모가 함께합니다.">
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/index.css') }}">
+{% endblock %}
+
+{% block top_strip %}
+<!-- 최상단 띠배너 -->
+<a class="top-strip" href="{{ url_for('auth.signup') }}">
+  <span class="tk"><i data-lucide="ticket-percent" style="width:14px;height:14px"></i></span>
+  지금 가입하면 <b>첫 상담 100% 지원!</b>
+  <i data-lucide="chevron-right" style="width:15px;height:15px"></i>
+</a>
+{% endblock %}
+
+{% block content %}
+<!-- 히어로 -->
+<div class="hero wrap">
+  <div class="hero-grid">
+    <div class="hero-banner">
+      <span class="ad">AD</span>
+      <h2>법률 문제의 시작부터 끝까지,<br>{{ site_name }}가 함께합니다</h2>
+      <p>분야별 전문 변호사를 지금 바로 만나보세요</p>
+      <div class="indicator"><i data-lucide="chevron-left" style="width:13px;height:13px"></i> 2 / 10 <i data-lucide="chevron-right" style="width:13px;height:13px"></i></div>
+    </div>
+    <div class="hero-side">
+      <div class="side-row">
+        <a class="side-card" href="{{ url_for('lawyers.find') }}"><h3>변호사 찾기 <i data-lucide="user-search" style="width:19px;height:19px"></i></h3><p>내게 딱 맞는 변호사 찾기</p></a>
+        <a class="side-card" href="{{ url_for('counsel.list_') }}"><h3>온라인 상담 <i data-lucide="message-circle-question" style="width:19px;height:19px"></i></h3><p>부담 없이 먼저, 법률 조언</p></a>
+      </div>
+      <div class="side-mini">
+        <a class="mini-item" href="#"><i data-lucide="file-pen-line"></i>고소대리</a>
+        <a class="mini-item" href="#"><i data-lucide="shield-check"></i>경찰조사동행</a>
+        <a class="mini-item" href="#"><i data-lucide="mail-warning"></i>내용증명</a>
+      </div>
+      <a class="kakao-card" href="#"><i data-lucide="message-square" style="width:20px;height:20px"></i>카카오톡 채널 추가하고 상담 쿠폰 받기</a>
+    </div>
+  </div>
+</div>
+
+<!-- 통합 콘텐츠 탭 (커뮤니티/판례/상담글/해결사례) — 실데이터 연동은 Phase 5 -->
+<section class="wrap">
+  <h2 class="sec-title">지금 {{ site_name }}에서는</h2>
+  <div class="hub-tabs">
+    <button class="on" data-tab="hub-comm">커뮤니티 인기글 <span class="badge-new">NEW</span></button>
+    <button data-tab="hub-case">판례돋보기</button>
+    <button data-tab="hub-qna">최신 상담글</button>
+    <button data-tab="hub-solve">변호사 해결사례</button>
+  </div>
+
+  <div class="hub-panel on" id="hub-comm">
+    <div class="comm-band">
+      <div class="comm-grid">
+        <a class="comm-card" href="{{ url_for('community.list_') }}">
+          <span class="comm-tag">이혼/가사</span>
+          <h4>협의이혼 진행 중인데 양육비 산정 기준이 궁금합니다</h4>
+          <div class="comm-meta"><span>조회 <b>1,024</b></span><span>댓글 <b>18</b></span><span>추천 <b>32</b></span></div>
+        </a>
+        <a class="comm-card" href="{{ url_for('community.list_') }}">
+          <span class="comm-tag">부동산</span>
+          <h4>전세보증금 반환 소송, 실제로 걸리는 기간과 비용 후기</h4>
+          <div class="comm-meta"><span>조회 <b>2,381</b></span><span>댓글 <b>41</b></span><span>추천 <b>76</b></span></div>
+        </a>
+        <a class="comm-card" href="{{ url_for('community.list_') }}">
+          <span class="comm-tag">형사</span>
+          <h4>모욕죄 고소당했을 때 초기 대응, 이렇게 하세요</h4>
+          <div class="comm-meta"><span>조회 <b>897</b></span><span>댓글 <b>12</b></span><span>추천 <b>21</b></span></div>
+        </a>
+      </div>
+    </div>
+    <div class="more-pill"><a href="{{ url_for('community.list_') }}"><button>커뮤니티 더보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
+  </div>
+
+  <div class="hub-panel" id="hub-case">
+    <div class="case-grid">
+      <a class="case-card" href="{{ url_for('contents.cases') }}">
+        <div class="case-tags">소송/집행절차 · 노무/인사</div>
+        <h4>정기상여금은 통상임금, 회사는 돈 더 줘야 한다</h4>
+        <p>사건 개요: 사내에서 지급된 정기상여금이 통상임금에 포함되는지가 쟁점이 된 사안으로, 법원은 지급 조건과 관행을 종합해 판단했습니다.</p>
+        <div class="case-no">대법원 2025다OOOOO</div>
+      </a>
+      <a class="case-card" href="{{ url_for('contents.cases') }}">
+        <div class="case-tags">형사일반 · 세금/행정/헌법</div>
+        <h4>불법 의료기기 대량 유통, 의사면허 정지 판결</h4>
+        <p>사건 개요: 허가받지 않은 의료기기를 대량으로 유통한 행위에 대해 면허 정지 처분의 적법성이 다투어진 사안입니다.</p>
+        <div class="case-no">대법원 2025두OOOOO</div>
+      </a>
+      <a class="case-card" href="{{ url_for('contents.cases') }}">
+        <div class="case-tags">계약일반/매매 · 소송/집행절차</div>
+        <h4>이사 한 명의 자기거래, 회사 계약을 무효로 만든다</h4>
+        <p>사건 개요: 이사회 승인 없이 이루어진 이사의 자기거래가 회사에 미치는 효력이 문제된 사안입니다.</p>
+        <div class="case-no">대법원 2025다OOOOO</div>
+      </a>
+      <a class="case-card" href="{{ url_for('contents.cases') }}">
+        <div class="case-tags">소송/집행절차 · 국제거래</div>
+        <h4>외국 법원 명령, 한국에서 강제집행 가능할까?</h4>
+        <p>사건 개요: 외국 법원의 판결을 국내에서 승인·집행할 수 있는 요건이 쟁점이 된 사안입니다.</p>
+        <div class="case-no">대법원 2025다OOOOO</div>
+      </a>
+    </div>
+    <div class="more-pill"><a href="{{ url_for('contents.cases') }}"><button>판례돋보기 더보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
+  </div>
+
+  <div class="hub-panel" id="hub-qna">
+    <div class="qna-grid">
+      <div class="qna-item">
+        <div class="cat">노동/인사</div>
+        <h4>카페 아르바이트 시 외부인 출입과 법적 책임은?</h4>
+        <p>1. 카페 아르바이트 중 지인을 매장 내부에 출입시켜 도움을 받았는데, 사장님과 문제가 생겼습니다. 법적 책임이 어디까지인지...</p>
+        <div class="ans"><div class="avs"><span>정</span><span>김</span></div>변호사 답변 2</div>
+      </div>
+      <div class="qna-item">
+        <div class="cat">성범죄</div>
+        <h4>미성년자 동석 사실을 몰랐을 때 아청법 고소 가능성과 처벌 여부</h4>
+        <p>일행 중 성년인지 몰랐던 미성년자가 있었다는 이유로 고소를 당했습니다. 처벌 가능성과 대응 방법이 궁금합니다...</p>
+        <div class="ans"><div class="avs"><span>이</span></div>변호사 답변 1</div>
+      </div>
+      <div class="qna-item">
+        <div class="cat">가압류/가처분</div>
+        <h4>이혼 소송 중 전세보증금 가압류, 어떻게 대처해야 할까요?</h4>
+        <p>남편과 이혼 소송을 진행하고 있는데, 남편이 소송 도중에 1억원 상당의 전세보증금에 대해 가압류를 신청했습니다...</p>
+        <div class="ans"><div class="avs"><span>박</span><span>최</span><span>정</span></div>변호사 답변 3</div>
+      </div>
+      <div class="qna-item">
+        <div class="cat">이혼</div>
+        <h4>소송구조 결정 후 사전처분 추가 시 위임료는 어떻게 되나요?</h4>
+        <p>소송구조 결정을 받은 상태에서 사전처분 신청을 추가로 진행하게 되었는데, 위임료 부담이 어떻게 되는지 궁금합니다...</p>
+        <div class="ans"><div class="avs"><span>김</span></div>변호사 답변 1</div>
+      </div>
+    </div>
+    <div class="more-pill"><button><i data-lucide="rotate-cw"></i>최신 상담글 더 보기 1/4</button></div>
+  </div>
+
+  <div class="hub-panel" id="hub-solve">
+    <div class="solve-grid">
+      <div class="solve-item">
+        <div class="solve-by"><span>안</span>안OO 변호사</div>
+        <h4>음주운전 재범, 양형자료 준비로 집행유예 판결 받은 사례</h4>
+        <p>음주운전 전력이 다수 있는 의뢰인에 대해 수사 단계부터 양형 자료를 촘촘히 준비하여 재판부를 설득, 집행유예 판결을 이끌어냈습니다...</p>
+        <span class="solve-badge"><i data-lucide="gavel"></i>집행유예</span>
+      </div>
+      <div class="solve-item">
+        <div class="solve-by"><span>이</span>이OO 변호사</div>
+        <h4>미성년 디지털 성범죄 사건, 형사재판 회부 없이 소년부 송치</h4>
+        <p>미성년 의뢰인의 성장 가능성과 재범 방지 계획을 구체적으로 소명하여 형사재판이 아닌 소년부 송치 결정을 받아냈습니다...</p>
+        <span class="solve-badge"><i data-lucide="gavel"></i>소년부송치</span>
+      </div>
+      <div class="solve-item">
+        <div class="solve-by"><span>박</span>박OO 변호사</div>
+        <h4>공동불법행위 구상금 소송, 책임 비율 다투어 청구 인용 판결</h4>
+        <p>공동불법행위자 사이의 내부 구상 문제에서 책임 비율을 다투어 의뢰인에게 유리한 판결을 받았습니다...</p>
+        <span class="solve-badge"><i data-lucide="gavel"></i>청구 인용</span>
+      </div>
+      <div class="solve-item">
+        <div class="solve-by"><span>정</span>정OO 변호사</div>
+        <h4>[의료법 위반] 수사 초기 대응으로 기소유예 처분 받은 사례</h4>
+        <p>의료 관련 형사 사건에서 초기 조사 단계부터 대응 전략을 수립하여 기소유예 처분을 이끌어낸 사례입니다...</p>
+        <span class="solve-badge"><i data-lucide="gavel"></i>기소유예</span>
+      </div>
+    </div>
+    <div class="more-pill"><button><i data-lucide="rotate-cw"></i>해결사례 더 보기 1/4</button></div>
+  </div>
+</section>
+
+<!-- 분야별 변호사 찾기 -->
+<section class="wrap">
+  <h2 class="sec-title">어떤 분야의 변호사를 찾으시나요?</h2>
+  <div class="cat-grid">
+    {% set cat_icons = [
+      ('성범죄', 'sex-crime', '#FFE9EE'),
+      ('재산범죄', 'property', '#FFF3DF'),
+      ('교통사고/범죄', 'traffic', '#E4EEFF'),
+      ('형사절차', 'criminal', '#EFE9FF'),
+      ('폭행/협박', 'assault', '#FFEDE3'),
+      ('명예훼손/모욕', 'defame', '#E6F7EF'),
+      ('기타 형사범죄', 'etc-criminal', '#F0F1F5'),
+      ('부동산/임대차', 'realestate', '#E2F5FF'),
+      ('금전/계약 문제', 'contract', '#FFF8D9'),
+      ('민사절차', 'civil', '#E7FBF2'),
+      ('기타 민사문제', 'etc-civil', '#EDF1FF'),
+      ('가족', 'family', '#FFE8F3'),
+      ('회사', 'company', '#E7EFFE'),
+      ('의료/세금/행정', 'medical', '#E4FAF7'),
+      ('IT/지식재산/금융', 'it', '#F3E9FF'),
+    ] %}
+    {% for name, icon, bg in cat_icons %}
+    <a class="cat-item" href="{{ url_for('lawyers.find') }}"><span class="ic" style="background:{{ bg }}"><img src="{{ url_for('static', filename='icons/' + icon + '.png') }}" alt="{{ name }}" loading="lazy"></span>{{ name }}</a>
+    {% endfor %}
+    <a class="cat-item more" href="{{ url_for('lawyers.find') }}"><span class="ic"><span class="em" style="font-size:20px;color:var(--ink-500)">＋</span></span>전체보기</a>
+  </div>
+</section>
+
+<!-- 지역별 변호사 찾기 -->
+<section class="wrap">
+  <h2 class="sec-title">어떤 지역의 변호사를 찾으시나요?</h2>
+  <div class="region-grid">
+    {% for region in ['서울', '경기', '인천/부천', '춘천/강원', '대전/충남/세종', '청주/충북', '대구/경북', '부산/울산/경남', '광주/전남', '전주/전북', '제주'] %}
+    <button class="region-btn">{{ region }}</button>
+    {% endfor %}
+    <button class="region-btn" style="color:var(--blue-600);border-color:var(--blue-600)">전체보기</button>
+  </div>
+</section>
+
+<!-- 요즘 활발한 변호사 -->
+<section class="wrap">
+  <h2 class="sec-title">요즘 활발한 변호사</h2>
+  <div class="chip-row">
+    <button class="on">활동순</button><button>답변 많은순</button><button>가족</button><button>기타 형사범죄</button><button>금전/계약 문제</button><button>형사절차</button><button>재산범죄</button><button>부동산/임대차</button><button>폭행/협박</button><button>명예훼손/모욕</button><button>회사</button><button>교통사고/범죄</button>
+  </div>
+  <div class="quick-grid">
+    <a class="quick-card" href="{{ url_for('lawyers.find') }}">
+      <div class="qav">이</div>
+      <div>
+        <div class="name">이OO <small>변호사</small></div>
+        <div class="field">이혼/가사 전문 · 법무법인 OO</div>
+        <div class="time-chips"><span>최근 답변 12건</span><span>해결사례 8건</span></div>
+      </div>
+    </a>
+    <a class="quick-card" href="{{ url_for('lawyers.find') }}">
+      <div class="qav">최</div>
+      <div>
+        <div class="name">최OO <small>변호사</small></div>
+        <div class="field">형사절차 전문 · OO법률사무소</div>
+        <div class="time-chips"><span>최근 답변 9건</span><span>해결사례 15건</span></div>
+      </div>
+    </a>
+    <a class="quick-card" href="{{ url_for('lawyers.find') }}">
+      <div class="qav">임</div>
+      <div>
+        <div class="name">임OO <small>변호사</small></div>
+        <div class="field">부동산/임대차 전문 · 법무법인 OO</div>
+        <div class="time-chips"><span>최근 답변 7건</span><span>포스트 5건</span></div>
+      </div>
+    </a>
+    <a class="quick-card" href="{{ url_for('lawyers.find') }}">
+      <div class="qav">정</div>
+      <div>
+        <div class="name">정OO <small>변호사</small></div>
+        <div class="field">재산범죄 전문 · OO합동법률사무소</div>
+        <div class="time-chips"><span>최근 답변 6건</span><span>해결사례 4건</span></div>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- 새로 함께하는 변호사 -->
+<section class="wrap">
+  <h2 class="sec-title">새로 함께하는 변호사 <span class="badge-new">NEW</span></h2>
+  <div class="chip-row">
+    <button class="on">전체</button><button>상담순</button><button>기타 형사범죄</button><button>형사절차</button><button>재산범죄</button><button>성범죄/성매매 문제</button><button>회사</button><button>가족</button><button>부동산/임대차</button><button>교통사고/범죄</button><button>명예훼손/모욕</button>
+  </div>
+  <div class="new-grid">
+    <div class="new-card">
+      <span class="lb">형사/성범죄</span>
+      <div class="row"><span class="nav2">신</span><h4>신OO 변호사</h4></div>
+      <p>군검사 출신, 형사 사건 초기 대응부터 끝까지 직접 수행합니다.</p>
+    </div>
+    <div class="new-card">
+      <span class="lb">부동산/임대차</span>
+      <div class="row"><span class="nav2">송</span><h4>송OO 변호사</h4></div>
+      <p>보증금 반환·명도 사건 다수 수행, 실무 중심으로 조언드립니다.</p>
+    </div>
+    <div class="new-card">
+      <span class="lb">재산/사기범죄</span>
+      <div class="row"><span class="nav2">오</span><h4>오OO 변호사</h4></div>
+      <p>[사기 등] 고소·방어 양측 경험을 토대로 전략을 제시합니다.</p>
+    </div>
+    <div class="new-card">
+      <span class="lb">가족/이혼</span>
+      <div class="row"><span class="nav2">김</span><h4>김OO 변호사</h4></div>
+      <p>양육권·재산분할 사건 전문, 의뢰인과 함께 끝까지 갑니다.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+{% endblock %}

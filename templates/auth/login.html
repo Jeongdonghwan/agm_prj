@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}로그인 | {{ site_name }}{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1 class="auth-title">로그인</h1>
+    <p class="auth-sub">{{ site_name }}에 오신 것을 환영합니다</p>
+
+    <div class="auth-tabs">
+      <a href="{{ url_for('auth.login', tab='user', next=next) }}" class="{% if tab != 'lawyer' %}on{% endif %}">일반회원</a>
+      <a href="{{ url_for('auth.login', tab='lawyer', next=next) }}" class="{% if tab == 'lawyer' %}on{% endif %}">변호사회원</a>
+    </div>
+
+    <form class="auth-form" method="post" action="{{ url_for('auth.login', tab=tab) }}">
+      <input type="hidden" name="next" value="{{ next }}">
+      <div>
+        <label>이메일</label>
+        <input type="email" name="email" placeholder="email@example.com" required autofocus>
+      </div>
+      <div>
+        <label>비밀번호</label>
+        <input type="password" name="password" placeholder="비밀번호" required>
+      </div>
+      <button class="btn-submit" type="submit">로그인</button>
+    </form>
+
+    <div class="auth-foot">
+      아직 회원이 아니신가요?
+      {% if tab == 'lawyer' %}
+      <a href="{{ url_for('auth.signup_lawyer') }}">변호사 가입 신청</a>
+      {% else %}
+      <a href="{{ url_for('auth.signup') }}">회원가입</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
