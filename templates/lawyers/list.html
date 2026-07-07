@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% set filter_label = (category.name if category else (region.name ~ ' 지역' if region else '전체')) %}
+
+{% block title %}{{ filter_label }} 변호사 - {{ site_name }}{% endblock %}
+
+{% block meta %}
+<meta name="description" content="{{ filter_label }} 분야 변호사 {{ total }}명 — 프로필에서 사무소 전화·카카오톡으로 바로 문의하세요.">
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lawyers-list.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- 추천 키워드 -->
+<div class="kw-row"><div class="wrap">
+  <span class="lb">추천키워드</span>
+  {% if category %}
+    {% for kw in [category.name ~ ' 처벌', category.name ~ ' 변호사', category.name ~ ' 무혐의', category.name ~ ' 합의', category.name ~ ' 상담'] %}
+    <a href="{{ url_for('lawyers.list_', category=category.id) }}">{{ kw }}</a>
+    {% endfor %}
+  {% else %}
+    <a href="{{ url_for('lawyers.find') }}">분야로 찾기</a>
+    <a href="{{ url_for('lawyers.find') }}">지역으로 찾기</a>
+  {% endif %}
+  <a href="{{ url_for('lawyers.find') }}">전체보기</a>
+</div></div>
+
+<div class="wrap list-layout">
+  <!-- 좌측 -->
+  <div>
+    {% if solve_cases %}
+    <!-- 맞춤 법률 정보: 관련 분야 해결사례 -->
+    <div class="info-box">
+      <div class="head"><i data-lucide="sparkles"></i>맞춤 법률 정보 <span class="tag">관련도 높음</span><span class="ad">광고</span></div>
+      <div class="info-grid">
+        {% for post in solve_cases %}
+        <div class="info-item">
+          <div class="bd"><div class="cat">해결사례</div><h5>{{ post.title }}</h5></div>
+          <div class="who"><span class="av">{{ post.lawyer.name[0] }}</span>{{ post.lawyer.name }} 변호사</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 변호사 목록 -->
+    <h2 class="sec-title">변호사 <span class="cnt">{{ total }}</span>{% if category or region %}<small style="font-size:13px;font-weight:600;color:var(--ink-500)">{{ filter_label }}</small>{% endif %}</h2>
+
+    {% if total == 0 %}
+    <div class="empty-note">조건에 맞는 변호사가 아직 없습니다.<br><a href="{{ url_for('lawyers.find') }}" style="color:var(--blue-600);font-weight:700">다른 분야/지역으로 찾아보기</a></div>
+    {% endif %}
+
+    {% if ad_profiles %}
+    <div class="ad-label">AD LAWYERS <em>광고</em></div>
+    {% for p in ad_profiles %}
+    {% set detail_url = url_for('lawyers.detail', user_id=p.user_id, slug=slugify(p.user.name)) %}
+    <div class="ad-card">
+      <a class="photo" href="{{ detail_url }}">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</a>
+      <div class="bd">
+        <div class="merit"><span><i data-lucide="smile"></i>명쾌한 변호사</span><span><i data-lucide="award"></i>해결사</span></div>
+        <a href="{{ detail_url }}"><h3>{{ p.user.name }} 변호사</h3></a>
+        <div class="firm">{{ p.firm_name }}{% if p.region %} ({{ p.region.name }}){% endif %}</div>
+        <div class="hash">{% for c in p.categories[:3] %}<span>#{{ c.name }}</span>{% endfor %}</div>
+        <div class="copy">{{ p.headline }}</div>
+        <div class="rel">상담 답변 <b>{{ answer_counts.get(p.user_id, 0) }}건</b> · 프로필 조회 <b>{{ '{:,}'.format(p.view_count or 0) }}</b></div>
+        <div class="ad-actions">
+          {% if p.office_phone %}<a class="ic-btn contact-click" data-id="{{ p.user_id }}" data-type="phone" href="tel:{{ p.office_phone }}" aria-label="사무소 전화"><i data-lucide="phone"></i></a>{% endif %}
+          {% if p.kakao_url %}<a class="ic-btn kakao contact-click" data-id="{{ p.user_id }}" data-type="kakao" href="{{ p.kakao_url }}" target="_blank" rel="noopener" aria-label="카카오톡 문의"><i data-lucide="message-circle"></i></a>{% endif %}
+          <a class="btn-profile" href="{{ detail_url }}">프로필 보기 <i data-lucide="chevron-right" style="width:15px;height:15px"></i></a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if plain_profiles %}
+    <div class="plain-label">LAWYERS</div>
+    {% for p in plain_profiles %}
+    {% set detail_url = url_for('lawyers.detail', user_id=p.user_id, slug=slugify(p.user.name)) %}
+    <div class="plain-item">
+      <div class="bd">
+        <a href="{{ detail_url }}"><div class="nm">{{ p.user.name }} 변호사</div></a>
+        <div class="fm">{{ p.firm_name }}</div>
+        <div class="hl">{{ p.headline }}</div>
+        <div class="plain-actions">
+          <a class="txt" href="{{ detail_url }}">간편 문의</a>
+          {% if p.office_phone %}<a class="ic-btn contact-click" data-id="{{ p.user_id }}" data-type="phone" href="tel:{{ p.office_phone }}" aria-label="사무소 전화"><i data-lucide="phone"></i></a>{% endif %}
+          {% if p.kakao_url %}<a class="ic-btn kakao contact-click" data-id="{{ p.user_id }}" data-type="kakao" href="{{ p.kakao_url }}" target="_blank" rel="noopener" aria-label="카카오톡 문의"><i data-lucide="message-circle"></i></a>{% endif %}
+        </div>
+      </div>
+      <a class="cav" href="{{ detail_url }}">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</a>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if has_more %}
+    <a class="more-btn" href="{{ url_for('lawyers.list_', category=category.id if category else none, region=region.id if region else none, page=page + 1) }}" rel="next">변호사 {{ remaining }}명 더보기</a>
+    {% endif %}
+  </div>
+
+  <!-- 우측 안내 -->
+  <aside class="side-guide">
+    <h3>프로필에서 연락처 확인하고<br>부담 없이 문의해보세요.</h3>
+    <div class="guide-row">
+      <div class="ic"><i data-lucide="phone"></i></div>
+      <div><b>사무소 전화</b><small>프로필의 전화번호로 바로 연결</small></div>
+    </div>
+    <div class="guide-row">
+      <div class="ic"><i data-lucide="message-circle"></i></div>
+      <div><b>카카오톡 문의</b><small>변호사 채널로 간편하게 문의</small></div>
+    </div>
+    <div class="guide-row">
+      <div class="ic"><i data-lucide="file-text"></i></div>
+      <div><b>온라인 상담글</b><small>상담사례에 질문 남기고 답변 받기</small></div>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/contact-click.js') }}"></script>
+{% endblock %}

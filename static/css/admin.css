@@ -69,5 +69,38 @@ td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
 .flash.error{background:#FFF0F0;color:#C43030;border:1px solid #FFD9D9}
 .flash.success{background:var(--blue-050);color:var(--blue-700);border:1px solid var(--blue-100)}
 
-@media (max-width:1100px){.stat-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}}
+/* ===== 프로필 관리 폼 ===== */
+.pf-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.pf-body{padding:18px 20px;display:flex;flex-direction:column;gap:16px}
+.pf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pf-field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-500);margin-bottom:5px}
+.pf-field label .req{color:var(--red-500)}
+.pf-field input[type=text],.pf-field input[type=tel],.pf-field select,.pf-field textarea{width:100%;border:1px solid var(--ink-200);background:#fff;border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit;outline:none}
+.pf-field input:focus,.pf-field select:focus,.pf-field textarea:focus{border-color:var(--blue-600)}
+.pf-field small{display:block;margin-top:4px;font-size:12px;color:var(--ink-500)}
+.pf-field input[type=file]{font-size:13px}
+.pf-photo-cur{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-500);margin-bottom:8px}
+.pf-photo-cur img{width:44px;height:44px;border-radius:var(--radius-sm);object-fit:cover}
+.pf-cats{display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:14px}
+.pf-cat-parent{font-size:13.5px;font-weight:800;display:flex;align-items:center;gap:6px}
+.pf-cat-children{display:flex;flex-wrap:wrap;gap:6px 16px;margin:8px 0 0 22px}
+.pf-cat-children label{font-size:12.5px;color:var(--ink-500);display:flex;align-items:center;gap:5px;font-weight:600}
+.career-row{display:grid;grid-template-columns:90px 1fr auto;gap:8px;margin-bottom:8px}
+.career-row input{border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
+/* 미리보기 */
+.pf-preview{position:sticky;top:80px}
+.pv-card{padding:18px;text-align:center}
+.pv-photo{width:100%;aspect-ratio:1/1.1;border-radius:var(--radius-sm);background:linear-gradient(160deg,#E8ECF3,#F4F6FA);display:flex;align-items:center;justify-content:center;color:#B0B8C1;overflow:hidden}
+.pv-photo img{width:100%;height:100%;object-fit:cover}
+.pv-photo i{width:40px;height:40px}
+.pv-headline{margin-top:14px;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.45}
+.pv-firm{margin-top:6px;font-size:12.5px;font-weight:700}
+.pv-addr{margin-top:2px;font-size:12px;color:var(--ink-500)}
+.pv-tel{margin-top:8px;font-size:12.5px;font-weight:700;color:var(--blue-700)}
+.pv-gauge{margin-top:16px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-500)}
+.pv-gauge .bar{flex:1;height:6px;background:var(--blue-050);border-radius:99px;overflow:hidden}
+.pv-gauge .bar i{display:block;height:100%;background:var(--blue-600);border-radius:99px}
+.pv-gauge b{color:var(--blue-700)}
+
+@media (max-width:1100px){.stat-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}.pf-layout{grid-template-columns:1fr}.pf-preview{position:static}}
 @media (max-width:800px){.sidebar{display:none}}

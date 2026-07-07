@@ -1,18 +1,7 @@
-{% extends "base_admin.html" %}
+{% extends "lawyer_admin/base.html" %}
+{% set admin_active = 'dashboard' %}
 
 {% block title %}변호사 어드민 - {{ site_name }}{% endblock %}
-
-{% block role_tag %}
-<div class="role-tag"><i data-lucide="briefcase" style="width:13px;height:13px"></i>변호사 어드민</div>
-{% endblock %}
-
-{% block sidebar_nav %}
-<a href="{{ url_for('lawyer_admin.dashboard') }}" class="on"><i data-lucide="layout-dashboard"></i>대시보드</a>
-<a href="#"><i data-lucide="user-pen"></i>프로필 관리</a>
-<a href="#"><i data-lucide="message-square-text"></i>상담 답변</a>
-<a href="#"><i data-lucide="file-pen-line"></i>포스트 작성</a>
-<a href="#"><i data-lucide="settings"></i>계정 설정</a>
-{% endblock %}
 
 {% block content %}
 <div class="stat-grid">
@@ -22,8 +11,10 @@
   <div class="stat-card"><div class="lb"><i data-lucide="file-check"></i>게시중 포스트</div><div class="num">{{ stats.published_posts }}<small>건</small></div><div class="diff">published</div></div>
 </div>
 
-{% if profile and not profile.is_complete %}
-<div class="notice-strip"><i data-lucide="info"></i><span>프로필 필수 항목(사진·헤드라인·분야·연락처)이 아직 완성되지 않아 목록에 노출되지 않습니다. <b>프로필 관리는 Phase 2에서 열립니다 →</b></span></div>
+{% if profile %}
+<div class="notice-strip"><i data-lucide="info"></i><span>프로필 완성도 <b>{{ completion }}%</b>
+  {% if not profile.is_complete %} — 필수 항목(사진·헤드라인·분야·연락처)을 채우면 목록에 노출됩니다.{% else %} — 상세 소개와 경력을 보강하면 노출 품질이 올라가요.{% endif %}
+  <a href="{{ url_for('lawyer_admin.profile') }}"><b>프로필 완성하기 →</b></a></span></div>
 {% endif %}
 
 <div class="two-col">

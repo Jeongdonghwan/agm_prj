@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}변호사 찾기 - {{ site_name }}{% endblock %}
+
+{% block meta %}
+<meta name="description" content="분야별, 지역별로 나에게 맞는 변호사를 찾아보세요. {{ site_name }}의 전문 변호사 프로필에서 바로 연락할 수 있습니다.">
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lawyers.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="find-toggle"><div>
+    <button class="on" data-panel="panel-cat">분야로 찾기</button><button data-panel="panel-region">지역으로 찾기</button>
+  </div></div>
+
+  <!-- 분야로 찾기 -->
+  <div class="find-panel on" id="panel-cat">
+    <div class="cat-layout">
+      <aside class="cat-nav">
+        {% for p in parents %}
+        <a href="#s{{ p.id }}" {% if loop.first %}class="on"{% endif %}>{{ p.name }}</a>
+        {% endfor %}
+      </aside>
+
+      <div class="cat-main">
+        <h1>분야로 변호사를 찾으세요.</h1>
+        {% for p in parents %}
+        <div class="cat-sec" id="s{{ p.id }}">
+          <div class="band">{{ p.name }}</div>
+          <div class="sub-grid">
+            {% for c in by_parent.get(p.id, []) %}
+            <a class="sub-item" href="{{ url_for('lawyers.list_', category=c.id) }}"><h4>{{ c.name }}</h4><p>{{ c.description }}</p></a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- 지역으로 찾기 -->
+  <div class="find-panel region-panel" id="panel-region">
+    <h1>지역으로 변호사를 찾으세요.</h1>
+    <div class="region-grid">
+      {% for r in regions %}
+      <a class="region-btn" href="{{ url_for('lawyers.list_', region=r.id) }}">{{ r.name }}</a>
+      {% endfor %}
+      <a class="region-btn" href="{{ url_for('lawyers.list_') }}" style="color:var(--blue-600);border-color:var(--blue-600)">전체보기</a>
+    </div>
+  </div>
+</div>
+
+<div class="help-bar"><div class="wrap">
+  <span>어떤 분야를 찾아야 할지 모르시겠다면?</span>
+  <a href="{{ url_for('counsel.list_') }}">온라인 상담으로 물어보기 <i data-lucide="chevron-right" style="width:15px;height:15px"></i></a>
+</div></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.find-toggle button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.find-toggle button').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.find-panel').forEach(p=>p.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById(btn.dataset.panel).classList.add('on');
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,33 @@
+/* ===== 변호사 찾기 1단계 (시안 lawyers.html) ===== */
+.find-toggle{display:flex;justify-content:center;margin:26px 0 34px}
+.find-toggle div{display:flex;border:1px solid var(--ink-200);border-radius:999px;overflow:hidden}
+.find-toggle button{font-size:15px;font-weight:700;padding:13px 34px;color:var(--ink-500)}
+.find-toggle button.on{background:#fff;color:var(--ink-900);border:2px solid var(--ink-900);border-radius:999px;margin:-1px}
+.cat-layout{display:grid;grid-template-columns:180px 1fr;gap:40px}
+.cat-nav{position:sticky;top:130px;height:fit-content}
+.cat-nav a{display:block;font-size:15px;font-weight:700;padding:7px 0;color:#C4CAD2}
+.cat-nav a.on{color:var(--ink-900)}
+.cat-nav a:hover{color:var(--blue-600)}
+.cat-main h1{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-bottom:28px}
+.cat-sec{margin-bottom:34px}
+.cat-sec .band{background:var(--blue-050);border-radius:var(--radius-sm);padding:14px 20px;font-size:16px;font-weight:800;margin-bottom:6px}
+.sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;padding:0 20px}
+.sub-item{padding:16px 0;border-bottom:1px solid var(--blue-050);display:block}
+.sub-item h4{font-size:15px;font-weight:700}
+.sub-item h4:hover{color:var(--blue-600);cursor:pointer}
+.sub-item p{margin-top:4px;font-size:12px;color:var(--ink-500)}
+.help-bar{position:sticky;bottom:0;background:#fff;border-top:1px solid var(--ink-200);box-shadow:0 -4px 16px rgba(10,42,94,.06);padding:14px 0;margin-top:20px}
+.help-bar .wrap{display:flex;justify-content:space-between;align-items:center}
+.help-bar span{font-size:15px;font-weight:700}
+.help-bar a{color:var(--blue-600);font-size:14px;font-weight:800;display:flex;align-items:center;gap:4px}
+
+/* 지역으로 찾기 패널 */
+.region-panel h1{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-bottom:28px}
+.region-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:720px}
+.region-btn{border:1px solid var(--ink-200);border-radius:999px;padding:14px 0;text-align:center;font-size:14px;font-weight:600;background:#fff;transition:.15s;display:block}
+.region-btn:hover{border-color:var(--blue-600);color:var(--blue-600);background:var(--blue-050)}
+
+.find-panel{display:none}
+.find-panel.on{display:block}
+
+@media (max-width:960px){.cat-layout{grid-template-columns:1fr}.cat-nav{display:none}.sub-grid{grid-template-columns:1fr}.region-grid{grid-template-columns:repeat(2,1fr)}}

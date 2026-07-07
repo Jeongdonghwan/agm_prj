@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ user.name }} 변호사{% if profile.firm_name %} - {{ profile.firm_name }}{% endif %} | {{ site_name }}</title>
+<meta name="description" content="{{ profile.headline or user.name + ' 변호사 프로필' }} — 분야: {{ profile.categories | map(attribute='name') | join(', ') }}. 사무소 전화·카카오톡으로 바로 문의하세요.">
+<link rel="canonical" href="{{ url_for('lawyers.detail', user_id=profile.user_id, slug=canonical_slug, _external=True) }}">
+<meta property="og:type" content="profile">
+<meta property="og:title" content="{{ user.name }} 변호사 | {{ site_name }}">
+<meta property="og:description" content="{{ profile.headline or '' }}">
+{% if profile.photo_url %}<meta property="og:image" content="{{ profile.photo_url }}">{% endif %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lawyer-detail.css') }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Attorney",
+  "name": "{{ user.name }}",
+  "url": "{{ url_for('lawyers.detail', user_id=profile.user_id, slug=canonical_slug, _external=True) }}",
+  {% if profile.photo_url %}"image": "{{ profile.photo_url }}",{% endif %}
+  {% if profile.office_phone %}"telephone": "{{ profile.office_phone }}",{% endif %}
+  {% if profile.address %}"address": {"@type": "PostalAddress", "streetAddress": "{{ profile.address }}"},{% endif %}
+  "knowsAbout": {{ profile.categories | map(attribute='name') | list | tojson }},
+  "worksFor": {"@type": "LegalService", "name": "{{ profile.firm_name or site_name }}"}
+}
+</script>
+</head>
+<body>
+
+<!-- 프로필 내부 탭 (미니멀) -->
+<div class="p-tabs"><div class="wrap">
+  <a href="{{ url_for('main.index') }}" class="mini-logo" aria-label="{{ site_name }} 홈"><i data-lucide="scale" style="width:16px;height:16px"></i></a>
+  <a href="#" class="on">변호사홈</a>
+  <a href="#info">변호사정보</a>
+  <a href="#solve">해결사례</a>
+  <a href="#office">사무소 안내</a>
+  <a href="{{ url_for('lawyers.list_') }}" class="back"><i data-lucide="chevron-left"></i>목록으로</a>
+</div></div>
+
+<div class="wrap profile-layout">
+  <!-- 좌측 본문 -->
+  <div>
+    <!-- 헤드라인 -->
+    <h1 class="headline">{{ profile.headline }}<b>.</b></h1>
+
+    <!-- 기본 정보 (2단 텍스트) -->
+    <div class="basic" id="info">
+      <div>
+        <div class="name">{{ user.name }} 변호사</div>
+        {% if profile.firm_name %}<div class="firm">{{ profile.firm_name }}</div>{% endif %}
+        {% if profile.address %}<div class="addr">{{ profile.address }}{% if profile.firm_name %}<br>{{ profile.firm_name }}{% endif %}</div>{% endif %}
+        {% if profile.office_phone %}<div class="tel">사무실 전화 <b>{{ profile.office_phone }}</b></div>{% endif %}
+      </div>
+      <div class="meta-rows">
+        <div class="meta-row"><div class="k">분야</div><div class="v">
+          {%- for c in profile.categories -%}
+          <a href="{{ url_for('lawyers.list_', category=c.id) }}">{{ c.name }}</a>{% if not loop.last %}, {% endif %}
+          {%- endfor -%}
+        </div></div>
+        <div class="meta-row"><div class="k">자격</div><div class="v">변호사 등록번호 {{ profile.license_no }}</div></div>
+        {% if profile.bar_association %}<div class="meta-row"><div class="k">소속</div><div class="v">{{ profile.bar_association }}</div></div>{% endif %}
+        {% if profile.region %}<div class="meta-row"><div class="k">지역</div><div class="v">{{ profile.region.name }}</div></div>{% endif %}
+      </div>
+    </div>
+
+    <!-- 간편 문의 -->
+    <div class="inquiry-box">
+      <div class="line"><span class="new">new</span>정식 상담이 고민된다면, <b>먼저 가볍게 문의</b>해보세요</div>
+      <div class="inquiry-btns">
+        {% if profile.office_phone %}<a class="btn-outline contact-click" data-id="{{ profile.user_id }}" data-type="phone" href="tel:{{ profile.office_phone }}"><i data-lucide="phone"></i>사무소 전화</a>{% endif %}
+        {% if profile.kakao_url %}<a class="btn-outline kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>카카오톡 문의</a>{% endif %}
+      </div>
+      <div class="note"><i data-lucide="info"></i>간편 문의는 사무실 직원이 응대할 수 있습니다.</div>
+    </div>
+
+    <!-- 해결사례 -->
+    <div class="sec" id="solve">
+      <h2>{{ user.name }} 변호사의<br>법률 활동을 확인하세요.</h2>
+      <div class="sub">해결사례 <b>{{ solve_total }}건</b></div>
+      {% if solve_posts %}
+      <div class="solve-list">
+        {% for post in solve_posts %}
+        <a class="solve-item" href="{{ url_for('contents.posts') }}"><span class="rb">{{ post.result_badge or '해결' }}</span><h4>{{ post.title }}</h4><i data-lucide="chevron-right"></i></a>
+        {% endfor %}
+      </div>
+      <a class="see-all" href="{{ url_for('contents.posts') }}">해결사례 전체보기 <i data-lucide="chevron-right"></i></a>
+      {% else %}
+      <div class="solve-empty">아직 등록된 해결사례가 없습니다. 상담 답변과 프로필 정보를 확인해보세요.</div>
+      {% endif %}
+    </div>
+
+    <!-- 소개/경력 -->
+    {% if profile.intro_full or profile.career %}
+    <div class="sec">
+      <h2>변호사 소개</h2>
+      {% if profile.intro_full %}<p class="intro-text">{{ profile.intro_full }}</p>{% endif %}
+      {% if profile.career %}
+      <ul class="career">
+        {% for item in profile.career %}
+        <li><b>{{ item.year }}</b>{{ item.text }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- 사무소 안내 -->
+    {% if profile.address or profile.firm_name %}
+    <div class="sec" id="office">
+      <h2>법률사무소에 오셔서<br>문제를 해결하세요.</h2>
+      <div class="office">
+        {% if profile.firm_name %}<div class="fm">{{ profile.firm_name }}</div>{% endif %}
+        {% if profile.address %}
+        <div class="row">
+          <div class="addr">{{ profile.address }}</div>
+          <a class="maplink" href="https://map.naver.com/p/search/{{ profile.address | urlencode }}" target="_blank" rel="noopener">네이버 지도로 보기 <i data-lucide="external-link"></i></a>
+        </div>
+        <div class="map-ph"><i data-lucide="map"></i>지도 영역 (네이버 지도 연동)</div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 우측 sticky -->
+  <aside class="side">
+    <div class="contact-card">
+      <div class="cc-head">
+        <div><h3>{{ user.name }} 변호사</h3>{% if profile.firm_name %}<p>{{ profile.firm_name }}</p>{% endif %}</div>
+        <div class="ics"><i data-lucide="star"></i><i data-lucide="share-2"></i></div>
+      </div>
+      <div class="cc-photo">{% if profile.photo_url %}<img src="{{ profile.photo_url }}" alt="{{ user.name }} 변호사 프로필 사진">{% else %}<i data-lucide="user-round"></i>{% endif %}</div>
+      <div class="cc-body">
+        <div class="cc-pill">비용 부담 없이 지금 바로 문의하기</div>
+        {% if profile.office_phone %}
+        <a class="btn-call contact-click" data-id="{{ profile.user_id }}" data-type="phone" href="tel:{{ profile.office_phone }}"><i data-lucide="phone"></i>전화 문의하기</a>
+        {% endif %}
+        <div class="mini-contact">
+          {% if profile.office_phone %}<a class="contact-click" data-id="{{ profile.user_id }}" data-type="phone" href="tel:{{ profile.office_phone }}"><i data-lucide="phone"></i>사무소 전화</a>{% endif %}
+          {% if profile.kakao_url %}<a class="kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>카카오톡</a>{% endif %}
+        </div>
+        <div class="cc-stat">
+          <div><b>{{ '{:,}'.format(profile.view_count or 0) }}</b>프로필 조회</div>
+          <div><b>{{ solve_total }}</b>해결사례</div>
+          <div><b>{{ answer_count }}</b>상담 답변</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer><div class="wrap">
+  <span>© 2026 {{ site_name_en }}. All rights reserved.</span>
+  <span>상호: {{ site_name }} · 사업자등록번호 000-00-00000 · contact@angimo.co.kr</span>
+</div></footer>
+
+<script>lucide.createIcons();</script>
+<script src="{{ url_for('static', filename='js/contact-click.js') }}"></script>
+</body>
+</html>
