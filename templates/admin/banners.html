@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'banners' %}
+{% block title %}배너 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}배너 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>메인 히어로 배너 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.banner_form') }}">+ 새 배너</a></div>
+  <table>
+    <tr><th>위치</th><th>제목</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
+    {% for b in items %}
+    <tr>
+      <td>메인 히어로</td>
+      <td><b>{{ b.title }}</b></td>
+      <td>{{ b.starts_at.strftime('%m.%d') if b.starts_at else '~' }} ~ {{ b.ends_at.strftime('%m.%d') if b.ends_at else '' }}</td>
+      <td>{{ b.sort_order }}</td>
+      <td>{% if b.is_active %}<span class="badge ok">노출중</span>{% else %}<span class="badge wait">대기</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.banner_form', banner_id=b.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.banner_delete', banner_id=b.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="color:var(--ink-500)">등록된 배너가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

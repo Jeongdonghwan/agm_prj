@@ -1,0 +1,42 @@
+/* ===== 로펌 (시안 firms.html) ===== */
+.thumb{background:linear-gradient(135deg,var(--blue-100),var(--blue-050));border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--blue-600);overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.firm-chips{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--ink-200)}
+.firm-chips a{border:1px solid var(--ink-200);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ink-500)}
+.firm-chips a.on{border-color:var(--blue-600);color:var(--blue-600);background:var(--blue-050);font-weight:700}
+.ad-label{margin:22px 0 6px;font-size:11px;color:var(--ink-500);letter-spacing:1px;display:flex;align-items:center;gap:6px}
+.ad-label em{font-style:normal;border:1px solid var(--ink-200);border-radius:4px;padding:0 5px;font-size:10px}
+.firm-card{padding:26px 0;border-bottom:1px solid var(--ink-200)}
+.firm-card h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.firm-card h2 b{color:var(--blue-600)}
+.firm-card .desc{margin-top:10px;font-size:14px;color:var(--ink-500);line-height:1.65;max-width:640px}
+.consult-band{margin-top:16px;background:var(--blue-050);border:1px solid var(--blue-100);border-radius:var(--radius-md);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;max-width:640px}
+.consult-band .t{font-size:14px;font-weight:700;display:flex;align-items:center;gap:10px}
+.consult-band .t i{width:19px;height:19px;color:var(--blue-600)}
+.consult-band button{background:var(--blue-600);color:#fff;font-size:13px;font-weight:700;padding:10px 18px;border-radius:var(--radius-sm)}
+.consult-band button:hover{background:var(--blue-700)}
+.link-chips{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.link-chips a{border:1px solid var(--ink-200);border-radius:999px;padding:7px 15px;font-size:13px;font-weight:600}
+.link-chips a:hover{border-color:var(--blue-600);color:var(--blue-600)}
+.photo-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:16px;max-width:640px}
+.photo-strip .thumb{aspect-ratio:4/3}
+.firm-addr{margin-top:12px;font-size:13px;color:var(--ink-500);display:flex;align-items:center;gap:5px}
+.firm-addr i{width:14px;height:14px}
+.list-empty{padding:60px 0;text-align:center;color:var(--ink-500);font-size:14px}
+
+/* 간편 문의 모달 */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(10,42,94,.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-bg.on{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:420px}
+.modal h3{font-size:18px;font-weight:800}
+.modal p{margin-top:4px;font-size:13px;color:var(--ink-500)}
+.modal form{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+.modal input,.modal textarea{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none}
+.modal input:focus,.modal textarea:focus{outline:2px solid var(--blue-600);background:#fff}
+.modal .btns{display:flex;gap:8px;margin-top:6px}
+.modal .btns button{flex:1;padding:13px 0;border-radius:var(--radius-md);font-size:14px;font-weight:800}
+.modal .btns .submit{background:var(--blue-600);color:#fff}
+.modal .btns .submit:hover{background:var(--blue-700)}
+.modal .btns .cancel{background:var(--blue-050);color:var(--ink-500)}
+
+@media (max-width:960px){.photo-strip{grid-template-columns:repeat(3,1fr)}}

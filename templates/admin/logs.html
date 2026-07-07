@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'logs' %}
+{% block title %}운영 로그 - {{ site_name }}{% endblock %}
+{% block topbar_title %}운영 로그{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>최근 관리자 액션 <span class="cnt">{{ items | length }}</span></h2></div>
+  <table>
+    <tr><th>일시</th><th>관리자</th><th>액션</th><th>대상</th><th>상세</th></tr>
+    {% for l in items %}
+    <tr>
+      <td>{{ l.created_at.strftime('%m.%d %H:%M') }}</td>
+      <td>{{ l.admin.name if l.admin }}</td>
+      <td><span class="badge blue">{{ l.action }}</span></td>
+      <td>{{ l.target }}</td>
+      <td style="max-width:360px;font-size:12px;color:var(--ink-500)">{{ l.detail | tojson if l.detail }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="color:var(--ink-500)">기록된 로그가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

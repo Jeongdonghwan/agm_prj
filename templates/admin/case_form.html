@@ -1,0 +1,34 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'cases' %}
+{% block title %}판례 {{ '수정' if case else '등록' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}판례 {{ '수정' if case else '등록' }}{% endblock %}
+
+{% block content %}
+<form method="post" class="panel" style="margin-top:0;max-width:760px">
+  <div class="pf-body">
+    <div class="pf-field"><label>제목 *</label><input type="text" name="title" value="{{ case.title if case else '' }}" required maxlength="200"></div>
+    <div class="pf-field"><label>요약 (목록 노출)</label><input type="text" name="summary" value="{{ case.summary if case else '' }}" maxlength="500"></div>
+    <div class="pf-field"><label>본문 *</label><textarea name="content" rows="10" required>{{ case.content if case else '' }}</textarea></div>
+    <div class="pf-row">
+      <div class="pf-field"><label>법원</label><input type="text" name="court" value="{{ case.court if case else '' }}" placeholder="대법원"></div>
+      <div class="pf-field"><label>사건번호</label><input type="text" name="case_no" value="{{ case.case_no if case else '' }}" placeholder="2025다OOOOO"></div>
+    </div>
+    <div class="pf-field"><label>사건 유형</label>
+      <select name="case_type">
+        <option value="">선택</option>
+        {% for value, label in case_types %}
+        <option value="{{ value }}" {% if case and case.case_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="pf-field"><label>관련 분야 (복수 선택)</label>
+      <div class="pf-cat-children" style="margin:0">
+        {% for p in parents %}
+        <label><input type="checkbox" name="category_ids" value="{{ p.id }}" {% if case and case.category_ids and p.id in case.category_ids %}checked{% endif %}> {{ p.name }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <button class="btn pri" type="submit" style="padding:12px 0">저장</button>
+  </div>
+</form>
+{% endblock %}

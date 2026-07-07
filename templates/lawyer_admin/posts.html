@@ -1,0 +1,33 @@
+{% extends "lawyer_admin/base.html" %}
+{% set admin_active = 'posts' %}
+{% block title %}포스트 작성 - {{ site_name }}{% endblock %}
+{% block topbar_title %}포스트 작성{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>내 포스트 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('lawyer_admin.post_new') }}">+ 새 포스트</a></div>
+  {% for p in items %}
+  <div class="list-item">
+    <div class="t">[{{ type_labels.get(p.type, '') }}] {{ p.title }}
+      {% if p.status == 'published' %}<span class="badge ok">게시중</span>
+      {% elif p.status == 'pending' %}<span class="badge wait">검수 대기</span>
+      {% elif p.status == 'rejected' %}<span class="badge red">반려</span>
+      {% else %}<span class="badge red">숨김</span>{% endif %}
+      {% if p.result_badge %}<span class="badge blue">{{ p.result_badge }}</span>{% endif %}
+    </div>
+    <div class="m">
+      {{ p.created_at.strftime('%Y.%m.%d') }} 작성
+      {% if p.status == 'published' %} · 조회 {{ p.views }}{% endif %}
+      {% if p.status == 'rejected' and p.reject_reason %} · <b style="color:#B91C1C">반려 사유: {{ p.reject_reason }}</b>{% endif %}
+    </div>
+    <div style="margin-top:8px">
+      <form method="post" action="{{ url_for('lawyer_admin.post_delete', post_id=p.id) }}" onsubmit="return confirm('삭제할까요?')" style="display:inline">
+        <button class="btn danger" type="submit">삭제</button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="list-item"><div class="m">작성한 포스트가 없습니다. 첫 포스트를 작성해보세요.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

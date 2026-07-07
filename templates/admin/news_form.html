@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'news' %}
+{% block title %}뉴스 {{ '수정' if item else '등록' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}뉴스 {{ '수정' if item else '등록' }}{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel" style="margin-top:0;max-width:760px">
+  <div class="pf-body">
+    <div class="pf-field"><label>제목 *</label><input type="text" name="title" value="{{ item.title if item else '' }}" required maxlength="200"></div>
+    <div class="pf-field"><label>본문 *</label><textarea name="content" rows="12" required>{{ item.content if item else '' }}</textarea></div>
+    <div class="pf-row">
+      <div class="pf-field"><label>해시태그 (쉼표 구분)</label><input type="text" name="hashtags" value="{{ (item.hashtags or []) | join(', ') if item else '' }}" placeholder="부동산, 전세사기"></div>
+      <div class="pf-field"><label>기자</label><input type="text" name="reporter" value="{{ item.reporter if item else '안기모 뉴스팀' }}"></div>
+    </div>
+    <div class="pf-field"><label>썸네일 (jpg/png)</label>
+      {% if item and item.thumbnail_url %}<div class="pf-photo-cur"><img src="{{ item.thumbnail_url }}" alt=""> 현재 썸네일 (새 파일 업로드 시 교체)</div>{% endif %}
+      <input type="file" name="thumbnail" accept=".jpg,.jpeg,.png">
+    </div>
+    <button class="btn pri" type="submit" style="padding:12px 0">저장</button>
+  </div>
+</form>
+{% endblock %}

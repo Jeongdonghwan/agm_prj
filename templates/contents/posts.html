@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% set type_label = dict(post_types).get(ptype, '') %}
+
+{% block title %}{{ type_label }} - 변호사포스트 | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="변호사가 직접 작성한 {{ type_label }} {{ total }}건 — {{ site_name }} 변호사포스트.">
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/posts.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="sub-tabs"><div class="wrap">
+  {% for value, label in post_types %}
+  <a href="{{ url_for('contents.posts', type=value) }}" class="{% if ptype == value %}on{% endif %}">{{ label }}</a>
+  {% endfor %}
+</div></div>
+
+<div class="post-hero">
+  {% if ptype == 'case' %}
+  <h1><span class="script">Case</span>의뢰인의 문제를 해결한 실제 사례<b>.</b></h1>
+  <p>변호사님들의 해결사례를 통해 도움을 얻어보세요.</p>
+  {% elif ptype == 'guide' %}
+  <h1><span class="script">Guide</span>변호사가 알려주는 법률 가이드<b>.</b></h1>
+  <p>어려운 법률 지식을 알기 쉽게 정리했습니다.</p>
+  {% elif ptype == 'video' %}
+  <h1><span class="script">Video</span>영상으로 만나는 법률 이야기<b>.</b></h1>
+  <p>변호사가 직접 설명하는 법률 동영상입니다.</p>
+  {% else %}
+  <h1><span class="script">Essay</span>변호사의 시선으로 쓴 에세이<b>.</b></h1>
+  <p>현장에서 길어 올린 변호사들의 이야기입니다.</p>
+  {% endif %}
+</div>
+
+<div class="wrap">
+  <div class="post-filter">
+    <form method="get">
+      <input type="hidden" name="type" value="{{ ptype }}">
+      <select name="category" onchange="this.form.submit()">
+        <option value="">모든 분야</option>
+        {% for p in parents %}
+        <option value="{{ p.id }}" {% if category_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    <div class="sorts">
+      <a href="{{ url_for('contents.posts', type=ptype, category=category_id, sort='recent') }}" class="{% if sort != 'views' %}on{% endif %}">최신순</a>
+      <a href="{{ url_for('contents.posts', type=ptype, category=category_id, sort='views') }}" class="{% if sort == 'views' %}on{% endif %}">조회순</a>
+    </div>
+  </div>
+
+  {% if items %}
+  <div class="post-grid">
+    {% for post in items %}
+    <a class="post-card" href="{{ url_for('contents.post_detail', post_id=post.id, slug=slug(post.title)) }}">
+      <div class="post-by"><span class="av">{% if post.lawyer.lawyer_profile and post.lawyer.lawyer_profile.photo_url %}<img src="{{ post.lawyer.lawyer_profile.photo_url }}" alt="" loading="lazy">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>{{ post.lawyer.name }} 변호사</div>
+      <h3>{{ post.title }}</h3>
+      <p>{{ post.content[:120] }}</p>
+      {% if post.result_badge %}<span class="result-badge"><i data-lucide="gavel"></i>{{ post.result_badge }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="list-empty">아직 게시된 {{ type_label }}가 없습니다.</div>
+  {% endif %}
+
+  <div class="pager">
+    {% if page > 1 %}<a href="{{ url_for('contents.posts', type=ptype, category=category_id, sort=sort, page=page - 1) }}" rel="prev">이전</a>{% endif %}
+    {% if has_next %}<a href="{{ url_for('contents.posts', type=ptype, category=category_id, sort=sort, page=page + 1) }}" rel="next">다음</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

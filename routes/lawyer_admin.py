@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 
 from flask import (
     Blueprint,
@@ -21,6 +22,20 @@ bp = Blueprint("lawyer_admin", __name__)
 MAX_CATEGORIES = 7  # §4-3-1: 분야 최대 7개
 
 PHOTO_EXTENSIONS = {"jpg", "jpeg", "png"}
+
+POST_TYPES = [
+    ("case", "해결사례"),
+    ("guide", "법률가이드"),
+    ("video", "법률동영상"),
+    ("essay", "변호사에세이"),
+]
+POST_TYPE_LABELS = dict(POST_TYPES)
+POST_STATUS_LABELS = {
+    "pending": "검수 대기",
+    "published": "게시중",
+    "rejected": "반려",
+    "hidden": "숨김",
+}
 
 
 def _completion_percent(profile: LawyerProfile) -> int:
@@ -157,3 +172,95 @@ def profile():
         completion=_completion_percent(prof),
         max_categories=MAX_CATEGORIES,
     )
+
+
+@bp.route("/posts")
+@role_required("lawyer")
+def posts():
+    """내 포스트 목록: 게시중 / 검수 대기 / 반려(+사유)."""
+    items = (
+        LawyerPost.query.filter_by(lawyer_id=g.user.id)
+        .filter(LawyerPost.deleted_at.is_(None))
+        .order_by(LawyerPost.created_at.desc())
+        .all()
+    )
+    return render_template(
+        "lawyer_admin/posts.html",
+        items=items,
+        post_types=POST_TYPES,
+        type_labels=POST_TYPE_LABELS,
+        status_labels=POST_STATUS_LABELS,
+    )
+
+
+@bp.route("/posts/new", methods=["GET", "POST"])
+@role_required("lawyer")
+def post_new():
+    """포스트 작성 → 저장 시 pending → 관리자 검수 후 게시 (§4-3)."""
+    if request.method == "POST":
+        form = request.form
+        ptype = form.get("type")
+        title = form.get("title", "").strip()
+        content = form.get("content", "").strip()
+        errors = []
+        if ptype not in POST_TYPE_LABELS:
+            errors.append("포스트 타입을 선택해주세요.")
+        if not title:
+            errors.append("제목을 입력해주세요.")
+        if not content:
+            errors.append("본문을 입력해주세요.")
+
+        thumbnail_url = None
+        thumb = request.files.get("thumbnail")
+        if thumb and thumb.filename:
+            ext = thumb.filename.rsplit(".", 1)[-1].lower() if "." in thumb.filename else ""
+            if ext not in PHOTO_EXTENSIONS:
+                errors.append("썸네일은 jpg, jpeg, png만 업로드할 수 있습니다.")
+            else:
+                tdir = os.path.join(
+                    current_app.config["UPLOAD_FOLDER"], "posts", str(g.user.id)
+                )
+                os.makedirs(tdir, exist_ok=True)
+                fname = f"{uuid.uuid4().hex}.{ext}"
+                thumb.save(os.path.join(tdir, fname))
+                thumbnail_url = url_for(
+                    "main.uploads", filename=f"posts/{g.user.id}/{fname}"
+                )
+
+        if errors:
+            for e in errors:
+                flash(e, "error")
+        else:
+            db.session.add(
+                LawyerPost(
+                    lawyer_id=g.user.id,
+                    type=ptype,
+                    title=title[:200],
+                    content=content,
+                    thumbnail_url=thumbnail_url,
+                    result_badge=form.get("result_badge", "").strip()[:30] or None,
+                    category_id=form.get("category_id", type=int) or None,
+                    status="pending",
+                )
+            )
+            db.session.commit()
+            flash("포스트가 제출되었습니다. 관리자 검수 후 게시됩니다.", "success")
+            return redirect(url_for("lawyer_admin.posts"))
+
+    parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
+    return render_template(
+        "lawyer_admin/post_form.html", post_types=POST_TYPES, parents=parents
+    )
+
+
+@bp.route("/posts/<int:post_id>/delete", methods=["POST"])
+@role_required("lawyer")
+def post_delete(post_id):
+    post = LawyerPost.query.filter_by(id=post_id, lawyer_id=g.user.id).first()
+    if post is None:
+        flash("포스트를 찾을 수 없습니다.", "error")
+    else:
+        post.deleted_at = datetime.now()  # soft delete (§11)
+        db.session.commit()
+        flash("포스트가 삭제되었습니다.", "success")
+    return redirect(url_for("lawyer_admin.posts"))

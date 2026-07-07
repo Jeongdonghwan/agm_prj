@@ -1,0 +1,23 @@
+{% extends "base_admin.html" %}
+
+{% block role_tag %}
+<div class="role-tag"><i data-lucide="shield-check" style="width:13px;height:13px"></i>총관리자</div>
+{% endblock %}
+
+{% block sidebar_nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="{% if admin_active == 'dashboard' %}on{% endif %}"><i data-lucide="layout-dashboard"></i>대시보드</a>
+<div class="grp">회원</div>
+<a href="#"><i data-lucide="users"></i>회원 관리</a>
+<a href="{{ url_for('admin.lawyers') }}" class="{% if admin_active == 'lawyers' %}on{% endif %}"><i data-lucide="badge-check"></i>변호사 관리</a>
+<div class="grp">게시판</div>
+<a href="#"><i data-lucide="message-square-text"></i>상담 관리</a>
+<a href="#"><i data-lucide="messages-square"></i>커뮤니티 관리</a>
+<a href="{{ url_for('admin.posts') }}" class="{% if admin_active == 'posts' %}on{% endif %}"><i data-lucide="file-check"></i>포스트 검수</a>
+<a href="{{ url_for('admin.cases') }}" class="{% if admin_active == 'cases' %}on{% endif %}"><i data-lucide="scale"></i>판례돋보기</a>
+<a href="{{ url_for('admin.news') }}" class="{% if admin_active == 'news' %}on{% endif %}"><i data-lucide="newspaper"></i>안기모뉴스</a>
+<div class="grp">광고/운영</div>
+<a href="{{ url_for('admin.banners') }}" class="{% if admin_active == 'banners' %}on{% endif %}"><i data-lucide="image"></i>배너 관리</a>
+<a href="{{ url_for('admin.firms') }}" class="{% if admin_active == 'firms' %}on{% endif %}"><i data-lucide="building-2"></i>로펌 광고 관리</a>
+<a href="{{ url_for('admin.firm_inquiries') }}" class="{% if admin_active == 'inquiries' %}on{% endif %}"><i data-lucide="flag"></i>신고/문의</a>
+<a href="{{ url_for('admin.logs') }}" class="{% if admin_active == 'logs' %}on{% endif %}"><i data-lucide="scroll-text"></i>운영 로그</a>
+{% endblock %}

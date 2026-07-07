@@ -1,0 +1,28 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'banners' %}
+{% block title %}배너 {{ '수정' if item else '등록' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}배너 {{ '수정' if item else '등록' }}{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel" style="margin-top:0;max-width:640px">
+  <div class="pf-body">
+    <div class="pf-field"><label>제목 *</label><input type="text" name="title" value="{{ item.title if item else '' }}" required maxlength="100"></div>
+    <div class="pf-field"><label>링크 URL</label><input type="text" name="link_url" value="{{ item.link_url if item else '' }}" placeholder="/signup"></div>
+    <div class="pf-field"><label>이미지 (jpg/png, 선택)</label>
+      {% if item and item.image_url %}<div class="pf-photo-cur"><img src="{{ item.image_url }}" alt=""> 현재 이미지</div>{% endif %}
+      <input type="file" name="image" accept=".jpg,.jpeg,.png">
+    </div>
+    <div class="pf-row">
+      <div class="pf-field"><label>시작일</label><input type="text" name="starts_at" value="{{ item.starts_at.strftime('%Y-%m-%dT%H:%M') if item and item.starts_at else '' }}" placeholder="2026-07-01T00:00"></div>
+      <div class="pf-field"><label>종료일</label><input type="text" name="ends_at" value="{{ item.ends_at.strftime('%Y-%m-%dT%H:%M') if item and item.ends_at else '' }}" placeholder="2026-07-31T23:59"></div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-field"><label>순서</label><input type="text" name="sort_order" value="{{ item.sort_order if item else 0 }}"></div>
+      <div class="pf-field"><label>노출</label>
+        <select name="is_active"><option value="1" {% if not item or item.is_active %}selected{% endif %}>노출</option><option value="0" {% if item and not item.is_active %}selected{% endif %}>중지</option></select>
+      </div>
+    </div>
+    <button class="btn pri" type="submit" style="padding:12px 0">저장</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "lawyer_admin/base.html" %}
+{% set admin_active = 'posts' %}
+{% block title %}새 포스트 - {{ site_name }}{% endblock %}
+{% block topbar_title %}새 포스트 작성{% endblock %}
+
+{% block content %}
+<div class="notice-strip"><i data-lucide="info"></i><span>저장 시 <b>검수 대기</b> 상태가 되며, 관리자 승인 후 게시됩니다. 해결사례는 승인 시 프로필 페이지에도 자동 노출됩니다.</span></div>
+
+<form method="post" enctype="multipart/form-data" class="panel">
+  <div class="pf-body">
+    <div class="pf-row">
+      <div class="pf-field"><label>타입 *</label>
+        <select name="type" required>
+          {% for value, label in post_types %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="pf-field"><label>분야</label>
+        <select name="category_id">
+          <option value="">선택</option>
+          {% for p in parents %}
+          <option value="{{ p.id }}">{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="pf-field"><label>제목 *</label><input type="text" name="title" required maxlength="200"></div>
+    <div class="pf-field"><label>본문 *</label><textarea name="content" rows="12" required></textarea></div>
+    <div class="pf-row">
+      <div class="pf-field"><label>결과 뱃지 (해결사례용)</label><input type="text" name="result_badge" maxlength="30" placeholder="무죄 / 집행유예 / 승소 등"></div>
+      <div class="pf-field"><label>썸네일 (jpg/png)</label><input type="file" name="thumbnail" accept=".jpg,.jpeg,.png"></div>
+    </div>
+    <button class="btn pri" type="submit" style="padding:12px 0">검수 요청 (제출)</button>
+  </div>
+</form>
+{% endblock %}

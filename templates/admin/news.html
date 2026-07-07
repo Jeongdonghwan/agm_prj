@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'news' %}
+{% block title %}안기모뉴스 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}안기모뉴스 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>뉴스 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.news_form') }}">+ 새 뉴스</a></div>
+  <table>
+    <tr><th>발행일</th><th>제목</th><th>해시태그</th><th>기자</th><th>조회</th><th></th></tr>
+    {% for n in items %}
+    <tr>
+      <td>{{ n.published_at.strftime('%m.%d') if n.published_at }}</td>
+      <td><b>{{ n.title }}</b></td>
+      <td>{% for t in n.hashtags or [] %}#{{ t }} {% endfor %}</td>
+      <td>{{ n.reporter }}</td>
+      <td>{{ n.views }}</td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.news_form', news_id=n.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.news_delete', news_id=n.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="color:var(--ink-500)">등록된 뉴스가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

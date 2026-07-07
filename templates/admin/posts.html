@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'posts' %}
+{% block title %}포스트 검수 - {{ site_name }}{% endblock %}
+{% block topbar_title %}포스트 검수{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:16px">
+  {% for st, label in [('pending', '검수 대기'), ('published', '게시중'), ('rejected', '반려'), ('all', '전체')] %}
+  <a class="btn {% if status == st %}pri{% else %}line{% endif %}" href="{{ url_for('admin.posts', status=st) }}">{{ label }}</a>
+  {% endfor %}
+</div>
+
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>포스트 <span class="cnt">{{ items | length }}</span></h2></div>
+  {% for p in items %}
+  <div class="list-item">
+    <div class="t">[{{ type_labels.get(p.type, '') }}] {{ p.title }}
+      {% if p.status == 'pending' %}<span class="badge wait">검수 대기</span>
+      {% elif p.status == 'published' %}<span class="badge ok">게시중</span>
+      {% elif p.status == 'rejected' %}<span class="badge red">반려</span>{% endif %}
+      {% if p.result_badge %}<span class="badge blue">{{ p.result_badge }}</span>{% endif %}
+    </div>
+    <div class="m" style="margin-top:6px">{{ p.lawyer.name }} 변호사 · {{ p.created_at.strftime('%Y.%m.%d') }} 제출{% if p.reject_reason %} · 반려 사유: {{ p.reject_reason }}{% endif %}</div>
+    <div class="m" style="margin-top:8px;white-space:pre-line">{{ p.content[:200] }}{% if p.content | length > 200 %}…{% endif %}</div>
+    <div style="margin-top:10px">
+      {% if p.status != 'published' %}
+      <form method="post" action="{{ url_for('admin.post_approve', post_id=p.id) }}" style="display:inline">
+        <button class="btn pri" type="submit">승인·게시</button>
+      </form>
+      {% endif %}
+      {% if p.status != 'rejected' %}
+      <form method="post" action="{{ url_for('admin.post_reject', post_id=p.id) }}" style="display:inline" onsubmit="var r=prompt('반려 사유를 입력하세요'); if(r===null) return false; this.reason.value=r;">
+        <input type="hidden" name="reason"><button class="btn danger" type="submit">반려</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="list-item"><div class="m">해당 상태의 포스트가 없습니다.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

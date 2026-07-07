@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'firms' %}
+{% block title %}로펌 광고 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}로펌 광고 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>로펌 광고 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.firm_form') }}">+ 새 광고</a></div>
+  <table>
+    <tr><th>로펌명</th><th>헤드라인</th><th>분야</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
+    {% for f in items %}
+    <tr>
+      <td><b>{{ f.firm_name }}</b></td>
+      <td>{{ f.headline }}</td>
+      <td>{{ f.category.name if f.category }}</td>
+      <td>{{ f.starts_at.strftime('%m.%d') if f.starts_at else '~' }} ~ {{ f.ends_at.strftime('%m.%d') if f.ends_at else '' }}</td>
+      <td>{{ f.sort_order }}</td>
+      <td>{% if f.is_active %}<span class="badge ok">노출중</span>{% else %}<span class="badge wait">중지</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.firm_form', firm_id=f.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.firm_delete', firm_id=f.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" style="color:var(--ink-500)">등록된 로펌 광고가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

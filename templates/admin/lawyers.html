@@ -1,0 +1,54 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'lawyers' %}
+{% block title %}변호사 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}변호사 관리{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:16px">
+  <a class="btn {% if status == 'pending' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='pending') }}">승인 대기</a>
+  <a class="btn {% if status == 'all' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='all') }}">전체</a>
+</div>
+
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% else %}전체 변호사{% endif %} <span class="cnt">{{ users | length }}</span></h2></div>
+  <table>
+    <tr><th>신청일</th><th>이름</th><th>이메일</th><th>등록번호</th><th>소속</th><th>서류</th><th>상태</th><th></th></tr>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.created_at.strftime('%m.%d') }}</td>
+      <td><b>{{ u.name }}</b></td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.lawyer_profile.license_no if u.lawyer_profile }}</td>
+      <td>{{ u.lawyer_profile.firm_name if u.lawyer_profile }}</td>
+      <td>
+        {% for f in files_by_user.get(u.id, []) %}
+        <a class="btn line" href="{{ url_for('admin.verification_file', file_id=f.id) }}" target="_blank">서류{{ loop.index }}</a>
+        {% else %}<span style="color:var(--ink-500)">없음</span>{% endfor %}
+      </td>
+      <td>
+        {% if u.status == 'pending' %}<span class="badge wait">대기</span>
+        {% elif u.status == 'active' %}<span class="badge ok">활동중</span>{% if u.lawyer_profile and not u.lawyer_profile.is_visible %} <span class="badge red">노출정지</span>{% endif %}
+        {% elif u.status == 'rejected' %}<span class="badge red">반려</span>
+        {% else %}<span class="badge red">{{ u.status }}</span>{% endif %}
+      </td>
+      <td style="white-space:nowrap">
+        {% if u.status in ('pending', 'rejected') %}
+        <form method="post" action="{{ url_for('admin.lawyer_approve', user_id=u.id) }}" style="display:inline">
+          <button class="btn pri" type="submit">승인</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.lawyer_reject', user_id=u.id) }}" style="display:inline" onsubmit="var r=prompt('반려 사유를 입력하세요'); if(r===null) return false; this.reason.value=r;">
+          <input type="hidden" name="reason"><button class="btn danger" type="submit">반려</button>
+        </form>
+        {% elif u.status == 'active' and u.lawyer_profile %}
+        <form method="post" action="{{ url_for('admin.lawyer_toggle_visible', user_id=u.id) }}" style="display:inline">
+          <button class="btn line" type="submit">{{ '노출 정지' if u.lawyer_profile.is_visible else '노출 재개' }}</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" style="color:var(--ink-500)">해당 상태의 변호사가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

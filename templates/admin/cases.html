@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'cases' %}
+{% block title %}판례돋보기 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}판례돋보기 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>판례 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.case_form') }}">+ 새 판례</a></div>
+  <table>
+    <tr><th>등록일</th><th>제목</th><th>법원/사건번호</th><th>유형</th><th>조회</th><th></th></tr>
+    {% for c in items %}
+    <tr>
+      <td>{{ c.created_at.strftime('%m.%d') }}</td>
+      <td><b>{{ c.title }}</b></td>
+      <td>{{ c.court }} {{ c.case_no }}</td>
+      <td>{{ case_types.get(c.case_type, '') }}</td>
+      <td>{{ c.views }}</td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.case_form', case_id=c.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.case_delete', case_id=c.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="color:var(--ink-500)">등록된 판례가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

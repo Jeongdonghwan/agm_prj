@@ -1,0 +1,32 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'inquiries' %}
+{% block title %}간편 문의 접수함 - {{ site_name }}{% endblock %}
+{% block topbar_title %}신고/문의 — 로펌 간편 문의 접수함{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>간편 문의 <span class="cnt">{{ items | selectattr('status', 'equalto', 'new') | list | length }}</span></h2></div>
+  <table>
+    <tr><th>접수일</th><th>로펌</th><th>이름</th><th>연락처</th><th>내용</th><th>상태</th><th></th></tr>
+    {% for i in items %}
+    <tr>
+      <td>{{ i.created_at.strftime('%m.%d %H:%M') }}</td>
+      <td>{{ i.firm_ad.firm_name if i.firm_ad }}</td>
+      <td><b>{{ i.name }}</b></td>
+      <td>{{ i.phone }}</td>
+      <td style="max-width:320px">{{ i.content }}</td>
+      <td>{% if i.status == 'new' %}<span class="badge wait">신규</span>{% else %}<span class="badge ok">처리됨</span>{% endif %}</td>
+      <td>
+        {% if i.status == 'new' %}
+        <form method="post" action="{{ url_for('admin.firm_inquiry_process', inq_id=i.id) }}">
+          <button class="btn pri" type="submit">처리 완료</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" style="color:var(--ink-500)">접수된 문의가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

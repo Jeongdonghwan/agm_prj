@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'firms' %}
+{% block title %}로펌 광고 {{ '수정' if item else '등록' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}로펌 광고 {{ '수정' if item else '등록' }}{% endblock %}
+
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel" style="margin-top:0;max-width:760px">
+  <div class="pf-body">
+    <div class="pf-row">
+      <div class="pf-field"><label>로펌명 *</label><input type="text" name="firm_name" value="{{ item.firm_name if item else '' }}" required maxlength="100"></div>
+      <div class="pf-field"><label>분야</label>
+        <select name="category_id">
+          <option value="">선택</option>
+          {% for p in parents %}
+          <option value="{{ p.id }}" {% if item and item.category_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="pf-field"><label>헤드라인 *</label><input type="text" name="headline" value="{{ item.headline if item else '' }}" required maxlength="200"></div>
+    <div class="pf-field"><label>소개</label><textarea name="description" rows="4">{{ item.description if item else '' }}</textarea></div>
+    <div class="pf-field"><label>링크칩 (줄마다 "라벨|URL")</label><textarea name="links" rows="3" placeholder="홈페이지|https://...">{% if item and item.links %}{% for l in item.links %}{{ l.label }}|{{ l.url }}
+{% endfor %}{% endif %}</textarea></div>
+    <div class="pf-field"><label>사진 (jpg/png, 여러 장, 최대 5)</label>
+      {% if item and item.photos %}<div class="pf-photo-cur">{% for ph in item.photos %}<img src="{{ ph }}" alt="">{% endfor %} 현재 {{ item.photos | length }}장</div>{% endif %}
+      <input type="file" name="photos" accept=".jpg,.jpeg,.png" multiple>
+    </div>
+    <div class="pf-field"><label>주소</label><input type="text" name="address" value="{{ item.address if item else '' }}"></div>
+    <div class="pf-row">
+      <div class="pf-field"><label>시작일</label><input type="text" name="starts_at" value="{{ item.starts_at.strftime('%Y-%m-%dT%H:%M') if item and item.starts_at else '' }}" placeholder="2026-07-01T00:00"></div>
+      <div class="pf-field"><label>종료일</label><input type="text" name="ends_at" value="{{ item.ends_at.strftime('%Y-%m-%dT%H:%M') if item and item.ends_at else '' }}" placeholder="2026-12-31T23:59"></div>
+    </div>
+    <div class="pf-row">
+      <div class="pf-field"><label>순서</label><input type="text" name="sort_order" value="{{ item.sort_order if item else 0 }}"></div>
+      <div class="pf-field"><label>노출</label>
+        <select name="is_active"><option value="1" {% if not item or item.is_active %}selected{% endif %}>노출</option><option value="0" {% if item and not item.is_active %}selected{% endif %}>중지</option></select>
+      </div>
+    </div>
+    <button class="btn pri" type="submit" style="padding:12px 0">저장</button>
+  </div>
+</form>
+{% endblock %}
