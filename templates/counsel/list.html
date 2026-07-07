@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}상담사례 - {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="나와 비슷한 법률 고민에 대한 변호사 답변을 찾아보세요 — {{ site_name }} 상담사례 {{ total }}건.">
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/counsel.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrap qa-layout">
+  <div>
+    <div class="qa-head"><h1>나와 비슷한 문제에 대한<br>답변을 찾아보세요<b>.</b></h1></div>
+    <div class="qa-sort">
+      <a href="{{ url_for('counsel.list_', sort='recent_answer') }}" class="{% if sort == 'recent_answer' %}on{% endif %}">최신 답변순</a>
+      <a href="{{ url_for('counsel.list_', sort='recent') }}" class="{% if sort == 'recent' %}on{% endif %}">최신 질문순</a>
+      <a href="{{ url_for('counsel.list_', sort='views') }}" class="{% if sort == 'views' %}on{% endif %}">조회순</a>
+    </div>
+
+    {% for c in items %}
+    {% set live_answers = c.answers | selectattr('deleted_at', 'none') | list %}
+    <a class="qa-item" href="{{ url_for('counsel.detail', consult_id=c.id, slug=slug(c.title)) }}">
+      <div class="qa-cat">{{ c.category.name if c.category }}</div>
+      <h3>{{ c.title }}</h3>
+      {% if live_answers %}
+      <div class="qa-ans">
+        <div class="who"><b>답변</b>{{ lawyer_names.get(live_answers[0].lawyer_id, '') }} 변호사</div>
+        <p>{{ live_answers[0].content[:130] }}</p>
+      </div>
+      {% if live_answers | length > 1 %}
+      <div class="qa-more"><span class="mini">+{{ live_answers | length - 1 }}</span>다른 변호사 답변 {{ live_answers | length - 1 }}개</div>
+      {% endif %}
+      {% else %}
+      <div class="qa-wait">아직 답변이 없습니다. 변호사님들의 답변을 기다리고 있어요.</div>
+      {% endif %}
+      <div class="qa-foot">
+        <div class="l"><span>조회수 <b>{{ c.views }}</b></span></div>
+        <span>{{ c.created_at.strftime('%Y.%m.%d') }} 질문</span>
+      </div>
+    </a>
+    {% else %}
+    <div style="padding:60px 0;text-align:center;color:var(--ink-500)">등록된 상담글이 없습니다.</div>
+    {% endfor %}
+
+    <div class="pager">
+      {% if page > 1 %}<a href="{{ url_for('counsel.list_', sort=sort, page=page - 1) }}" rel="prev">이전</a>{% endif %}
+      {% if has_next %}<a href="{{ url_for('counsel.list_', sort=sort, page=page + 1) }}" rel="next">다음</a>{% endif %}
+    </div>
+  </div>
+
+  {% include "counsel/_ranking.html" %}
+</div>
+
+<a class="fab" href="{{ url_for('counsel.write') }}"><i data-lucide="pen-line"></i>상담글 쓰기</a>
+{% endblock %}

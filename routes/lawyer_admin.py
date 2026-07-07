@@ -264,3 +264,97 @@ def post_delete(post_id):
         db.session.commit()
         flash("포스트가 삭제되었습니다.", "success")
     return redirect(url_for("lawyer_admin.posts"))
+
+
+def _matched_category_ids():
+    """내 분야 + 그 부모/자식 분야 id 집합 (피드 매칭용)."""
+    prof = g.user.lawyer_profile
+    if prof is None or not prof.categories:
+        return set()
+    ids = set()
+    for c in prof.categories:
+        ids.add(c.id)
+        if c.parent_id:
+            ids.add(c.parent_id)
+        else:
+            ids.update(
+                cid for (cid,) in db.session.query(Category.id).filter_by(parent_id=c.id)
+            )
+    return ids
+
+
+@bp.route("/answers")
+@role_required("lawyer")
+def answers():
+    """분야 매칭 답변 대기 피드 + 내 답변 목록 (§9)."""
+    from models import Consultation, ConsultationAnswer
+
+    answered_ids = [
+        cid
+        for (cid,) in db.session.query(ConsultationAnswer.consultation_id).filter_by(
+            lawyer_id=g.user.id
+        )
+    ]
+    cat_ids = _matched_category_ids()
+    feed_q = Consultation.query.filter_by(status="open").filter(
+        Consultation.deleted_at.is_(None)
+    )
+    if answered_ids:
+        feed_q = feed_q.filter(~Consultation.id.in_(answered_ids))
+    if cat_ids:
+        feed_q = feed_q.filter(Consultation.category_id.in_(cat_ids))
+    feed = feed_q.order_by(Consultation.created_at.desc()).limit(20).all()
+
+    my_answers = (
+        ConsultationAnswer.query.filter_by(lawyer_id=g.user.id)
+        .filter(ConsultationAnswer.deleted_at.is_(None))
+        .order_by(ConsultationAnswer.created_at.desc())
+        .limit(20)
+        .all()
+    )
+    consult_map = {
+        c.id: c
+        for c in Consultation.query.filter(
+            Consultation.id.in_([a.consultation_id for a in my_answers] or [0])
+        )
+    }
+    return render_template(
+        "lawyer_admin/answers.html",
+        feed=feed,
+        my_answers=my_answers,
+        consult_map=consult_map,
+        has_categories=bool(cat_ids),
+    )
+
+
+@bp.route("/answers", methods=["POST"])
+@role_required("lawyer")
+def answer_create():
+    """답변 작성 — 상담글당 변호사 1인 1답변 (uq_one_answer)."""
+    from models import Consultation, ConsultationAnswer
+
+    consultation_id = request.form.get("consultation_id", type=int)
+    content = request.form.get("content", "").strip()
+    c = Consultation.query.filter_by(id=consultation_id, status="open").filter(
+        Consultation.deleted_at.is_(None)
+    ).first()
+    if c is None:
+        flash("상담글을 찾을 수 없습니다.", "error")
+        return redirect(url_for("lawyer_admin.answers"))
+    if not content:
+        flash("답변 내용을 입력해주세요.", "error")
+        return redirect(url_for("lawyer_admin.answers"))
+    exists = ConsultationAnswer.query.filter_by(
+        consultation_id=consultation_id, lawyer_id=g.user.id
+    ).first()
+    if exists:
+        flash("이미 이 상담글에 답변했습니다. (상담글당 1답변)", "error")
+        return redirect(url_for("lawyer_admin.answers"))
+    db.session.add(
+        ConsultationAnswer(
+            consultation_id=consultation_id, lawyer_id=g.user.id, content=content
+        )
+    )
+    db.session.commit()
+    flash("답변이 등록되었습니다.", "success")
+    return redirect(url_for("lawyer_admin.answers"))

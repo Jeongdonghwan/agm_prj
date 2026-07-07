@@ -1,0 +1,45 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'community' %}
+{% block title %}커뮤니티 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}커뮤니티 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>공지글 작성 (상단 고정)</h2></div>
+  <form method="post" class="pf-body">
+    <div class="pf-field"><label>제목</label><input type="text" name="title" required maxlength="200"></div>
+    <div class="pf-field"><label>내용</label><textarea name="content" rows="3" required></textarea></div>
+    <button class="btn pri" type="submit" style="padding:11px 0">공지 등록</button>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="p-head"><h2>게시글 <span class="cnt">{{ posts | length }}</span> <small style="font-weight:600;color:var(--ink-500)">신고된 글 우선</small></h2></div>
+  <table>
+    <tr><th>작성일</th><th>카테고리</th><th>제목</th><th>작성자</th><th>조회/추천</th><th>상태</th><th></th></tr>
+    {% for p in posts %}
+    <tr>
+      <td>{{ p.created_at.strftime('%m.%d') }}</td>
+      <td>{% if p.is_notice %}<span class="badge blue">공지</span>{% else %}{{ p.category }}{% endif %}</td>
+      <td><a href="{{ url_for('community.detail', post_id=p.id) }}" target="_blank"><b>{{ p.title }}</b></a>
+        {% if p.id in reported_ids %}<span class="badge red">신고됨</span>{% endif %}
+        {% if p.is_anonymous %}<span class="badge wait">익명</span>{% endif %}
+      </td>
+      <td>{{ p.user.email if p.user }}</td>
+      <td>{{ p.views }} / {{ p.likes }}</td>
+      <td>{% if p.status == 'open' %}<span class="badge ok">공개중</span>{% elif p.status == 'hidden' %}<span class="badge wait">숨김</span>{% else %}<span class="badge red">삭제</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        <form method="post" action="{{ url_for('admin.community_hide', pid=p.id) }}" style="display:inline">
+          <button class="btn line" type="submit">{{ '숨김 해제' if p.status == 'hidden' else '숨김' }}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.community_delete', pid=p.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" style="color:var(--ink-500)">게시글이 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

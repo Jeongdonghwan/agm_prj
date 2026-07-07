@@ -1,0 +1,41 @@
+{% extends "lawyer_admin/base.html" %}
+{% set admin_active = 'answers' %}
+{% block title %}상담 답변 - {{ site_name }}{% endblock %}
+{% block topbar_title %}상담 답변{% endblock %}
+
+{% block content %}
+{% if not has_categories %}
+<div class="notice-strip"><i data-lucide="info"></i><span>프로필에 분야를 설정하면 <b>내 분야에 맞는 상담글</b>만 피드에 표시됩니다. <a href="{{ url_for('lawyer_admin.profile') }}"><b>프로필 관리 →</b></a></span></div>
+{% endif %}
+
+<div class="panel" style="margin-top:{% if has_categories %}0{% else %}20px{% endif %}">
+  <div class="p-head"><h2>답변 대기 상담글 <span class="cnt">{{ feed | length }}</span></h2></div>
+  {% for c in feed %}
+  <div class="list-item">
+    <div class="t"><a href="{{ url_for('counsel.detail', consult_id=c.id) }}" target="_blank">{{ c.title }}</a>{% if not c.is_public %} <span class="badge wait">비공개</span>{% endif %}</div>
+    <div class="m">{{ c.category.name if c.category }} · {{ c.created_at.strftime('%m.%d %H:%M') }} · 조회 {{ c.views }}</div>
+    <div class="m" style="margin-top:6px;white-space:pre-line">{{ c.content[:150] }}{% if c.content | length > 150 %}…{% endif %}</div>
+    <form method="post" action="{{ url_for('lawyer_admin.answer_create') }}" style="margin-top:10px">
+      <input type="hidden" name="consultation_id" value="{{ c.id }}">
+      <textarea name="content" rows="3" required placeholder="답변을 입력하세요 (상담글당 1회)" style="width:100%;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit;outline:none"></textarea>
+      <button class="btn pri" type="submit" style="margin-top:8px">답변 등록</button>
+    </form>
+  </div>
+  {% else %}
+  <div class="list-item"><div class="m">답변 대기 중인 상담글이 없습니다.</div></div>
+  {% endfor %}
+</div>
+
+<div class="panel">
+  <div class="p-head"><h2>내 답변 <span class="cnt">{{ my_answers | length }}</span></h2></div>
+  {% for a in my_answers %}
+  {% set c = consult_map.get(a.consultation_id) %}
+  <div class="list-item">
+    <div class="t">{% if c %}<a href="{{ url_for('counsel.detail', consult_id=c.id) }}" target="_blank">{{ c.title }}</a>{% else %}삭제된 상담글{% endif %}</div>
+    <div class="m">{{ a.created_at.strftime('%Y.%m.%d %H:%M') }} 답변 · {{ a.content[:100] }}{% if a.content | length > 100 %}…{% endif %}</div>
+  </div>
+  {% else %}
+  <div class="list-item"><div class="m">작성한 답변이 없습니다.</div></div>
+  {% endfor %}
+</div>
+{% endblock %}

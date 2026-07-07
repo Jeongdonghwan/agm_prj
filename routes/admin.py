@@ -491,3 +491,163 @@ def logs():
         .all()
     )
     return render_template("admin/logs.html", items=items)
+
+
+# ─────────────────────────── 상담 관리 ───────────────────────────
+@bp.route("/consultations")
+@role_required("admin")
+def consultations():
+    from models import ConsultationAnswer
+
+    # 신고된 상담글 우선 표시 (§4-4)
+    reported_ids = {
+        r.target_id
+        for r in Report.query.filter_by(target_type="consultation", status="new")
+    }
+    items = (
+        Consultation.query.filter(Consultation.deleted_at.is_(None))
+        .options(joinedload(Consultation.user), joinedload(Consultation.category))
+        .order_by(Consultation.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    items.sort(key=lambda c: c.id not in reported_ids)
+    answer_counts = dict(
+        db.session.query(
+            ConsultationAnswer.consultation_id, db.func.count(ConsultationAnswer.id)
+        )
+        .filter(ConsultationAnswer.deleted_at.is_(None))
+        .group_by(ConsultationAnswer.consultation_id)
+        .all()
+    )
+    return render_template(
+        "admin/consultations.html",
+        items=items,
+        reported_ids=reported_ids,
+        answer_counts=answer_counts,
+    )
+
+
+@bp.route("/consultations/<int:cid>/hide", methods=["POST"])
+@role_required("admin")
+def consultation_hide(cid):
+    c = db.session.get(Consultation, cid)
+    if c is None:
+        abort(404)
+    c.status = "open" if c.status == "hidden" else "hidden"
+    _log("consultation_toggle_hide", f"consultation:{cid}", {"status": c.status})
+    db.session.commit()
+    flash("상담글 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.consultations"))
+
+
+@bp.route("/consultations/<int:cid>/delete", methods=["POST"])
+@role_required("admin")
+def consultation_delete(cid):
+    c = db.session.get(Consultation, cid)
+    if c is None:
+        abort(404)
+    c.status = "deleted"
+    c.deleted_at = datetime.now()
+    _log("consultation_delete", f"consultation:{cid}", {"title": c.title})
+    db.session.commit()
+    flash("상담글을 삭제했습니다.", "success")
+    return redirect(url_for("admin.consultations"))
+
+
+# ─────────────────────────── 커뮤니티 관리 ───────────────────────────
+@bp.route("/community", methods=["GET", "POST"])
+@role_required("admin")
+def community():
+    from models import CommunityComment, CommunityPost
+
+    if request.method == "POST":  # 공지글 작성 (상단 고정)
+        title = request.form.get("title", "").strip()
+        content = request.form.get("content", "").strip()
+        if title and content:
+            db.session.add(
+                CommunityPost(
+                    user_id=g.user.id,
+                    category="공지",
+                    title=title[:200],
+                    content=content,
+                    is_notice=True,
+                )
+            )
+            _log("community_notice", "community:new", {"title": title})
+            db.session.commit()
+            flash("공지글이 등록되었습니다.", "success")
+        else:
+            flash("공지 제목과 내용을 입력해주세요.", "error")
+        return redirect(url_for("admin.community"))
+
+    reported_ids = {
+        r.target_id
+        for r in Report.query.filter_by(target_type="community_post", status="new")
+    }
+    posts = (
+        CommunityPost.query.filter(CommunityPost.deleted_at.is_(None))
+        .options(joinedload(CommunityPost.user))
+        .order_by(CommunityPost.is_notice.desc(), CommunityPost.created_at.desc())
+        .limit(50)
+        .all()
+    )
+    posts.sort(key=lambda p: (not p.is_notice, p.id not in reported_ids), reverse=False)
+    return render_template("admin/community.html", posts=posts, reported_ids=reported_ids)
+
+
+@bp.route("/community/<int:pid>/hide", methods=["POST"])
+@role_required("admin")
+def community_hide(pid):
+    from models import CommunityPost
+
+    p = db.session.get(CommunityPost, pid)
+    if p is None:
+        abort(404)
+    p.status = "open" if p.status == "hidden" else "hidden"
+    _log("community_toggle_hide", f"community_post:{pid}", {"status": p.status})
+    db.session.commit()
+    flash("게시글 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.community"))
+
+
+@bp.route("/community/<int:pid>/delete", methods=["POST"])
+@role_required("admin")
+def community_delete(pid):
+    from models import CommunityPost
+
+    p = db.session.get(CommunityPost, pid)
+    if p is None:
+        abort(404)
+    p.status = "deleted"
+    p.deleted_at = datetime.now()
+    _log("community_delete", f"community_post:{pid}", {"title": p.title})
+    db.session.commit()
+    flash("게시글을 삭제했습니다.", "success")
+    return redirect(url_for("admin.community"))
+
+
+# ─────────────────────────── 신고 처리 ───────────────────────────
+@bp.route("/reports")
+@role_required("admin")
+def reports():
+    items = (
+        Report.query.options(joinedload(Report.reporter))
+        .order_by(Report.status, Report.created_at.desc())
+        .limit(100)
+        .all()
+    )
+    return render_template("admin/reports.html", items=items)
+
+
+@bp.route("/reports/<int:rid>/done", methods=["POST"])
+@role_required("admin")
+def report_done(rid):
+    r = db.session.get(Report, rid)
+    if r is None:
+        abort(404)
+    r.status = "done"
+    _log("report_done", f"report:{rid}", {"target": f"{r.target_type}:{r.target_id}"})
+    db.session.commit()
+    flash("신고를 처리 완료로 표시했습니다.", "success")
+    return redirect(url_for("admin.reports"))

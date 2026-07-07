@@ -1,0 +1,36 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'consultations' %}
+{% block title %}상담 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}상담 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>상담글 <span class="cnt">{{ items | length }}</span> <small style="font-weight:600;color:var(--ink-500)">신고된 글 우선 표시</small></h2></div>
+  <table>
+    <tr><th>작성일</th><th>제목</th><th>작성자</th><th>분야</th><th>답변</th><th>상태</th><th></th></tr>
+    {% for c in items %}
+    <tr>
+      <td>{{ c.created_at.strftime('%m.%d') }}</td>
+      <td><a href="{{ url_for('counsel.detail', consult_id=c.id) }}" target="_blank"><b>{{ c.title }}</b></a>
+        {% if c.id in reported_ids %}<span class="badge red">신고됨</span>{% endif %}
+        {% if not c.is_public %}<span class="badge wait">비공개</span>{% endif %}
+      </td>
+      <td>{{ c.user.email if c.user }}</td>
+      <td>{{ c.category.name if c.category }}</td>
+      <td>{{ answer_counts.get(c.id, 0) }}</td>
+      <td>{% if c.status == 'open' %}<span class="badge ok">공개중</span>{% elif c.status == 'hidden' %}<span class="badge wait">숨김</span>{% else %}<span class="badge red">삭제</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        <form method="post" action="{{ url_for('admin.consultation_hide', cid=c.id) }}" style="display:inline">
+          <button class="btn line" type="submit">{{ '숨김 해제' if c.status == 'hidden' else '숨김' }}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.consultation_delete', cid=c.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="7" style="color:var(--ink-500)">상담글이 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '상담글 수정' if consult else '상담글 쓰기' }} - {{ site_name }}{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/counsel.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="qa-form">
+  <h1>{{ '상담글 수정' if consult else '어떤 일을 겪고 계신가요?' }}</h1>
+  <form method="post">
+    <div class="field">
+      <label>분야</label>
+      <select name="category_id">
+        <option value="">선택 안 함</option>
+        {% for p in parents %}
+        <option value="{{ p.id }}" {% if consult and consult.category_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>제목</label>
+      <input type="text" name="title" required maxlength="200" value="{{ consult.title if consult else '' }}" placeholder="예: 전세보증금을 돌려받지 못하고 있습니다">
+    </div>
+    <div class="field">
+      <label>내용</label>
+      <textarea name="content" rows="10" required placeholder="상황을 구체적으로 적을수록 정확한 답변을 받을 수 있어요. 전화번호·주민등록번호는 자동으로 가려집니다.">{{ consult.content if consult else '' }}</textarea>
+    </div>
+    <div class="field">
+      <label>공개 설정</label>
+      <div class="radio-row">
+        <label><input type="radio" name="is_public" value="1" {% if not consult or consult.is_public %}checked{% endif %}> 공개 (다른 회원도 열람)</label>
+        <label><input type="radio" name="is_public" value="0" {% if consult and not consult.is_public %}checked{% endif %}> 비공개 (나와 변호사만)</label>
+      </div>
+    </div>
+    <button class="submit" type="submit">{{ '수정하기' if consult else '상담글 등록' }}</button>
+  </form>
+</div>
+{% endblock %}

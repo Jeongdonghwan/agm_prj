@@ -7,7 +7,7 @@
 {% block sidebar_nav %}
 <a href="{{ url_for('lawyer_admin.dashboard') }}" class="{% if admin_active == 'dashboard' %}on{% endif %}"><i data-lucide="layout-dashboard"></i>대시보드</a>
 <a href="{{ url_for('lawyer_admin.profile') }}" class="{% if admin_active == 'profile' %}on{% endif %}"><i data-lucide="user-pen"></i>프로필 관리</a>
-<a href="#"><i data-lucide="message-square-text"></i>상담 답변</a>
+<a href="{{ url_for('lawyer_admin.answers') }}" class="{% if admin_active == 'answers' %}on{% endif %}"><i data-lucide="message-square-text"></i>상담 답변</a>
 <a href="{{ url_for('lawyer_admin.posts') }}" class="{% if admin_active == 'posts' %}on{% endif %}"><i data-lucide="file-pen-line"></i>포스트 작성</a>
 <a href="#"><i data-lucide="settings"></i>계정 설정</a>
 {% endblock %}

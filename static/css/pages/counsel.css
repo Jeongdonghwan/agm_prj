@@ -1,0 +1,71 @@
+/* ===== 상담사례 (시안 counsel.html) ===== */
+.thumb{background:linear-gradient(135deg,var(--blue-100),var(--blue-050));border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.qa-layout{display:grid;grid-template-columns:1fr 300px;gap:44px;margin-top:44px;align-items:start}
+.qa-head h1{font-size:30px;font-weight:800;letter-spacing:-.8px;line-height:1.35}
+.qa-head h1 b{color:var(--blue-600)}
+.qa-sort{display:flex;gap:18px;margin:26px 0 4px;font-size:14px;color:var(--ink-500);border-bottom:1px solid var(--ink-200);padding-bottom:12px}
+.qa-sort a.on{color:var(--ink-900);font-weight:800;text-decoration:underline;text-underline-offset:6px}
+.qa-item{padding:26px 0;border-bottom:1px solid var(--ink-200);display:block}
+.qa-cat{font-size:13px;color:var(--blue-600);font-weight:700}
+.qa-item h3{font-size:18px;font-weight:800;margin-top:8px;letter-spacing:-.4px}
+.qa-item h3:hover{color:var(--blue-600);cursor:pointer}
+.qa-ans{margin-top:14px}
+.qa-ans .who{font-size:14px}
+.qa-ans .who b{color:var(--blue-600);margin-right:8px;font-weight:800}
+.qa-ans p{margin-top:8px;font-size:14px;color:var(--ink-500);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.qa-more{margin-top:12px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-500)}
+.qa-more .mini{width:26px;height:26px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:11px}
+.qa-foot{margin-top:16px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ink-500)}
+.qa-foot .l{display:flex;gap:12px;align-items:center}
+.qa-wait{margin-top:12px;font-size:13px;color:var(--ink-500);background:var(--blue-050);border-radius:var(--radius-sm);padding:12px 14px}
+
+/* 랭킹 사이드 */
+.rank-box h3{font-size:15px;font-weight:800;margin-bottom:16px}
+.rank-item{display:flex;gap:12px;padding:12px 0;align-items:flex-start}
+.rank-item .medal{font-size:12px;font-weight:800;color:var(--blue-600);flex-shrink:0;width:26px;text-align:center}
+.rank-item .medal i{width:16px;height:16px;display:block;margin:0 auto 2px}
+.rank-item .av{width:44px;height:44px;border-radius:50%;flex-shrink:0}
+.rank-item h4{font-size:14px;font-weight:800}
+.rank-item p{font-size:12px;color:var(--ink-500);margin-top:2px;line-height:1.5}
+
+/* 글쓰기 FAB */
+.fab{position:fixed;right:36px;bottom:36px;width:78px;height:78px;border-radius:50%;background:var(--blue-600);color:#fff;font-size:12px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 8px 24px rgba(27,92,255,.4);z-index:90}
+.fab:hover{background:var(--blue-700)}
+.fab i{width:20px;height:20px}
+
+/* 상세 */
+.qa-detail{max-width:760px}
+.qa-detail .q-box{padding:28px 0;border-bottom:1px solid var(--ink-200)}
+.qa-detail .q-box h1{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.45;margin-top:8px}
+.qa-detail .q-meta{margin-top:12px;font-size:13px;color:var(--ink-500);display:flex;gap:12px;flex-wrap:wrap}
+.qa-detail .q-body{margin-top:20px;font-size:15px;line-height:1.85;white-space:pre-line}
+.qa-detail .own-actions{margin-top:16px;display:flex;gap:8px}
+.qa-detail .own-actions a,.qa-detail .own-actions button{font-size:12px;font-weight:700;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 14px;color:var(--ink-500)}
+.qa-detail .own-actions .del{border-color:#FCA5A5;color:#B91C1C}
+.ans-box{padding:24px 0;border-bottom:1px solid var(--ink-200)}
+.ans-box .lb{font-size:13px;font-weight:800;color:var(--blue-600)}
+.ans-box .body{margin-top:12px;font-size:14.5px;line-height:1.8;white-space:pre-line}
+.ans-lawyer{margin-top:16px;border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:14px 16px;display:flex;gap:12px;align-items:center}
+.ans-lawyer .av{width:44px;height:44px;flex-shrink:0}
+.ans-lawyer .nm{font-size:14px;font-weight:800}
+.ans-lawyer .hl{font-size:12px;color:var(--ink-500);margin-top:2px}
+.ans-lawyer .go{margin-left:auto;font-size:12px;font-weight:800;color:var(--blue-600);flex-shrink:0}
+.ans-empty{padding:36px 0;font-size:14px;color:var(--ink-500);text-align:center;border-bottom:1px solid var(--ink-200)}
+
+/* 작성 폼 */
+.qa-form{max-width:680px;margin:44px auto 0;padding:0 20px}
+.qa-form h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:24px}
+.qa-form .field{margin-bottom:16px}
+.qa-form label{display:block;font-size:13px;font-weight:700;color:var(--ink-500);margin-bottom:6px}
+.qa-form input[type=text],.qa-form select,.qa-form textarea{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none}
+.qa-form input:focus,.qa-form select:focus,.qa-form textarea:focus{outline:2px solid var(--blue-600);background:#fff}
+.qa-form .radio-row{display:flex;gap:18px;font-size:14px}
+.qa-form .radio-row label{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--ink-900);margin:0}
+.qa-form .submit{width:100%;background:var(--blue-600);color:#fff;font-size:15px;font-weight:800;padding:14px 0;border-radius:var(--radius-md);margin-top:8px}
+.qa-form .submit:hover{background:var(--blue-700)}
+.pager{display:flex;justify-content:center;gap:8px;margin:30px 0}
+.pager a{border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:10px 22px;font-size:13px;font-weight:700}
+.pager a:hover{border-color:var(--blue-600);color:var(--blue-600)}
+
+@media (max-width:960px){.qa-layout{grid-template-columns:1fr}.rank-box{display:none}}

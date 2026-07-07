@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}{{ consult.title }} - 상담사례 | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ consult.content[:150] }}">
+<link rel="canonical" href="{{ url_for('counsel.detail', consult_id=consult.id, slug=canonical_slug, _external=True) }}">
+{% if consult.is_public and answers %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "QAPage",
+  "mainEntity": {
+    "@type": "Question",
+    "name": {{ consult.title | tojson }},
+    "text": {{ consult.content[:300] | tojson }},
+    "answerCount": {{ answers | length }},
+    "suggestedAnswer": {
+      "@type": "Answer",
+      "text": {{ answers[0].content[:300] | tojson }}
+    }
+  }
+}
+</script>
+{% endif %}
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/counsel.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrap qa-layout">
+  <div class="qa-detail">
+    <div class="q-box">
+      <div class="qa-cat">{{ consult.category.name if consult.category }}{% if not consult.is_public %} · 비공개{% endif %}</div>
+      <h1>{{ consult.title }}</h1>
+      <div class="q-meta">
+        <span>{{ consult.created_at.strftime('%Y.%m.%d %H:%M') }}</span>
+        <span>조회 {{ consult.views }}</span>
+        <span>답변 {{ answers | length }}</span>
+      </div>
+      <div class="q-body">{{ consult.content }}</div>
+      {% if can_edit %}
+      <div class="own-actions">
+        <a href="{{ url_for('counsel.edit', consult_id=consult.id) }}">수정</a>
+        <form method="post" action="{{ url_for('counsel.delete', consult_id=consult.id) }}" onsubmit="return confirm('상담글을 삭제할까요?')" style="display:inline">
+          <button class="del" type="submit">삭제</button>
+        </form>
+      </div>
+      {% elif is_owner %}
+      <div class="own-actions"><span style="font-size:12px;color:var(--ink-500)">답변이 달린 상담글은 수정/삭제할 수 없습니다.</span></div>
+      {% endif %}
+    </div>
+
+    {% for a in answers %}
+    <div class="ans-box">
+      <div class="lb">변호사 답변</div>
+      <div class="body">{{ a.content }}</div>
+      {% set prof = profiles.get(a.lawyer_id) %}
+      <div class="ans-lawyer">
+        <div class="av thumb">{% if prof and prof.photo_url %}<img src="{{ prof.photo_url }}" alt="{{ a.lawyer.name }} 변호사">{% else %}{{ a.lawyer.name[0] }}{% endif %}</div>
+        <div>
+          <div class="nm">{{ a.lawyer.name }} 변호사</div>
+          <div class="hl">{{ prof.headline if prof }}{% if prof and prof.firm_name %} · {{ prof.firm_name }}{% endif %}</div>
+        </div>
+        {% if prof %}<a class="go" href="{{ url_for('lawyers.detail', user_id=a.lawyer_id) }}">프로필 보기 →</a>{% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="ans-empty">아직 답변이 없습니다. 변호사님들의 답변을 기다리고 있어요.</div>
+    {% endfor %}
+
+    <div class="pager"><a href="{{ url_for('counsel.list_') }}">목록으로</a></div>
+  </div>
+
+  {% include "counsel/_ranking.html" %}
+</div>
+{% endblock %}

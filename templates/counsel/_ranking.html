@@ -1,0 +1,15 @@
+<aside class="rank-box">
+  <h3>최근 답변이 활발한 변호사</h3>
+  {% for r in ranking %}
+  <div class="rank-item">
+    <div class="medal"><i data-lucide="crown"></i>{{ loop.index }}위</div>
+    <div class="av thumb">{% if r.profile.photo_url %}<img src="{{ r.profile.photo_url }}" alt="{{ r.profile.user.name }} 변호사">{% else %}{{ r.profile.user.name[0] }}{% endif %}</div>
+    <div>
+      <a href="{{ url_for('lawyers.detail', user_id=r.profile.user_id) }}"><h4>{{ r.profile.user.name }} 변호사</h4></a>
+      <p>{{ r.profile.headline }} · 최근 30일 답변 {{ r.count }}건</p>
+    </div>
+  </div>
+  {% else %}
+  <p style="font-size:13px;color:var(--ink-500)">최근 30일 답변 데이터가 없습니다.</p>
+  {% endfor %}
+</aside>

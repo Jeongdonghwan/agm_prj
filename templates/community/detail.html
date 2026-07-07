@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - 커뮤니티 | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ post.content[:150] }}">
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrap comm-layout" style="margin-top:0">
+  <div class="comm-detail">
+    <div class="head">
+      <span class="tag" style="background:var(--blue-100);color:var(--blue-700);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px">{{ '공지' if post.is_notice else post.category }}</span>
+      <h1>{{ post.title }}</h1>
+      <div class="meta">
+        <span>{{ site_name + ' 운영팀' if post.is_notice else author_name(post) }}</span>
+        <span>{{ post.created_at.strftime('%Y.%m.%d %H:%M') }}</span>
+        <span>조회 {{ '{:,}'.format(post.views) }} · 추천 <b id="like-count">{{ post.likes }}</b></span>
+      </div>
+    </div>
+    <div class="body">{{ post.content }}</div>
+
+    <div class="act-row">
+      <button type="button" id="btn-like" class="{% if liked %}liked{% endif %}"><i data-lucide="thumbs-up"></i>추천 <span id="like-num">{{ post.likes }}</span></button>
+      <button type="button" id="btn-report"><i data-lucide="flag"></i>신고</button>
+    </div>
+
+    <div class="cmt-sec">
+      <h3>댓글</h3>
+      {% for c in comments %}
+      <div class="cmt">
+        <div class="who">{{ author_name(c) }}<small>{{ c.created_at.strftime('%m.%d %H:%M') }}</small></div>
+        <p>{{ c.content }}</p>
+        <div class="acts">
+          {% if can_write %}<button type="button" class="btn-reply" data-id="{{ c.id }}">답글</button>{% endif %}
+          <button type="button" class="btn-report-cmt" data-id="{{ c.id }}">신고</button>
+        </div>
+        {% for r in replies.get(c.id, []) %}
+        <div class="cmt reply">
+          <div class="who">{{ author_name(r) }}<small>{{ r.created_at.strftime('%m.%d %H:%M') }}</small></div>
+          <p>{{ r.content }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="font-size:13px;color:var(--ink-500);padding:14px 0">첫 댓글을 남겨보세요.</p>
+      {% endfor %}
+
+      {% if can_write %}
+      <form class="cmt-form" method="post" action="{{ url_for('community.comment', post_id=post.id) }}" {% if nickname_required %}data-need-nickname="1"{% endif %}>
+        <input type="hidden" name="parent_id" id="parent-id" value="">
+        <textarea name="content" rows="3" required placeholder="댓글을 입력하세요" id="cmt-textarea"></textarea>
+        <div class="row">
+          <label class="anon"><input type="checkbox" name="is_anonymous" value="1"> 익명</label>
+          <button type="submit">댓글 등록</button>
+        </div>
+      </form>
+      {% elif not current_user %}
+      <p style="font-size:13px;color:var(--ink-500);padding:10px 0"><a href="{{ url_for('auth.login', next=request.path) }}" style="color:var(--blue-600);font-weight:700">로그인</a> 후 댓글을 작성할 수 있습니다.</p>
+      {% elif current_user.role == 'lawyer' %}
+      <p style="font-size:13px;color:var(--ink-500);padding:10px 0">변호사 회원은 커뮤니티 열람만 가능합니다.</p>
+      {% endif %}
+    </div>
+
+    <div class="pager"><a href="{{ url_for('community.list_') }}">목록으로</a></div>
+  </div>
+
+  <aside style="padding-top:28px">
+    <div class="notice-box">
+      <b>커뮤니티 이용 안내</b>
+      개인정보가 포함된 글은 자동으로 가려지며, 신고된 글은 운영팀 검토 후 조치됩니다.
+    </div>
+  </aside>
+</div>
+
+{% include "community/_nickname_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/nickname-modal.js') }}"></script>
+<script>
+// 추천 (글당 1회)
+document.getElementById('btn-like').addEventListener('click', async () => {
+  {% if not current_user %}
+  location.href = '{{ url_for('auth.login', next=request.path) }}';
+  return;
+  {% endif %}
+  const res = await fetch('/api/community/posts/{{ post.id }}/like', { method: 'POST' });
+  const data = await res.json();
+  if (res.ok) {
+    document.getElementById('like-num').textContent = data.likes;
+    document.getElementById('btn-like').classList.add('liked');
+  } else {
+    alert(data.error ? data.error.message : '추천에 실패했습니다.');
+  }
+});
+// 신고
+async function sendReport(targetType, targetId) {
+  {% if not current_user %}
+  location.href = '{{ url_for('auth.login', next=request.path) }}';
+  return;
+  {% endif %}
+  const reason = prompt('신고 사유를 입력해주세요');
+  if (!reason) return;
+  const res = await fetch('/api/reports', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target_type: targetType, target_id: targetId, reason }),
+  });
+  const data = await res.json();
+  alert(res.ok ? '신고가 접수되었습니다.' : (data.error ? data.error.message : '신고에 실패했습니다.'));
+}
+document.getElementById('btn-report').addEventListener('click', () => sendReport('community_post', {{ post.id }}));
+document.querySelectorAll('.btn-report-cmt').forEach(b =>
+  b.addEventListener('click', () => sendReport('community_comment', b.dataset.id)));
+// 대댓글
+document.querySelectorAll('.btn-reply').forEach(b =>
+  b.addEventListener('click', () => {
+    document.getElementById('parent-id').value = b.dataset.id;
+    const ta = document.getElementById('cmt-textarea');
+    ta.placeholder = '답글을 입력하세요 (답글 대상 댓글 아래에 표시됩니다)';
+    ta.focus();
+  }));
+</script>
+{% endblock %}

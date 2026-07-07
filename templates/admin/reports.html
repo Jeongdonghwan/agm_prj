@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'reports' %}
+{% block title %}신고 처리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}신고 처리{% endblock %}
+
+{% block content %}
+{% set type_labels = {'community_post': '커뮤니티 글', 'community_comment': '커뮤니티 댓글', 'consultation': '상담글', 'answer': '상담 답변'} %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>신고 <span class="cnt">{{ items | selectattr('status', 'equalto', 'new') | list | length }}</span></h2></div>
+  <table>
+    <tr><th>접수일</th><th>대상</th><th>사유</th><th>신고자</th><th>상태</th><th></th></tr>
+    {% for r in items %}
+    <tr>
+      <td>{{ r.created_at.strftime('%m.%d %H:%M') }}</td>
+      <td><span class="badge red">{{ type_labels.get(r.target_type, r.target_type) }}</span> #{{ r.target_id }}
+        {% if r.target_type == 'community_post' %}<a class="btn line" href="{{ url_for('admin.community') }}">관리</a>
+        {% elif r.target_type == 'consultation' %}<a class="btn line" href="{{ url_for('admin.consultations') }}">관리</a>{% endif %}
+      </td>
+      <td style="max-width:300px">{{ r.reason }}</td>
+      <td>{{ r.reporter.email if r.reporter }}</td>
+      <td>{% if r.status == 'new' %}<span class="badge wait">신규</span>{% else %}<span class="badge ok">처리됨</span>{% endif %}</td>
+      <td>
+        {% if r.status == 'new' %}
+        <form method="post" action="{{ url_for('admin.report_done', rid=r.id) }}">
+          <button class="btn pri" type="submit">처리 완료</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="color:var(--ink-500)">접수된 신고가 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

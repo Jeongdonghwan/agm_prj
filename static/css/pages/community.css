@@ -1,0 +1,95 @@
+/* ===== 커뮤니티 (시안 community.html) ===== */
+.page-head{background:var(--blue-050);padding:30px 0}
+.page-head .wrap{display:flex;justify-content:space-between;align-items:center}
+.page-head h1{font-size:24px;font-weight:800;letter-spacing:-.5px;display:flex;align-items:center;gap:8px}
+.page-head p{margin-top:6px;font-size:14px;color:var(--ink-500)}
+.page-head .btn-write{background:var(--blue-600);color:#fff;font-size:14px;font-weight:700;padding:12px 22px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:6px}
+.page-head .btn-write:hover{background:var(--blue-700)}
+
+.comm-layout{display:grid;grid-template-columns:1fr 280px;gap:28px;margin-top:26px;align-items:start}
+.cat-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.cat-chips a{border:1px solid var(--ink-200);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ink-500)}
+.cat-chips a.on{background:var(--blue-600);border-color:var(--blue-600);color:#fff}
+.sort-tabs{display:flex;gap:16px;border-bottom:2px solid var(--ink-200);margin-bottom:4px}
+.sort-tabs a{font-size:14px;font-weight:700;color:var(--ink-500);padding:10px 4px;border-bottom:3px solid transparent;margin-bottom:-2px}
+.sort-tabs a.on{color:var(--blue-600);border-bottom-color:var(--blue-600)}
+.post{display:flex;gap:14px;padding:18px 4px;border-bottom:1px solid var(--ink-200);align-items:flex-start}
+.post .tag{background:var(--blue-100);color:var(--blue-700);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;flex-shrink:0;margin-top:2px}
+.post .tag.notice{background:var(--blue-900);color:#fff}
+.post h4{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.post h4:hover{color:var(--blue-600)}
+.post h4 .cmt{color:var(--blue-600);font-size:13px;margin-left:4px}
+.post p{margin-top:4px;font-size:13px;color:var(--ink-500);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.post .meta{margin-top:8px;font-size:12px;color:var(--ink-500);display:flex;gap:12px;align-items:center}
+.post .meta b{color:var(--ink-900);font-weight:700;margin-left:2px}
+
+.hot-box{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:20px;position:sticky;top:130px}
+.hot-box h3{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.hot-box h3 i{width:16px;height:16px;color:var(--red-500)}
+.hot-item{display:flex;gap:10px;padding:9px 0;font-size:13px;font-weight:600;align-items:flex-start}
+.hot-item .rank{color:var(--blue-600);font-weight:800;flex-shrink:0}
+.hot-item span{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.notice-box{margin-top:14px;background:var(--blue-050);border-radius:var(--radius-md);padding:16px;font-size:12px;color:var(--ink-500);line-height:1.7}
+.notice-box b{color:var(--blue-900);display:block;font-size:13px;margin-bottom:4px}
+
+/* 상세 */
+.comm-detail{max-width:760px}
+.comm-detail .head{padding:28px 0 20px;border-bottom:1px solid var(--ink-200)}
+.comm-detail .head h1{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.45;margin-top:10px}
+.comm-detail .meta{margin-top:12px;font-size:13px;color:var(--ink-500);display:flex;gap:12px;flex-wrap:wrap}
+.comm-detail .body{padding:24px 0;font-size:15px;line-height:1.85;white-space:pre-line;border-bottom:1px solid var(--ink-200)}
+.act-row{display:flex;gap:10px;justify-content:center;padding:22px 0;border-bottom:1px solid var(--ink-200)}
+.act-row button{display:flex;align-items:center;gap:6px;border:1px solid var(--ink-200);border-radius:999px;padding:11px 22px;font-size:13.5px;font-weight:700;color:var(--ink-500)}
+.act-row button:hover{border-color:var(--blue-600);color:var(--blue-600)}
+.act-row button.liked{border-color:var(--blue-600);background:var(--blue-050);color:var(--blue-600)}
+.act-row i{width:15px;height:15px}
+.cmt-sec{margin-top:26px}
+.cmt-sec h3{font-size:15px;font-weight:800;margin-bottom:12px}
+.cmt{padding:14px 0;border-bottom:1px solid var(--blue-050)}
+.cmt.reply{margin-left:34px}
+.cmt .who{font-size:13px;font-weight:800}
+.cmt .who small{font-weight:600;color:var(--ink-500);margin-left:8px}
+.cmt p{margin-top:5px;font-size:14px;line-height:1.7;white-space:pre-line}
+.cmt .acts{margin-top:6px;display:flex;gap:10px;font-size:12px;color:var(--ink-500)}
+.cmt .acts button{font-size:12px;color:var(--ink-500)}
+.cmt .acts button:hover{color:var(--blue-600)}
+.cmt-form{margin-top:16px}
+.cmt-form textarea{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none;resize:vertical}
+.cmt-form textarea:focus{outline:2px solid var(--blue-600);background:#fff}
+.cmt-form .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.cmt-form .anon{font-size:13px;color:var(--ink-500);display:flex;align-items:center;gap:5px;font-weight:600}
+.cmt-form button[type=submit]{background:var(--blue-600);color:#fff;font-size:13px;font-weight:800;padding:10px 20px;border-radius:var(--radius-sm)}
+.cmt-form button[type=submit]:hover{background:var(--blue-700)}
+
+/* 글쓰기 폼 */
+.comm-form{max-width:680px;margin:44px auto 0;padding:0 20px}
+.comm-form h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin-bottom:24px}
+.comm-form .field{margin-bottom:16px}
+.comm-form label{display:block;font-size:13px;font-weight:700;color:var(--ink-500);margin-bottom:6px}
+.comm-form input[type=text],.comm-form select,.comm-form textarea{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none}
+.comm-form input:focus,.comm-form select:focus,.comm-form textarea:focus{outline:2px solid var(--blue-600);background:#fff}
+.comm-form .anon{font-size:14px;display:flex;align-items:center;gap:6px;font-weight:600}
+.comm-form .submit{width:100%;background:var(--blue-600);color:#fff;font-size:15px;font-weight:800;padding:14px 0;border-radius:var(--radius-md);margin-top:8px}
+.comm-form .submit:hover{background:var(--blue-700)}
+.pager{display:flex;justify-content:center;gap:8px;margin:30px 0}
+.pager a{border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:10px 22px;font-size:13px;font-weight:700}
+.pager a:hover{border-color:var(--blue-600);color:var(--blue-600)}
+
+/* 닉네임 설정 모달 */
+.nick-modal-bg{display:none;position:fixed;inset:0;background:rgba(10,42,94,.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.nick-modal-bg.on{display:flex}
+.nick-modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:400px}
+.nick-modal h3{font-size:18px;font-weight:800}
+.nick-modal p{margin-top:6px;font-size:13px;color:var(--ink-500);line-height:1.6}
+.nick-modal input{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none;margin-top:16px}
+.nick-modal input:focus{outline:2px solid var(--blue-600);background:#fff}
+.nick-modal .check-msg{margin-top:8px;font-size:12.5px;font-weight:600;min-height:18px}
+.nick-modal .check-msg.ok{color:#16A34A}
+.nick-modal .check-msg.bad{color:var(--red-500)}
+.nick-modal .btns{display:flex;gap:8px;margin-top:14px}
+.nick-modal .btns button{flex:1;padding:13px 0;border-radius:var(--radius-md);font-size:14px;font-weight:800}
+.nick-modal .btns .save{background:var(--blue-600);color:#fff}
+.nick-modal .btns .save:disabled{background:var(--ink-200);cursor:not-allowed}
+.nick-modal .btns .close{background:var(--blue-050);color:var(--ink-500)}
+
+@media (max-width:960px){.comm-layout{grid-template-columns:1fr}.hot-box{position:static}}

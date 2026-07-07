@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}글쓰기 - 커뮤니티 | {{ site_name }}{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="comm-form">
+  <h1>커뮤니티 글쓰기</h1>
+  <form method="post" {% if nickname_required %}data-need-nickname="1"{% endif %}>
+    <div class="field">
+      <label>카테고리</label>
+      <select name="category" required>
+        {% for c in categories %}
+        <option value="{{ c }}" {% if form.get('category') == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="field">
+      <label>제목</label>
+      <input type="text" name="title" required maxlength="200" value="{{ form.get('title', '') }}">
+    </div>
+    <div class="field">
+      <label>내용</label>
+      <textarea name="content" rows="10" required placeholder="전화번호·주민등록번호는 자동으로 가려집니다.">{{ form.get('content', '') }}</textarea>
+    </div>
+    <div class="field">
+      <label class="anon"><input type="checkbox" name="is_anonymous" value="1" {% if form.get('is_anonymous') %}checked{% endif %}> 익명으로 작성</label>
+    </div>
+    <button class="submit" type="submit">등록하기</button>
+  </form>
+</div>
+
+{% include "community/_nickname_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/nickname-modal.js') }}"></script>
+{% endblock %}
