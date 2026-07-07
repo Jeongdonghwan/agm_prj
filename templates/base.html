@@ -35,13 +35,13 @@
         <a class="lnk" href="{{ url_for('auth.signup') }}">회원가입</a>
         <a class="lnk" href="#">고객센터</a>
       {% endif %}
-      <a class="btn-write" href="{{ url_for('community.list_') }}">글쓰기 <i data-lucide="chevron-down"></i></a>
+      <a class="btn-write" href="{{ url_for('community.list_') }}">글쓰기 <i data-lucide="pen-line" style="width:14px;height:14px"></i></a>
     </div>
   </div>
   <nav class="gnb wrap">
     <ul>
-      <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
       <li><a href="{{ url_for('main.index') }}" class="{% if active_menu == 'home' %}active{% endif %}">홈</a></li>
+      <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
       <li><a href="{{ url_for('lawyers.find') }}" class="{% if active_menu == 'lawyers' %}active{% endif %}">변호사</a></li>
       <li><a href="{{ url_for('contents.firms') }}" class="{% if active_menu == 'firms' %}active{% endif %}">로펌</a></li>
       <li><a href="{{ url_for('counsel.list_') }}" class="{% if active_menu == 'counsel' %}active{% endif %}">상담사례</a></li>

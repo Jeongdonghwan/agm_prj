@@ -18,7 +18,8 @@ def role_required(*roles):
         @wraps(view)
         def wrapped(*args, **kwargs):
             if g.user is None:
-                if "admin" in roles:
+                # admin 전용 페이지만 관리자 로그인으로 (user+admin 겸용은 일반 로그인)
+                if set(roles) == {"admin"}:
                     return redirect(url_for("auth.admin_login"))
                 return redirect(url_for("auth.login", next=request.path))
             if g.user.role not in roles:

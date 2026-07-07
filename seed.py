@@ -436,7 +436,8 @@ def run_seed(app):
                 is_notice=is_notice,
                 views=50 + i * 21,
                 likes=0,
-                created_at=now - timedelta(days=15 - i, hours=i * 2),
+                # 최근 글일수록 촘촘하게 — 마지막 2~3개는 24시간 내(NEW 뱃지 데모)
+                created_at=now - timedelta(hours=(len(COMMUNITY_POSTS) - 1 - i) * 9),
             )
             db.session.add(p)
             comm_posts.append(p)
@@ -503,18 +504,28 @@ def run_seed(app):
                 )
             )
 
-        # 메인 히어로 배너 1
-        db.session.add(
-            Banner(
-                position="main_hero",
-                title="법률 문제의 시작부터 끝까지, 안기모가 함께합니다",
-                link_url="/lawyers/",
-                sort_order=0,
-                is_active=True,
-                starts_at=now - timedelta(days=1),
-                ends_at=now + timedelta(days=365),
+        # 메인 히어로 롤링 배너 3 (title 규칙: "메인|포인트|서브", image_url = 3D 아이콘)
+        hero_banners = [
+            ("법률 문제의 시작부터 끝까지|안기모가 함께합니다|분야별 전문 변호사를 지금 바로 만나보세요",
+             "/static/icons/etc-civil.png", "/lawyers/"),
+            ("법률 고민, 혼자 끙끙 앓지 마세요|커뮤니티에서 나눠보세요|비슷한 경험을 한 사람들의 이야기를 들어보세요",
+             "/static/icons/defame.png", "/community/"),
+            ("변호사 답변을 무료로 받는|온라인 상담사례|질문을 남기면 분야 전문 변호사가 답변해드려요",
+             "/static/icons/civil.png", "/counsel/"),
+        ]
+        for i, (title, image_url, link_url) in enumerate(hero_banners):
+            db.session.add(
+                Banner(
+                    position="main_hero",
+                    title=title,
+                    image_url=image_url,
+                    link_url=link_url,
+                    sort_order=i,
+                    is_active=True,
+                    starts_at=now - timedelta(days=1),
+                    ends_at=now + timedelta(days=365),
+                )
             )
-        )
 
         db.session.commit()
 

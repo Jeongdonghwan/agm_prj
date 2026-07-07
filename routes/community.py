@@ -80,6 +80,7 @@ def list_():
     )
     return render_template(
         "community/list.html",
+        new_threshold=datetime.now() - timedelta(hours=24),
         active_menu="community",
         items=items,
         notices=notices,

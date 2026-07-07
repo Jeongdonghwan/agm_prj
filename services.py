@@ -38,20 +38,34 @@ CATEGORY_ICONS = [
 ]
 
 
+def _parse_banner(b):
+    """배너 title 규칙: '메인카피|포인트카피(파란 줄)|서브카피' — 배너관리에서 그대로 입력."""
+    parts = (b.title or "").split("|")
+    return {
+        "main": parts[0].strip() if parts else "",
+        "point": parts[1].strip() if len(parts) > 1 else "",
+        "sub": parts[2].strip() if len(parts) > 2 else "",
+        "image": b.image_url,
+        "link": b.link_url,
+    }
+
+
 def get_home_data():
     now = datetime.now()
 
-    # 히어로 배너 (배너 관리 연동)
-    hero_banner = (
-        Banner.query.filter(
+    # 히어로 롤링 배너 (배너 관리 연동, sort_order 순)
+    hero_banners = [
+        _parse_banner(b)
+        for b in Banner.query.filter(
             Banner.position == "main_hero",
             Banner.is_active.is_(True),
             db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
             db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
         )
         .order_by(Banner.sort_order)
-        .first()
-    )
+        .limit(6)
+        .all()
+    ]
 
     # 탭1: 커뮤니티 인기글 3 (조회+추천×3)
     hot_community = (
@@ -146,7 +160,7 @@ def get_home_data():
     )
 
     return {
-        "hero_banner": hero_banner,
+        "hero_banners": hero_banners,
         "hot_community": hot_community,
         "recent_cases": recent_cases,
         "cat_names": cat_names,

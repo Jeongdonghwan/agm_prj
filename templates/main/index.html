@@ -22,17 +22,27 @@
 <!-- 히어로 -->
 <div class="hero wrap">
   <div class="hero-grid">
-    <a class="hero-banner" {% if hero_banner and hero_banner.link_url %}href="{{ hero_banner.link_url }}"{% endif %}>
+    <div class="hero-banner" id="hero-banner">
       <span class="ad">AD</span>
-      {% if hero_banner %}
-      <h2>{{ hero_banner.title }}</h2>
-      <p>분야별 전문 변호사를 지금 바로 만나보세요</p>
+      {% for b in hero_banners %}
+      <a class="hero-slide{% if loop.first %} on{% endif %}" {% if b.link %}href="{{ b.link }}"{% endif %}>
+        <div class="txt">
+          <h2>{{ b.main }}{% if b.point %}<span class="pt">{{ b.point }}</span>{% endif %}</h2>
+          {% if b.sub %}<p>{{ b.sub }}</p>{% endif %}
+        </div>
+        <div class="art"><img src="{{ b.image or url_for('static', filename='icons/etc-civil.png') }}" alt="{{ b.main }}" loading="lazy"></div>
+      </a>
       {% else %}
-      <h2>법률 문제의 시작부터 끝까지,<br>{{ site_name }}가 함께합니다</h2>
-      <p>분야별 전문 변호사를 지금 바로 만나보세요</p>
-      {% endif %}
-      <div class="indicator"><i data-lucide="chevron-left" style="width:13px;height:13px"></i> 1 / 1 <i data-lucide="chevron-right" style="width:13px;height:13px"></i></div>
-    </a>
+      <a class="hero-slide on" href="{{ url_for('lawyers.find') }}">
+        <div class="txt">
+          <h2>법률 문제의 시작부터 끝까지<span class="pt">{{ site_name }}가 함께합니다</span></h2>
+          <p>분야별 전문 변호사를 지금 바로 만나보세요</p>
+        </div>
+        <div class="art"><img src="{{ url_for('static', filename='icons/etc-civil.png') }}" alt="{{ site_name }}"></div>
+      </a>
+      {% endfor %}
+      <div class="indicator"><span id="hero-cur">1</span> / {{ hero_banners | length if hero_banners else 1 }}</div>
+    </div>
     <div class="hero-side">
       <div class="side-row">
         <a class="side-card" href="{{ url_for('lawyers.find') }}"><h3>변호사 찾기 <i data-lucide="user-search" style="width:19px;height:19px"></i></h3><p>내게 딱 맞는 변호사 찾기</p></a>
