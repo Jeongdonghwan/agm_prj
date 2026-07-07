@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ case.title }} - 판례돋보기 | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ case.summary }}">
+<link rel="canonical" href="{{ url_for('contents.case_detail', case_id=case.id, slug=canonical_slug, _external=True) }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ case.title }}">
+<meta property="og:description" content="{{ case.summary }}">
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/cases.css') }}">
+{% endblock %}
+
+{% block content %}
+<article class="article">
+  <div class="type-lb">판례돋보기 · {{ case_type_label }}{% for cid, name in cat_names.items() %} · {{ name }}{% endfor %}</div>
+  <h1>{{ case.title }}</h1>
+  <div class="meta">
+    <span>{{ case.created_at.strftime('%Y.%m.%d') }}</span>
+    <span>조회 {{ '{:,}'.format(case.views or 0) }}</span>
+  </div>
+  <div class="case-no-big">{{ case.court }} {{ case.case_no }}</div>
+  {% if case.summary %}<div class="summary"><b>사건 개요</b> — {{ case.summary }}</div>{% endif %}
+  <div class="body">{{ case.content }}</div>
+</article>
+
+<div class="pager" style="margin-top:36px">
+  <a href="{{ url_for('contents.cases') }}">목록으로</a>
+</div>
+{% endblock %}

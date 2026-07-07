@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - {{ type_label }} | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ post.content[:150] }}">
+<link rel="canonical" href="{{ url_for('contents.post_detail', post_id=post.id, slug=canonical_slug, _external=True) }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ post.title }}">
+<meta property="og:description" content="{{ post.content[:150] }}">
+{% if post.thumbnail_url %}<meta property="og:image" content="{{ post.thumbnail_url }}">{% endif %}
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/posts.css') }}">
+{% endblock %}
+
+{% block content %}
+<article class="article">
+  <div class="type-lb">{{ type_label }}{% if post.category %} · {{ post.category.name }}{% endif %}</div>
+  <h1>{{ post.title }}</h1>
+  <div class="meta">
+    <span>{{ post.lawyer.name }} 변호사</span>
+    <span>{{ post.published_at.strftime('%Y.%m.%d') if post.published_at }}</span>
+    <span>조회 {{ '{:,}'.format(post.views or 0) }}</span>
+    {% if post.result_badge %}<span class="result-badge" style="margin-top:0"><i data-lucide="gavel"></i>{{ post.result_badge }}</span>{% endif %}
+  </div>
+  {% if post.thumbnail_url %}<img class="thumb-full" src="{{ post.thumbnail_url }}" alt="{{ post.title }}" loading="lazy">{% endif %}
+  <div class="body">{{ post.content }}</div>
+</article>
+
+<!-- 작성 변호사 프로필 카드 -->
+<div class="lawyer-card">
+  <div class="box">
+    <span class="av">{% if profile and profile.photo_url %}<img src="{{ profile.photo_url }}" alt="{{ post.lawyer.name }} 변호사">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>
+    <div>
+      <div class="nm">{{ post.lawyer.name }} 변호사</div>
+      <div class="hl">{{ profile.headline if profile else '' }}{% if profile and profile.firm_name %} · {{ profile.firm_name }}{% endif %}</div>
+    </div>
+    {% if profile %}<a class="go" href="{{ url_for('lawyers.detail', user_id=post.lawyer_id) }}">프로필 보기</a>{% endif %}
+  </div>
+</div>
+
+<div class="pager" style="margin-top:36px">
+  <a href="{{ url_for('contents.posts', type=post.type) }}">목록으로</a>
+</div>
+{% endblock %}

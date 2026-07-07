@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}안기모뉴스{% if tag %} - #{{ tag }}{% endif %} | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="생활 속 법률 이슈를 쉽게 풀어주는 {{ site_name }} 뉴스{% if tag %} — #{{ tag }}{% endif %}.">
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/news.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="news-promos">
+    <a class="promo" href="#">생활 속 법률 상식<br>뉴스레터 구독<small>바로가기 →</small></a>
+    <a class="promo" href="{{ url_for('community.list_') }}">나눔과 소통의 공간<br>{{ site_name }} 커뮤니티<small>바로가기 →</small></a>
+    <a class="promo" href="{{ url_for('counsel.list_') }}">법률 고민 해결<br>온라인 상담<small>바로가기 →</small></a>
+    <a class="promo" href="{{ url_for('lawyers.find') }}">분야별 전문 변호사<br>바로 찾기<small>바로가기 →</small></a>
+  </div>
+
+  {% if all_tags %}
+  <div class="tag-row">
+    <a href="{{ url_for('contents.news') }}" class="{% if not tag %}on{% endif %}">전체</a>
+    {% for t in all_tags %}
+    <a href="{{ url_for('contents.news', tag=t) }}" class="{% if tag == t %}on{% endif %}">#{{ t }}</a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="news-sec">
+    <h2>{% if tag %}#{{ tag }} 뉴스{% else %}최신 뉴스{% endif %}</h2>
+
+    {% for n in items %}
+    <a class="news-item" href="{{ url_for('contents.news_detail', news_id=n.id, slug=slug(n.title)) }}">
+      <div class="body">
+        <h3>{{ n.title }}</h3>
+        <p>{{ n.content[:140] }}</p>
+        <div class="meta">{% for t in n.hashtags or [] %}<b>#{{ t }}</b>{% endfor %}<span>{{ n.published_at.strftime('%Y.%m.%d') if n.published_at }}</span><span>조회 {{ n.views }}</span></div>
+      </div>
+      <div class="thumb">{% if n.thumbnail_url %}<img src="{{ n.thumbnail_url }}" alt="{{ n.title }}" loading="lazy">{% else %}<i data-lucide="image"></i>{% endif %}</div>
+    </a>
+    {% else %}
+    <div class="list-empty">등록된 뉴스가 없습니다.</div>
+    {% endfor %}
+  </div>
+
+  <div class="pager">
+    {% if page > 1 %}<a href="{{ url_for('contents.news', tag=tag, page=page - 1) }}" rel="prev">이전</a>{% endif %}
+    {% if has_next %}<a href="{{ url_for('contents.news', tag=tag, page=page + 1) }}" rel="next">다음</a>{% endif %}
+  </div>
+</div>
+{% endblock %}

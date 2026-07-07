@@ -192,6 +192,41 @@ NEWS_ITEMS = [
     ("양육비 미지급 제재 강화, 출국금지 요건 완화", ["가족", "양육비"]),
 ]
 
+# (변호사idx 0~9, type, 결과뱃지, 분야명, 제목)
+LAWYER_POSTS = [
+    (0, "case", "무혐의", "성범죄", "강제추행 혐의, 초기 조사 대응으로 무혐의 처분을 받은 사례"),
+    (0, "case", "집행유예", "형사절차", "1심 실형 선고 사건, 항소심에서 집행유예로 석방된 사례"),
+    (1, "case", "승소", "부동산/임대차", "전세보증금 반환 소송, 전액 회수에 성공한 사례"),
+    (1, "case", "조정성립", "금전/계약 문제", "공사대금 분쟁, 조정으로 신속하게 마무리한 사례"),
+    (2, "case", "조정성립", "가족", "양육권 포함 전반적 조건을 반영해 조정성립을 이끌어낸 사례"),
+    (3, "case", "벌금", "교통사고/범죄", "음주 측정 절차를 다투어 벌금형 선처로 종결한 사례"),
+    (4, "case", "승소", "회사", "부당해고 구제신청 인용, 복직과 임금 상당액을 확보한 사례"),
+    (5, "case", "무죄", "재산범죄", "중고거래 사기 누명, 무죄 판결로 결백을 밝힌 사례"),
+    (6, "case", "조정성립", "의료/세금/행정", "의료분쟁조정으로 수술 후유증 배상을 받아낸 사례"),
+    (7, "guide", None, "IT/지식재산/금융", "내 사진이 무단으로 사용됐다면 — 저작권 침해 대응 절차 정리"),
+    (8, "guide", None, "폭행/협박", "쌍방폭행으로 몰렸을 때 반드시 확인해야 할 3가지"),
+    (9, "essay", None, "민사절차", "10년차 민사 변호사가 말하는 소송보다 나은 화해의 기술"),
+    # 검수 대기 2건 + 반려 1건 (관리자 검수 플로우 데모용)
+    (0, "guide", None, "형사절차", "경찰 조사 출석 전 꼭 알아야 할 5가지"),
+    (2, "essay", None, "가족", "이혼 상담실에서 만난 사람들"),
+    (3, "case", "기각", "교통사고/범죄", "블랙박스 분석으로 과실 비율을 뒤집은 사례"),
+]
+
+FIRM_ADS = [
+    ("법무법인 다온하늘", "가사·상속 분야에 집중한 프리미엄 법률서비스",
+     "가사·상속 분야만 집중적으로 수행해 온 전문 변호사들이 함께합니다. 상속·유류분 사건 다수 수행 경험을 보유하고 있습니다.",
+     "가족", "서울특별시 서초구 서초대로 100 다온빌딩 3층",
+     [{"label": "홈페이지", "url": "https://example.com/daon"}, {"label": "성공사례", "url": "https://example.com/daon/cases"}]),
+    ("법무법인 한결로", "부동산 분쟁, 계약서 검토부터 소송까지 원스톱",
+     "임대차·매매·재건축 분쟁을 전담하는 부동산 전문 로펌입니다. 보증금 반환·명도 사건 실무 경험이 풍부합니다.",
+     "부동산/임대차", "서울특별시 강남구 테헤란로 200 한결타워 5층",
+     [{"label": "홈페이지", "url": "https://example.com/hangyul"}, {"label": "블로그", "url": "https://example.com/hangyul/blog"}]),
+    ("법률사무소 미리내", "형사 사건 초기 대응, 24시간 긴급 상담 체계",
+     "형사 전담 변호사들이 경찰 조사 단계부터 동행합니다. 초기 대응이 결과를 바꿉니다.",
+     "형사절차", "인천광역시 남동구 예술로 150 미리내빌딩 2층",
+     [{"label": "홈페이지", "url": "https://example.com/mirinae"}, {"label": "긴급상담", "url": "https://example.com/mirinae/sos"}]),
+]
+
 COMMUNITY_POSTS = [
     ("공지", "안기모 커뮤니티 이용 안내 및 운영 원칙", True),
     ("생활법률", "전세 계약 전에 등기부등본 꼭 확인하세요", False),
@@ -220,6 +255,8 @@ def run_seed(app):
         CommunityPost,
         Consultation,
         ConsultationAnswer,
+        FirmAd,
+        LawyerPost,
         LawyerProfile,
         LegalCase,
         News,
@@ -421,12 +458,56 @@ def run_seed(app):
                 )
             p.likes = len(likers)
 
+        # 변호사 포스트 15 (published 12 / pending 2 / rejected 1)
+        for i, (lidx, ptype, badge, cat_name, title) in enumerate(LAWYER_POSTS):
+            if i < 12:
+                status, published_at, reject_reason = "published", now - timedelta(days=14 - i), None
+            elif i < 14:
+                status, published_at, reject_reason = "pending", None, None
+            else:
+                status, published_at, reject_reason = "rejected", None, "개인정보가 포함된 문단 수정이 필요합니다."
+            db.session.add(
+                LawyerPost(
+                    lawyer_id=lawyer_users[lidx].id,
+                    type=ptype,
+                    title=title,
+                    content=(
+                        f"{title}. 사건의 경위와 대응 전략, 결과에 이르기까지의 과정을 "
+                        "정리한 데모 본문입니다. 유사한 상황이라면 초기 대응이 중요합니다."
+                    ),
+                    result_badge=badge,
+                    category_id=cat_by_name[cat_name].id,
+                    views=80 + i * 33,
+                    status=status,
+                    published_at=published_at,
+                    reject_reason=reject_reason,
+                    created_at=now - timedelta(days=15 - i),
+                )
+            )
+
+        # 로펌 광고 3
+        for i, (firm_name, headline, desc, cat_name, address, links) in enumerate(FIRM_ADS):
+            db.session.add(
+                FirmAd(
+                    firm_name=firm_name,
+                    headline=headline,
+                    description=desc,
+                    links=links,
+                    address=address,
+                    category_id=cat_by_name[cat_name].id,
+                    sort_order=i,
+                    is_active=True,
+                    starts_at=now - timedelta(days=1),
+                    ends_at=now + timedelta(days=180),
+                )
+            )
+
         # 메인 히어로 배너 1
         db.session.add(
             Banner(
                 position="main_hero",
-                title="지금 가입하면 첫 상담 100% 지원!",
-                link_url="/signup",
+                title="법률 문제의 시작부터 끝까지, 안기모가 함께합니다",
+                link_url="/lawyers/",
                 sort_order=0,
                 is_active=True,
                 starts_at=now - timedelta(days=1),
@@ -455,6 +536,9 @@ def run_seed(app):
             "news": News.query.count(),
             "community_posts": CommunityPost.query.count(),
             "community_comments": CommunityComment.query.count(),
+            "lawyer_posts(published)": LawyerPost.query.filter_by(status="published").count(),
+            "lawyer_posts(pending)": LawyerPost.query.filter_by(status="pending").count(),
+            "firm_ads": FirmAd.query.count(),
             "banners": Banner.query.count(),
         }
         table_count = len(db.metadata.tables)

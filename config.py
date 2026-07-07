@@ -1,3 +1,4 @@
+import json
 import os
 
 from dotenv import load_dotenv
@@ -20,6 +21,10 @@ class Config:
         "?charset=utf8mb4"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # JSON 컬럼 한글을 \uXXXX 이스케이프 없이 저장 — JSON_CONTAINS 한글 비교를 위해 필수
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "json_serializer": lambda obj: json.dumps(obj, ensure_ascii=False)
+    }
 
     # 업로드: 인증 서류는 static 밖 — admin 전용 라우트로만 서빙 (CLAUDE.md §11)
     UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")

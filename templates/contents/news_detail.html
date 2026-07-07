@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.title }} - 안기모뉴스 | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ item.content[:150] }}">
+<link rel="canonical" href="{{ url_for('contents.news_detail', news_id=item.id, slug=canonical_slug, _external=True) }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ item.title }}">
+<meta property="og:description" content="{{ item.content[:150] }}">
+{% if item.thumbnail_url %}<meta property="og:image" content="{{ item.thumbnail_url }}">{% endif %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NewsArticle",
+  "headline": {{ item.title | tojson }},
+  "datePublished": "{{ item.published_at.isoformat() if item.published_at }}",
+  {% if item.thumbnail_url %}"image": ["{{ item.thumbnail_url }}"],{% endif %}
+  "author": {"@type": "Organization", "name": "{{ item.reporter or site_name }}"},
+  "publisher": {"@type": "Organization", "name": "{{ site_name }}"}
+}
+</script>
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/news.css') }}">
+{% endblock %}
+
+{% block content %}
+<article class="article">
+  <h1>{{ item.title }}</h1>
+  <div class="meta">
+    {% for t in item.hashtags or [] %}<b><a href="{{ url_for('contents.news', tag=t) }}">#{{ t }}</a></b>{% endfor %}
+    <span>{{ item.reporter }}</span>
+    <span>{{ item.published_at.strftime('%Y.%m.%d %H:%M') if item.published_at }}</span>
+    <span>조회 {{ '{:,}'.format(item.views or 0) }}</span>
+  </div>
+  {% if item.thumbnail_url %}<img class="thumb-full" src="{{ item.thumbnail_url }}" alt="{{ item.title }}" loading="lazy">{% endif %}
+  <div class="body">{{ item.content }}</div>
+</article>
+
+<div class="pager" style="margin-top:36px">
+  <a href="{{ url_for('contents.news') }}">목록으로</a>
+</div>
+{% endblock %}

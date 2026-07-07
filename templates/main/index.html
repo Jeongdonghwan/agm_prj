@@ -21,12 +21,17 @@
 <!-- 히어로 -->
 <div class="hero wrap">
   <div class="hero-grid">
-    <div class="hero-banner">
+    <a class="hero-banner" {% if hero_banner and hero_banner.link_url %}href="{{ hero_banner.link_url }}"{% endif %}>
       <span class="ad">AD</span>
+      {% if hero_banner %}
+      <h2>{{ hero_banner.title }}</h2>
+      <p>분야별 전문 변호사를 지금 바로 만나보세요</p>
+      {% else %}
       <h2>법률 문제의 시작부터 끝까지,<br>{{ site_name }}가 함께합니다</h2>
       <p>분야별 전문 변호사를 지금 바로 만나보세요</p>
-      <div class="indicator"><i data-lucide="chevron-left" style="width:13px;height:13px"></i> 2 / 10 <i data-lucide="chevron-right" style="width:13px;height:13px"></i></div>
-    </div>
+      {% endif %}
+      <div class="indicator"><i data-lucide="chevron-left" style="width:13px;height:13px"></i> 1 / 1 <i data-lucide="chevron-right" style="width:13px;height:13px"></i></div>
+    </a>
     <div class="hero-side">
       <div class="side-row">
         <a class="side-card" href="{{ url_for('lawyers.find') }}"><h3>변호사 찾기 <i data-lucide="user-search" style="width:19px;height:19px"></i></h3><p>내게 딱 맞는 변호사 찾기</p></a>
