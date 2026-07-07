@@ -1,0 +1,19 @@
+# 안기모 gunicorn systemd 서비스 예시 (CLAUDE.md §2-2)
+# /etc/systemd/system/angimo.service 로 복사
+# worker 수 = CPU코어×2+1 (예: 2코어 → 5)
+
+[Unit]
+Description=ANGIMO gunicorn
+After=network.target mariadb.service
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/srv/angimo
+Environment="PATH=/srv/angimo/.venv/bin"
+# 배포 시 .env: SESSION_COOKIE_SECURE=1, SECRET_KEY 교체, DB 계정 분리 필수
+ExecStart=/srv/angimo/.venv/bin/gunicorn -w 5 -b 127.0.0.1:8000 "app:app"
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

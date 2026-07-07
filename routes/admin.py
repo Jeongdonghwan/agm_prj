@@ -46,7 +46,10 @@ CASE_TYPES = [
 
 
 def _log(action, target, detail=None):
-    """관리자 액션 admin_logs 자동 기록 (§11)."""
+    """관리자 액션 admin_logs 자동 기록 (§11) + 페이지 캐시 무효화."""
+    from utils import invalidate_page_cache
+
+    invalidate_page_cache()
     db.session.add(
         AdminLog(admin_id=g.user.id, action=action, target=str(target), detail=detail)
     )

@@ -39,6 +39,9 @@ class Config:
     CACHE_TYPE = "SimpleCache"
     CACHE_DEFAULT_TIMEOUT = 120
 
+    # 정적 자산 Cache-Control 30일 (§2-2). 배포 시 nginx가 /static 직접 서빙
+    SEND_FILE_MAX_AGE_DEFAULT = 60 * 60 * 24 * 30
+
     # 브랜드 (템플릿 하드코딩 금지 — §11)
     SITE_NAME = "안기모"
     SITE_NAME_EN = "ANGIMO"

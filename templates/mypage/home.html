@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}마이페이지 - {{ site_name }}{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css') }}">
+<style>
+.my-wrap{max-width:760px;margin:40px auto 0;padding:0 20px}
+.my-wrap h1{font-size:24px;font-weight:800;letter-spacing:-.5px}
+.my-sec{margin-top:28px;border:1px solid var(--ink-200);border-radius:var(--radius-md);overflow:hidden}
+.my-sec .head{background:var(--blue-050);padding:13px 18px;font-size:14px;font-weight:800}
+.my-item{padding:13px 18px;border-top:1px solid var(--blue-050);font-size:14px}
+.my-item:first-of-type{border-top:none}
+.my-item small{color:var(--ink-500);margin-left:8px;font-size:12px}
+.my-item .empty{color:var(--ink-500);font-size:13px}
+.my-form{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.my-form label{font-size:12.5px;font-weight:700;color:var(--ink-500)}
+.my-form input{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:12px 14px;font-size:14px;font-family:inherit;outline:none;margin-top:4px}
+.my-form input:focus{outline:2px solid var(--blue-600);background:#fff}
+.my-form button{align-self:flex-start;background:var(--blue-600);color:#fff;font-size:13px;font-weight:800;padding:10px 20px;border-radius:var(--radius-sm)}
+.my-form button.danger{background:#fff;border:1px solid #FCA5A5;color:#B91C1C}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="my-wrap">
+  <h1>마이페이지</h1>
+  <p style="margin-top:6px;font-size:14px;color:var(--ink-500)">{{ current_user.email }} · 닉네임: {{ current_user.nickname or '미설정' }}</p>
+
+  <div class="my-sec">
+    <div class="head">내 상담글 ({{ my_consults | length }})</div>
+    {% for c in my_consults %}
+    <div class="my-item"><a href="{{ url_for('counsel.detail', consult_id=c.id) }}">{{ c.title }}</a><small>{{ c.created_at.strftime('%Y.%m.%d') }}{% if not c.is_public %} · 비공개{% endif %}{% if c.status == 'hidden' %} · 숨김{% endif %}</small></div>
+    {% else %}
+    <div class="my-item"><span class="empty">작성한 상담글이 없습니다. <a href="{{ url_for('counsel.write') }}" style="color:var(--blue-600);font-weight:700">상담글 쓰기 →</a></span></div>
+    {% endfor %}
+  </div>
+
+  <div class="my-sec">
+    <div class="head">내 커뮤니티 글 ({{ my_posts | length }})</div>
+    {% for p in my_posts %}
+    <div class="my-item"><a href="{{ url_for('community.detail', post_id=p.id) }}">{{ p.title }}</a><small>{{ p.created_at.strftime('%Y.%m.%d') }} · 조회 {{ p.views }} · 추천 {{ p.likes }}{% if p.is_anonymous %} · 익명{% endif %}</small></div>
+    {% else %}
+    <div class="my-item"><span class="empty">작성한 글이 없습니다.</span></div>
+    {% endfor %}
+  </div>
+
+  <div class="my-sec">
+    <div class="head">내 댓글 ({{ my_comments | length }})</div>
+    {% for c in my_comments %}
+    <div class="my-item"><a href="{{ url_for('community.detail', post_id=c.post_id) }}">{{ c.content[:60] }}</a><small>{{ c.created_at.strftime('%Y.%m.%d') }}</small></div>
+    {% else %}
+    <div class="my-item"><span class="empty">작성한 댓글이 없습니다.</span></div>
+    {% endfor %}
+  </div>
+
+  <div class="my-sec">
+    <div class="head">정보 수정</div>
+    <form class="my-form" method="post" action="{{ url_for('mypage.update') }}">
+      <div><label>이름</label><input type="text" name="name" value="{{ current_user.name or '' }}"></div>
+      <div><label>휴대폰</label><input type="tel" name="phone" value="{{ current_user.phone or '' }}"></div>
+      <div><label>닉네임</label><input type="text" value="{{ current_user.nickname or '미설정' }}" disabled>
+        <small style="font-size:12px;color:var(--ink-500)">닉네임 설정/변경(30일 1회)은 <button type="button" id="open-nick" style="color:var(--blue-600);font-weight:700">여기서</button> 할 수 있어요.</small></div>
+      <button type="submit">저장</button>
+    </form>
+  </div>
+
+  <div class="my-sec">
+    <div class="head">비밀번호 변경</div>
+    <form class="my-form" method="post" action="{{ url_for('mypage.password') }}">
+      <div><label>현재 비밀번호</label><input type="password" name="current_password" required></div>
+      <div><label>새 비밀번호 (8자 이상)</label><input type="password" name="new_password" required minlength="8"></div>
+      <button type="submit">변경</button>
+    </form>
+  </div>
+
+  <div class="my-sec">
+    <div class="head">회원 탈퇴</div>
+    <form class="my-form" method="post" action="{{ url_for('mypage.withdraw') }}" onsubmit="return confirm('정말 탈퇴하시겠어요? 계정은 비활성화되며 복구할 수 없습니다.')">
+      <div><label>비밀번호 확인</label><input type="password" name="password" required></div>
+      <button type="submit" class="danger">탈퇴하기</button>
+    </form>
+  </div>
+</div>
+
+{% include "community/_nickname_modal.html" %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/nickname-modal.js') }}"></script>
+<script>document.getElementById('open-nick').addEventListener('click', () => window.openNicknameModal());</script>
+{% endblock %}

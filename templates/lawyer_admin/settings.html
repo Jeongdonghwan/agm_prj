@@ -1,0 +1,25 @@
+{% extends "lawyer_admin/base.html" %}
+{% set admin_active = 'settings' %}
+{% block title %}계정 설정 - {{ site_name }}{% endblock %}
+{% block topbar_title %}계정 설정{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0;max-width:560px">
+  <div class="p-head"><h2>비밀번호 변경</h2></div>
+  <form method="post" class="pf-body">
+    <input type="hidden" name="action" value="password">
+    <div class="pf-field"><label>현재 비밀번호</label><input type="password" name="current_password" required style="width:100%;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit"></div>
+    <div class="pf-field"><label>새 비밀번호 (8자 이상)</label><input type="password" name="new_password" required minlength="8" style="width:100%;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit"></div>
+    <button class="btn pri" type="submit" style="padding:11px 0">변경</button>
+  </form>
+</div>
+
+<div class="panel" style="max-width:560px">
+  <div class="p-head"><h2>소속 변경</h2></div>
+  <form method="post" class="pf-body">
+    <input type="hidden" name="action" value="firm">
+    <div class="pf-field"><label>소속 (로펌·사무소명)</label><input type="text" name="firm_name" value="{{ profile.firm_name if profile else '' }}" required maxlength="100"></div>
+    <button class="btn pri" type="submit" style="padding:11px 0">변경</button>
+  </form>
+</div>
+{% endblock %}

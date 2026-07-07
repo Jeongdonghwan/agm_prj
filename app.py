@@ -1,4 +1,5 @@
 from flask import Flask, g, session
+from flask_compress import Compress
 
 from config import Config
 from extensions import cache, db
@@ -10,6 +11,7 @@ def create_app(config_class=Config):
 
     db.init_app(app)
     cache.init_app(app)
+    Compress(app)  # 응답 gzip (§2-1)
 
     import models  # noqa: F401 — create_all 등록 보장
 

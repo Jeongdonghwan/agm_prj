@@ -1,0 +1,160 @@
+"""메인 페이지 섹션 데이터 — 하나의 서비스 함수로 일괄 조회 (§2-2)."""
+
+from datetime import datetime, timedelta
+
+from sqlalchemy.orm import joinedload
+
+from extensions import db
+from models import (
+    Banner,
+    Category,
+    CommunityPost,
+    Consultation,
+    ConsultationAnswer,
+    LawyerPost,
+    LawyerProfile,
+    LegalCase,
+    Region,
+    User,
+)
+
+# 분야 그리드 아이콘 매핑 (시안 index.html cat-grid 1:1 — 이름은 seed와 일치)
+CATEGORY_ICONS = [
+    ("성범죄", "sex-crime", "#FFE9EE"),
+    ("재산범죄", "property", "#FFF3DF"),
+    ("교통사고/범죄", "traffic", "#E4EEFF"),
+    ("형사절차", "criminal", "#EFE9FF"),
+    ("폭행/협박", "assault", "#FFEDE3"),
+    ("명예훼손/모욕", "defame", "#E6F7EF"),
+    ("기타 형사범죄", "etc-criminal", "#F0F1F5"),
+    ("부동산/임대차", "realestate", "#E2F5FF"),
+    ("금전/계약 문제", "contract", "#FFF8D9"),
+    ("민사절차", "civil", "#E7FBF2"),
+    ("기타 민사문제", "etc-civil", "#EDF1FF"),
+    ("가족", "family", "#FFE8F3"),
+    ("회사", "company", "#E7EFFE"),
+    ("의료/세금/행정", "medical", "#E4FAF7"),
+    ("IT/지식재산/금융", "it", "#F3E9FF"),
+]
+
+
+def get_home_data():
+    now = datetime.now()
+
+    # 히어로 배너 (배너 관리 연동)
+    hero_banner = (
+        Banner.query.filter(
+            Banner.position == "main_hero",
+            Banner.is_active.is_(True),
+            db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
+            db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
+        )
+        .order_by(Banner.sort_order)
+        .first()
+    )
+
+    # 탭1: 커뮤니티 인기글 3 (조회+추천×3)
+    hot_community = (
+        CommunityPost.query.filter_by(status="open", is_notice=False)
+        .filter(CommunityPost.deleted_at.is_(None))
+        .options(joinedload(CommunityPost.comments))
+        .order_by((CommunityPost.views + CommunityPost.likes * 3).desc())
+        .limit(3)
+        .all()
+    )
+
+    # 탭2: 판례돋보기 4
+    recent_cases = (
+        LegalCase.query.filter(LegalCase.deleted_at.is_(None))
+        .order_by(LegalCase.created_at.desc())
+        .limit(4)
+        .all()
+    )
+    cat_names = {c.id: c.name for c in Category.query.all()}
+
+    # 탭3: 최신 상담글 4 (공개, 답변 변호사 이니셜)
+    recent_consults = (
+        Consultation.query.filter_by(status="open", is_public=True)
+        .filter(Consultation.deleted_at.is_(None))
+        .options(joinedload(Consultation.category), joinedload(Consultation.answers))
+        .order_by(Consultation.created_at.desc())
+        .limit(4)
+        .all()
+    )
+    answer_lawyer_ids = {
+        a.lawyer_id for c in recent_consults for a in c.answers if not a.deleted_at
+    }
+    lawyer_initials = {
+        u.id: (u.name[0] if u.name else "변")
+        for u in User.query.filter(User.id.in_(answer_lawyer_ids or [0]))
+    }
+
+    # 탭4: 변호사 해결사례 4
+    solve_posts = (
+        LawyerPost.query.filter_by(type="case", status="published")
+        .filter(LawyerPost.deleted_at.is_(None))
+        .options(joinedload(LawyerPost.lawyer))
+        .order_by(LawyerPost.published_at.desc())
+        .limit(4)
+        .all()
+    )
+
+    # 분야 그리드: 이름 → Category id 매핑
+    parent_ids = {
+        c.name: c.id for c in Category.query.filter_by(parent_id=None).all()
+    }
+    categories = [
+        {"name": name, "icon": icon, "bg": bg, "id": parent_ids.get(name)}
+        for name, icon, bg in CATEGORY_ICONS
+    ]
+
+    regions = Region.query.order_by(Region.sort_order).all()
+
+    # 요즘 활발한 변호사 4 (최근 30일 답변수)
+    since = datetime.now() - timedelta(days=30)
+    active_rows = (
+        db.session.query(
+            ConsultationAnswer.lawyer_id,
+            db.func.count(ConsultationAnswer.id).label("cnt"),
+        )
+        .filter(ConsultationAnswer.created_at >= since, ConsultationAnswer.deleted_at.is_(None))
+        .group_by(ConsultationAnswer.lawyer_id)
+        .order_by(db.text("cnt DESC"))
+        .limit(4)
+        .all()
+    )
+    profiles_by_id = {
+        p.user_id: p
+        for p in LawyerProfile.query.options(
+            joinedload(LawyerProfile.user), joinedload(LawyerProfile.categories)
+        ).filter(LawyerProfile.user_id.in_([r[0] for r in active_rows] or [0]))
+    }
+    active_lawyers = [
+        {"profile": profiles_by_id[lid], "answers": cnt}
+        for lid, cnt in active_rows
+        if lid in profiles_by_id
+    ]
+
+    # 새로 함께하는 변호사 4 (최근 승인 순)
+    new_lawyers = (
+        LawyerProfile.query.join(User, LawyerProfile.user_id == User.id)
+        .filter(User.status == "active", LawyerProfile.is_visible.is_(True))
+        .options(joinedload(LawyerProfile.user), joinedload(LawyerProfile.categories))
+        .order_by(LawyerProfile.approved_at.desc())
+        .limit(4)
+        .all()
+    )
+
+    return {
+        "hero_banner": hero_banner,
+        "hot_community": hot_community,
+        "recent_cases": recent_cases,
+        "cat_names": cat_names,
+        "recent_consults": recent_consults,
+        "lawyer_initials": lawyer_initials,
+        "solve_posts": solve_posts,
+        "categories": categories,
+        "regions": regions,
+        "active_lawyers": active_lawyers,
+        "new_lawyers": new_lawyers,
+    }

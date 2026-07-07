@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 
 from extensions import db
 from models import Category, FirmAd, LawyerPost, LegalCase, News
+from utils import cached_page
 
 bp = Blueprint("contents", __name__)
 
@@ -36,6 +37,7 @@ def _slug(text: str) -> str:
 
 # ─────────────────────────── 변호사포스트 ───────────────────────────
 @bp.route("/posts")
+@cached_page(120)
 def posts():
     ptype = request.args.get("type", "case")
     if ptype not in POST_TYPE_LABELS:
@@ -103,6 +105,7 @@ def post_detail(post_id, slug=None):
 
 # ─────────────────────────── 판례돋보기 ───────────────────────────
 @bp.route("/cases")
+@cached_page(120)
 def cases():
     case_type = request.args.get("case_type")
     category_id = request.args.get("category", type=int)
@@ -169,6 +172,7 @@ def case_detail(case_id, slug=None):
 
 # ─────────────────────────── 안기모뉴스 ───────────────────────────
 @bp.route("/news")
+@cached_page(120)
 def news():
     tag = request.args.get("tag")
     page = max(request.args.get("page", 1, type=int), 1)
@@ -219,6 +223,7 @@ def news_detail(news_id, slug=None):
 
 # ─────────────────────────── 로펌 ───────────────────────────
 @bp.route("/firms")
+@cached_page(120)
 def firms():
     category_id = request.args.get("category", type=int)
     now = datetime.now()

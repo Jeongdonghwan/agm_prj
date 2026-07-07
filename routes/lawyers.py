@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 
 from extensions import db
 from models import Category, ConsultationAnswer, LawyerPost, LawyerProfile, Region, User
+from utils import cached_page
 
 bp = Blueprint("lawyers", __name__, url_prefix="/lawyers")
 
@@ -40,6 +41,7 @@ def _visible_profiles_query():
 
 
 @bp.route("/")
+@cached_page(300)
 def find():
     """1단계 — 분야로/지역으로 찾기 (시안 lawyers.html)."""
     parents = (
@@ -66,6 +68,7 @@ def find():
 
 
 @bp.route("/list")
+@cached_page(120)
 def list_():
     """2단계 — 변호사 리스트 (시안 lawyers-list.html)."""
     category_id = request.args.get("category", type=int)

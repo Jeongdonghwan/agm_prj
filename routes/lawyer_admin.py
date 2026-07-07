@@ -150,6 +150,9 @@ def profile():
                 else []
             )
             db.session.commit()
+            from utils import invalidate_page_cache
+
+            invalidate_page_cache()
             flash("프로필이 저장되었습니다. 공개 페이지에 즉시 반영됩니다.", "success")
             return redirect(url_for("lawyer_admin.profile"))
 
@@ -244,6 +247,9 @@ def post_new():
                 )
             )
             db.session.commit()
+            from utils import invalidate_page_cache
+
+            invalidate_page_cache()
             flash("포스트가 제출되었습니다. 관리자 검수 후 게시됩니다.", "success")
             return redirect(url_for("lawyer_admin.posts"))
 
@@ -358,3 +364,31 @@ def answer_create():
     db.session.commit()
     flash("답변이 등록되었습니다.", "success")
     return redirect(url_for("lawyer_admin.answers"))
+
+
+@bp.route("/settings", methods=["GET", "POST"])
+@role_required("lawyer")
+def settings():
+    """계정 설정 — 비밀번호 변경, 소속 변경 (§9)."""
+    prof = g.user.lawyer_profile
+    if request.method == "POST":
+        action = request.form.get("action")
+        if action == "password":
+            if not g.user.check_password(request.form.get("current_password", "")):
+                flash("현재 비밀번호가 올바르지 않습니다.", "error")
+            elif len(request.form.get("new_password", "")) < 8:
+                flash("새 비밀번호는 8자 이상이어야 합니다.", "error")
+            else:
+                g.user.set_password(request.form["new_password"])
+                db.session.commit()
+                flash("비밀번호가 변경되었습니다.", "success")
+        elif action == "firm":
+            firm_name = request.form.get("firm_name", "").strip()
+            if prof and firm_name:
+                prof.firm_name = firm_name
+                db.session.commit()
+                flash("소속이 변경되었습니다.", "success")
+            else:
+                flash("소속명을 입력해주세요.", "error")
+        return redirect(url_for("lawyer_admin.settings"))
+    return render_template("lawyer_admin/settings.html", profile=prof)
