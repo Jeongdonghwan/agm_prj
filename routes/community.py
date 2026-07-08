@@ -22,8 +22,36 @@ bp = Blueprint("community", __name__, url_prefix="/community")
 
 PER_PAGE = 15
 
-# 커뮤니티 카테고리 (관리자 카테고리 관리 전 기본셋 — 시안 칩 기준)
-CATEGORIES = ["생활법률", "이혼/가사", "부동산", "형사", "금전/계약", "회사/노동", "교통", "자유"]
+# 커뮤니티 하위탭(보드) + 토픽 구조
+BOARDS = {
+    "facility": {
+        "label": "교정시설 정보",
+        "topics": ["접견 가능 시간", "영치금 계좌", "우편 주소", "택배 가능 여부", "자주 묻는 질문"],
+    },
+    "life": {
+        "label": "수용생활 정보",
+        "topics": ["초범 가족이 궁금한 것", "이감 절차", "영치품", "교도소 생활", "출소 절차", "교정기관 식단표"],
+    },
+    "forms": {
+        "label": "양식 자료실",
+        "topics": ["탄원서", "반성문", "합의서", "자주 쓰는 서류 모음"],
+    },
+    "free": {"label": "자유게시판", "topics": []},
+    "care": {"label": "옥바라지 이야기", "topics": []},
+}
+
+# 토픽/보드 라벨 → 보드 키 역매핑 (post.category에는 토픽명 또는 보드 라벨 저장)
+CATEGORY_TO_BOARD = {}
+for _key, _b in BOARDS.items():
+    CATEGORY_TO_BOARD[_b["label"]] = _key
+    for _t in _b["topics"]:
+        CATEGORY_TO_BOARD[_t] = _key
+
+
+def board_categories(board_key):
+    """보드에 속하는 post.category 값 목록 (토픽 없으면 보드 라벨 자체)."""
+    b = BOARDS[board_key]
+    return b["topics"] or [b["label"]]
 
 
 def author_name(obj):
@@ -54,15 +82,27 @@ def _hot_top5():
 
 @bp.route("/")
 def list_():
-    category = request.args.get("category")
+    board = request.args.get("board")
+    if board not in BOARDS:
+        board = None  # 전체
+    topic = request.args.get("topic")
     sort = request.args.get("sort", "recent")
     page = max(request.args.get("page", 1, type=int), 1)
 
     q = CommunityPost.query.filter_by(status="open", is_notice=False).filter(
         CommunityPost.deleted_at.is_(None)
     ).options(joinedload(CommunityPost.user), joinedload(CommunityPost.comments))
-    if category in CATEGORIES:
-        q = q.filter_by(category=category)
+
+    topics = board_categories(board) if board else []
+    if board:
+        if topic and topic in topics:
+            q = q.filter_by(category=topic)
+        else:
+            topic = None
+            q = q.filter(CommunityPost.category.in_(topics))
+    else:
+        topic = None
+
     if sort == "popular":
         q = q.order_by((CommunityPost.views + CommunityPost.likes * 3).desc())
     else:
@@ -87,8 +127,10 @@ def list_():
         total=total,
         page=page,
         has_next=total > page * PER_PAGE,
-        categories=CATEGORIES,
-        category=category,
+        boards=BOARDS,
+        board=board,
+        board_topics=(BOARDS[board]["topics"] if board else []),
+        topic=topic,
         sort=sort,
         hot_posts=_hot_top5(),
         author_name=author_name,
@@ -104,21 +146,23 @@ def _require_nickname():
 @role_required("user", "admin")
 def write():
     nickname_required = _require_nickname()
+    default_board = request.args.get("board") if request.args.get("board") in BOARDS else "free"
     if request.method == "POST":
         if _require_nickname():
             flash("커뮤니티 이용을 위해 닉네임을 먼저 설정해주세요.", "error")
             return render_template(
                 "community/write.html",
                 active_menu="community",
-                categories=CATEGORIES,
+                boards=BOARDS,
+                default_board=default_board,
                 nickname_required=True,
                 form=request.form,
             )
         title = request.form.get("title", "").strip()
         content = request.form.get("content", "").strip()
-        category = request.form.get("category")
-        if not title or not content or category not in CATEGORIES:
-            flash("카테고리/제목/내용을 확인해주세요.", "error")
+        category = request.form.get("category")  # 토픽명 또는 보드 라벨
+        if not title or not content or category not in CATEGORY_TO_BOARD:
+            flash("게시판/제목/내용을 확인해주세요.", "error")
         else:
             p = CommunityPost(
                 user_id=g.user.id,
@@ -135,7 +179,8 @@ def write():
     return render_template(
         "community/write.html",
         active_menu="community",
-        categories=CATEGORIES,
+        boards=BOARDS,
+        default_board=default_board,
         nickname_required=nickname_required,
         form=request.form,
     )

@@ -19,15 +19,27 @@
 
 <div class="wrap comm-layout">
   <div>
-    <div class="cat-chips">
-      <a href="{{ url_for('community.list_', sort=sort) }}" class="{% if not category %}on{% endif %}">전체</a>
-      {% for c in categories %}
-      <a href="{{ url_for('community.list_', category=c, sort=sort) }}" class="{% if category == c %}on{% endif %}">{{ c }}</a>
+    <!-- 하위탭 (보드) -->
+    <div class="board-tabs">
+      <a href="{{ url_for('community.list_', sort=sort) }}" class="{% if not board %}on{% endif %}">전체</a>
+      {% for key, b in boards.items() %}
+      <a href="{{ url_for('community.list_', board=key, sort=sort) }}" class="{% if board == key %}on{% endif %}">{{ b.label }}</a>
       {% endfor %}
     </div>
+
+    {% if board_topics %}
+    <!-- 선택된 보드의 토픽 칩 -->
+    <div class="cat-chips">
+      <a href="{{ url_for('community.list_', board=board, sort=sort) }}" class="{% if not topic %}on{% endif %}">전체</a>
+      {% for t in board_topics %}
+      <a href="{{ url_for('community.list_', board=board, topic=t, sort=sort) }}" class="{% if topic == t %}on{% endif %}">{{ t }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="sort-tabs">
-      <a href="{{ url_for('community.list_', category=category, sort='recent') }}" class="{% if sort != 'popular' %}on{% endif %}">최신순</a>
-      <a href="{{ url_for('community.list_', category=category, sort='popular') }}" class="{% if sort == 'popular' %}on{% endif %}">인기순</a>
+      <a href="{{ url_for('community.list_', board=board, topic=topic, sort='recent') }}" class="{% if sort != 'popular' %}on{% endif %}">최신순</a>
+      <a href="{{ url_for('community.list_', board=board, topic=topic, sort='popular') }}" class="{% if sort == 'popular' %}on{% endif %}">인기순</a>
     </div>
 
     {# 공지 상단 고정 #}

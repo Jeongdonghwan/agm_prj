@@ -10,12 +10,16 @@
   <h1>커뮤니티 글쓰기</h1>
   <form method="post" {% if nickname_required %}data-need-nickname="1"{% endif %}>
     <div class="field">
-      <label>카테고리</label>
-      <select name="category" required>
-        {% for c in categories %}
-        <option value="{{ c }}" {% if form.get('category') == c %}selected{% endif %}>{{ c }}</option>
+      <label>게시판</label>
+      <select id="board-select">
+        {% for key, b in boards.items() %}
+        <option value="{{ key }}" {% if key == default_board %}selected{% endif %}>{{ b.label }}</option>
         {% endfor %}
       </select>
+    </div>
+    <div class="field" id="topic-field">
+      <label>세부 주제</label>
+      <select name="category" id="topic-select" required></select>
     </div>
     <div class="field">
       <label>제목</label>
@@ -37,4 +41,20 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/nickname-modal.js') }}"></script>
+<script>
+// 게시판 → 세부 주제 종속 선택
+const BOARDS = {{ boards | tojson }};
+const boardSel = document.getElementById('board-select');
+const topicSel = document.getElementById('topic-select');
+const topicField = document.getElementById('topic-field');
+const prev = {{ form.get('category') | tojson }};
+function fillTopics() {
+  const b = BOARDS[boardSel.value];
+  const opts = b.topics.length ? b.topics : [b.label];
+  topicSel.innerHTML = opts.map(t => `<option value="${t}"${t === prev ? ' selected' : ''}>${t}</option>`).join('');
+  topicField.style.display = b.topics.length ? '' : 'none';
+}
+boardSel.addEventListener('change', fillTopics);
+fillTopics();
+</script>
 {% endblock %}
