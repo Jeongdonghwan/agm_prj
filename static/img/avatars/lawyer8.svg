@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="200" height="200" rx="24" fill="#0A2A5E"/><text x="100" y="100" font-family="Pretendard, sans-serif" font-size="84" font-weight="700" fill="#fff" text-anchor="middle" dominant-baseline="central">한</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+<defs><linearGradient id="g8" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6BA5C9"/><stop offset="1" stop-color="#4A85A9"/></linearGradient></defs>
+<rect width="200" height="200" fill="url(#g8)"/>
+<circle cx="100" cy="76" r="33" fill="#FFFFFF" opacity=".92"/>
+<path d="M38 200c0-37 28-61 62-61s62 24 62 61z" fill="#FFFFFF" opacity=".92"/>
+</svg>

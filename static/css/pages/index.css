@@ -101,30 +101,33 @@ section:first-of-type{padding-top:48px}
 .chip-row button{flex-shrink:0;border:1px solid var(--ink-200);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ink-500);white-space:nowrap}
 .chip-row button.on{background:var(--blue-600);border-color:var(--blue-600);color:#fff;font-weight:700}
 /* 빠른 상담 변호사 */
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.quick-card{border:1px solid var(--ink-200);border-radius:18px;padding:20px;display:flex;gap:16px;transition:.15s;align-items:flex-start}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.quick-card{border:1px solid var(--ink-200);border-radius:18px;padding:26px 24px;display:flex;gap:18px;transition:.15s;align-items:center}
 .quick-card:hover{border-color:var(--blue-600);box-shadow:var(--shadow-card)}
-.quick-card .qav{width:58px;height:58px;border-radius:20px;background:linear-gradient(135deg,var(--blue-100),var(--blue-050));display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:18px;flex-shrink:0}
-.quick-card .name{font-size:15px;font-weight:800}
+.quick-card .qav{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--blue-100),var(--blue-050));display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:18px;flex-shrink:0;overflow:hidden}
+.quick-card .qav img{width:100%;height:100%;object-fit:cover;border-radius:20px}
+.quick-card .name{font-size:15.5px;font-weight:800}
 .quick-card .name small{font-size:12px;font-weight:600;color:var(--ink-500);margin-left:4px}
-.quick-card .field{font-size:12px;color:var(--ink-500);margin-top:2px}
-.time-chips{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.quick-card .field{font-size:12.5px;color:var(--ink-500);margin-top:4px}
+.time-chips{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
 .time-chips span{background:var(--blue-100);color:var(--blue-700);font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer}
 .time-chips span:hover{background:var(--blue-600);color:#fff}
 /* 새로 함께하는 변호사 */
-.new-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.new-card{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:16px;transition:.15s}
+.new-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.new-card{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:22px 20px;transition:.15s}
 .new-card:hover{border-color:var(--blue-600);box-shadow:var(--shadow-card)}
 .new-card .lb{font-size:11px;font-weight:700;color:var(--blue-600);background:var(--blue-050);padding:3px 9px;border-radius:999px;display:inline-block}
-.new-card .row{display:flex;align-items:center;gap:9px;margin-top:12px}
-.new-card .nav2{width:36px;height:36px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:13px;flex-shrink:0}
-.new-card h4{font-size:14px;font-weight:800}
-.new-card p{margin-top:9px;font-size:12px;color:var(--ink-500);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.new-card .row{display:flex;align-items:center;gap:11px;margin-top:14px}
+.new-card .nav2{width:44px;height:44px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:14px;flex-shrink:0;overflow:hidden}
+.new-card .nav2 img{width:100%;height:100%;object-fit:cover}
+.new-card h4{font-size:14.5px;font-weight:800}
+.new-card p{margin-top:12px;font-size:12.5px;color:var(--ink-500);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* 변호사 해결사례 */
 .solve-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px}
 .solve-item{padding:22px 0;border-bottom:1px solid var(--ink-200)}
 .solve-by{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-500)}
-.solve-by span{width:24px;height:24px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--blue-600)}
+.solve-by span{width:24px;height:24px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--blue-600);overflow:hidden}
+.solve-by span img{width:100%;height:100%;object-fit:cover}
 .solve-item h4{margin-top:10px;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.4}
 .solve-item h4:hover{color:var(--blue-600);cursor:pointer}
 .solve-item p{margin-top:7px;font-size:13px;color:var(--ink-500);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
