@@ -15,7 +15,8 @@
 .sort-tabs a{font-size:14px;font-weight:700;color:var(--ink-500);padding:10px 4px;border-bottom:3px solid transparent;margin-bottom:-2px}
 .sort-tabs a.on{color:var(--blue-600);border-bottom-color:var(--blue-600)}
 .post{display:flex;gap:14px;padding:18px 4px;border-bottom:1px solid var(--ink-200);align-items:flex-start}
-.post .tag{background:var(--blue-100);color:var(--blue-700);font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;flex-shrink:0;margin-top:2px}
+/* 태그 고정폭 — 카테고리 길이가 달라도 제목 라인 정렬 유지 */
+.post .tag{background:var(--blue-100);color:var(--blue-700);font-size:11px;font-weight:700;padding:4px 0;border-radius:999px;flex-shrink:0;margin-top:2px;width:108px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .post .tag.notice{background:var(--blue-900);color:#fff}
 .post h4{font-size:15px;font-weight:700;letter-spacing:-.3px}
 .post h4:hover{color:var(--blue-600)}

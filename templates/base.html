@@ -44,13 +44,13 @@
       <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
       <li><a href="{{ url_for('community.board', key='facility') }}" class="{% if active_menu == 'facility' %}active{% endif %}">교정시설 정보</a></li>
       <li><a href="{{ url_for('community.board', key='life') }}" class="{% if active_menu == 'life' %}active{% endif %}">수용생활 정보</a></li>
-      <li><a href="{{ url_for('community.board', key='forms') }}" class="{% if active_menu == 'forms' %}active{% endif %}">양식 자료실</a></li>
       <li><a href="{{ url_for('lawyers.find') }}" class="{% if active_menu == 'lawyers' %}active{% endif %}">변호사</a></li>
       <li><a href="{{ url_for('contents.firms') }}" class="{% if active_menu == 'firms' %}active{% endif %}">로펌</a></li>
       <li><a href="{{ url_for('counsel.list_') }}" class="{% if active_menu == 'counsel' %}active{% endif %}">상담사례</a></li>
       <li><a href="{{ url_for('contents.posts') }}" class="{% if active_menu == 'posts' %}active{% endif %}">변호사포스트</a></li>
       <li><a href="{{ url_for('contents.cases') }}" class="{% if active_menu == 'cases' %}active{% endif %}">판례돋보기</a></li>
       <li><a href="{{ url_for('contents.news') }}" class="{% if active_menu == 'news' %}active{% endif %}">안기모뉴스</a></li>
+      <li><a href="{{ url_for('community.board', key='forms') }}" class="{% if active_menu == 'forms' %}active{% endif %}">양식 자료실</a></li>
     </ul>
   </nav>
 </header>
