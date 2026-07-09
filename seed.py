@@ -3,7 +3,7 @@
 실행: .venv\\Scripts\\python seed.py  또는  flask seed
 """
 
-import json
+import os
 from datetime import datetime, timedelta
 
 import pymysql
@@ -433,7 +433,23 @@ def run_seed(app):
                 )
             )
 
-        # 커뮤니티 15 (공지 1) + 댓글/추천 소량
+        # 양식 자료실 데모 첨부파일 생성 (uploads/community/samples/)
+        sample_dir = os.path.join(Config.UPLOAD_FOLDER, "community", "samples")
+        os.makedirs(sample_dir, exist_ok=True)
+        form_attachments = {}
+        for topic, fname in [
+            ("탄원서", "탄원서_양식.txt"),
+            ("반성문", "반성문_양식.txt"),
+            ("합의서", "합의서_양식.txt"),
+            ("서류 모음", "가족_서류_모음.txt"),
+        ]:
+            with open(os.path.join(sample_dir, fname), "w", encoding="utf-8") as fp:
+                fp.write(f"[{topic} 데모 양식]\n\n안기모 데모용 샘플 파일입니다.\n실제 양식은 관할 기관 서식을 확인하세요.\n")
+            form_attachments[topic] = [
+                {"name": fname, "url": f"/uploads/community/samples/{fname}"}
+            ]
+
+        # 커뮤니티 (공지 1 + 19) + 댓글/추천 소량
         comm_posts = []
         for i, (category, title, is_notice) in enumerate(COMMUNITY_POSTS):
             p = CommunityPost(
@@ -443,6 +459,7 @@ def run_seed(app):
                 content=f"{title} — 데모 본문입니다. 경험과 정보를 나누는 공간입니다.",
                 is_anonymous=(not is_notice and i % 3 == 0),
                 is_notice=is_notice,
+                attachments=form_attachments.get(category),
                 views=50 + i * 21,
                 likes=0,
                 # 최근 글일수록 촘촘하게 — 마지막 2~3개는 24시간 내(NEW 뱃지 데모)

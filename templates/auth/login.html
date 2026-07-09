@@ -38,6 +38,13 @@
       <a href="{{ url_for('auth.signup') }}">회원가입</a>
       {% endif %}
     </div>
+
+    <div class="info-box" style="margin-top:16px">
+      <b>데모 테스트 계정</b><br>
+      일반회원: user1@example.com / user-1234<br>
+      변호사: lawyer1@angimo.kr / lawyer-1234<br>
+      관리자: <a href="{{ url_for('auth.admin_login') }}" style="color:var(--blue-600);font-weight:700">/admin/login</a> — admin@angimo.kr / angimo-admin-1234
+    </div>
   </div>
 </div>
 {% endblock %}

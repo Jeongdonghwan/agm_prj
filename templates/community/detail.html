@@ -22,6 +22,14 @@
     </div>
     <div class="body">{{ post.content }}</div>
 
+    {% if post.attachments %}
+    <div class="attach-list">
+      {% for a in post.attachments %}
+      <a href="{{ a.url }}" download="{{ a.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>{{ a.name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="act-row">
       <button type="button" id="btn-like" class="{% if liked %}liked{% endif %}"><i data-lucide="thumbs-up"></i>추천 <span id="like-num">{{ post.likes }}</span></button>
       <button type="button" id="btn-report"><i data-lucide="flag"></i>신고</button>

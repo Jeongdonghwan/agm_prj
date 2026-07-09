@@ -10,8 +10,8 @@
 <meta property="og:title" content="{{ user.name }} 변호사 | {{ site_name }}">
 <meta property="og:description" content="{{ profile.headline or '' }}">
 {% if profile.photo_url %}<meta property="og:image" content="{{ profile.photo_url }}">{% endif %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="{{ url_for('static', filename='js/lucide.min.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/lawyer-detail.css') }}">
 <script type="application/ld+json">
@@ -32,7 +32,7 @@
 
 <!-- 프로필 내부 탭 (미니멀) -->
 <div class="p-tabs"><div class="wrap">
-  <a href="{{ url_for('main.index') }}" class="mini-logo" aria-label="{{ site_name }} 홈"><i data-lucide="scale" style="width:16px;height:16px"></i></a>
+  <a href="{{ url_for('main.index') }}" class="mini-logo" aria-label="{{ site_name }} 홈"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></a>
   <a href="#" class="on">변호사홈</a>
   <a href="#info">변호사정보</a>
   <a href="#solve">해결사례</a>

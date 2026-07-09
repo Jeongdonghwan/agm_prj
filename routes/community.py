@@ -1,8 +1,11 @@
+import os
+import uuid
 from datetime import datetime, timedelta
 
 from flask import (
     Blueprint,
     abort,
+    current_app,
     flash,
     g,
     redirect,
@@ -40,6 +43,32 @@ INFO_BOARDS = {
 
 # 커뮤니티 카테고리 (전체 = 두 카테고리 합침)
 COMMUNITY_CATS = ["자유게시판", "옥바라지 이야기"]
+
+# 첨부파일 허용 확장자 (양식/이미지 위주)
+ATTACH_EXTENSIONS = {"pdf", "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "txt", "jpg", "jpeg", "png", "zip"}
+MAX_ATTACHMENTS = 5
+
+
+def _save_attachments(files):
+    """첨부파일 저장 → [{name, url}] 반환. 허용 외 확장자는 (None, 에러메시지)."""
+    saved = []
+    for f in files[:MAX_ATTACHMENTS]:
+        if not f or not f.filename:
+            continue
+        ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+        if ext not in ATTACH_EXTENSIONS:
+            return None, f"첨부할 수 없는 파일 형식입니다: {f.filename}"
+        d = os.path.join(current_app.config["UPLOAD_FOLDER"], "community", str(g.user.id))
+        os.makedirs(d, exist_ok=True)
+        fname = f"{uuid.uuid4().hex}.{ext}"
+        f.save(os.path.join(d, fname))
+        saved.append(
+            {
+                "name": f.filename[:120],
+                "url": url_for("main.uploads", filename=f"community/{g.user.id}/{fname}"),
+            }
+        )
+    return saved, None
 
 # 글쓰기 폼용 전체 보드 (커뮤니티 2종 + 정보 3종)
 BOARDS = {
@@ -200,18 +229,23 @@ def write():
         if not title or not content or category not in CATEGORY_TO_BOARD:
             flash("게시판/제목/내용을 확인해주세요.", "error")
         else:
-            p = CommunityPost(
-                user_id=g.user.id,
-                category=category,
-                title=mask_privacy(title)[:200],
-                content=mask_privacy(content),
-                is_anonymous=request.form.get("is_anonymous") == "1",
-                is_notice=False,
-            )
-            db.session.add(p)
-            db.session.commit()
-            flash("글이 등록되었습니다.", "success")
-            return redirect(url_for("community.detail", post_id=p.id))
+            attachments, err = _save_attachments(request.files.getlist("attachments"))
+            if err:
+                flash(err, "error")
+            else:
+                p = CommunityPost(
+                    user_id=g.user.id,
+                    category=category,
+                    title=mask_privacy(title)[:200],
+                    content=mask_privacy(content),
+                    is_anonymous=request.form.get("is_anonymous") == "1",
+                    is_notice=False,
+                    attachments=attachments or None,
+                )
+                db.session.add(p)
+                db.session.commit()
+                flash("글이 등록되었습니다.", "success")
+                return redirect(url_for("community.detail", post_id=p.id))
     return render_template(
         "community/write.html",
         active_menu="community",

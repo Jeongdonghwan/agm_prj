@@ -23,6 +23,7 @@ class CommunityPost(db.Model):
     content = db.Column(db.Text)
     is_anonymous = db.Column(db.Boolean, default=False)
     is_notice = db.Column(db.Boolean, default=False)
+    attachments = db.Column(db.JSON)  # [{name, url}] — 양식 자료실 등 파일첨부
     views = db.Column(db.Integer, default=0)
     likes = db.Column(db.Integer, default=0)
     status = db.Column(ENUM("open", "hidden", "deleted"), default="open")

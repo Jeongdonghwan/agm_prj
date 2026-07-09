@@ -8,7 +8,7 @@
 {% block content %}
 <div class="comm-form">
   <h1>커뮤니티 글쓰기</h1>
-  <form method="post" {% if nickname_required %}data-need-nickname="1"{% endif %}>
+  <form method="post" enctype="multipart/form-data" {% if nickname_required %}data-need-nickname="1"{% endif %}>
     <div class="field">
       <label>게시판</label>
       <select id="board-select">
@@ -28,6 +28,10 @@
     <div class="field">
       <label>내용</label>
       <textarea name="content" rows="10" required placeholder="전화번호·주민등록번호는 자동으로 가려집니다.">{{ form.get('content', '') }}</textarea>
+    </div>
+    <div class="field">
+      <label>파일 첨부 <small style="font-weight:500;color:var(--ink-500)">(최대 5개 — pdf, hwp, doc, xls, txt, 이미지, zip / 10MB)</small></label>
+      <input type="file" name="attachments" multiple accept=".pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.zip">
     </div>
     <div class="field">
       <label class="anon"><input type="checkbox" name="is_anonymous" value="1" {% if form.get('is_anonymous') %}checked{% endif %}> 익명으로 작성</label>

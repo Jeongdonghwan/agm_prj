@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}{{ site_name }} - 법률 문제, 변호사와 바로 연결{% endblock %}</title>
 {% block meta %}{% endblock %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pretendard/1.3.9/static/pretendard.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.462.0/umd/lucide.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="{{ url_for('static', filename='js/lucide.min.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 {% block styles %}{% endblock %}
@@ -17,8 +17,8 @@
 
 <header class="site">
   <div class="wrap header-top">
-    <a href="{{ url_for('main.index') }}" class="logo"><span class="mark"><i data-lucide="scale" style="width:17px;height:17px"></i></span>{{ site_name }}</a>
-    <div class="search"><i data-lucide="search" style="width:17px;height:17px;color:var(--blue-600)"></i><input placeholder="어떤 법률 문제가 있으신가요?"></div>
+    <a href="{{ url_for('main.index') }}" class="logo"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span>{{ site_name }}</a>
+    <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:17px;height:17px;flex-shrink:0" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input placeholder="어떤 법률 문제가 있으신가요?"></div>
     <div class="h-utils">
       {% if current_user %}
         {% if current_user.role == 'lawyer' %}
@@ -29,13 +29,11 @@
           <a class="lnk" href="{{ url_for('mypage.home') }}">마이페이지</a>
         {% endif %}
         <a class="lnk" href="{{ url_for('auth.logout') }}">로그아웃</a>
-        <a class="lnk" href="#">고객센터</a>
       {% else %}
         <a class="lnk" href="{{ url_for('auth.login') }}">로그인</a>
         <a class="lnk" href="{{ url_for('auth.signup') }}">회원가입</a>
-        <a class="lnk" href="#">고객센터</a>
       {% endif %}
-      <a class="btn-write" href="{{ url_for('community.list_') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>글쓰기</a>
+      <a class="btn-write" href="{{ url_for('community.write') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>글쓰기</a>
     </div>
   </div>
   <nav class="gnb wrap">
@@ -69,7 +67,7 @@
 
 <footer class="site">
   <div class="wrap">
-    <a href="{{ url_for('main.index') }}" class="logo"><span class="mark"><i data-lucide="scale" style="width:14px;height:14px"></i></span>{{ site_name }}</a>
+    <a href="{{ url_for('main.index') }}" class="logo"><span class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg></span>{{ site_name }}</a>
     <div class="foot-links">
       <a href="#">회사소개</a><a href="#">이용약관</a><a href="#">개인정보처리방침</a><a href="#">공지사항</a><a href="#">제휴문의</a>
     </div>
