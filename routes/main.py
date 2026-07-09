@@ -80,6 +80,9 @@ def sitemap():
         url_for("contents.news", _external=True),
         url_for("contents.firms", _external=True),
         url_for("community.list_", _external=True),
+        url_for("community.board", key="facility", _external=True),
+        url_for("community.board", key="life", _external=True),
+        url_for("community.board", key="forms", _external=True),
     ]
     for p in (
         LawyerProfile.query.join(User, LawyerProfile.user_id == User.id)

@@ -22,8 +22,8 @@ bp = Blueprint("community", __name__, url_prefix="/community")
 
 PER_PAGE = 15
 
-# 커뮤니티 하위탭(보드) + 토픽 구조
-BOARDS = {
+# 정보 게시판 3종 — GNB 별도 메뉴 (/community/board/<key>)
+INFO_BOARDS = {
     "facility": {
         "label": "교정시설 정보",
         "topics": ["접견 가능 시간", "영치금 계좌", "우편 주소", "택배 가능 여부", "자주 묻는 질문"],
@@ -36,8 +36,16 @@ BOARDS = {
         "label": "양식 자료실",
         "topics": ["탄원서", "반성문", "합의서", "자주 쓰는 서류 모음"],
     },
+}
+
+# 커뮤니티 카테고리 (전체 = 두 카테고리 합침)
+COMMUNITY_CATS = ["자유게시판", "옥바라지 이야기"]
+
+# 글쓰기 폼용 전체 보드 (커뮤니티 2종 + 정보 3종)
+BOARDS = {
     "free": {"label": "자유게시판", "topics": []},
     "care": {"label": "옥바라지 이야기", "topics": []},
+    **INFO_BOARDS,
 }
 
 # 토픽/보드 라벨 → 보드 키 역매핑 (post.category에는 토픽명 또는 보드 라벨 저장)
@@ -46,12 +54,6 @@ for _key, _b in BOARDS.items():
     CATEGORY_TO_BOARD[_b["label"]] = _key
     for _t in _b["topics"]:
         CATEGORY_TO_BOARD[_t] = _key
-
-
-def board_categories(board_key):
-    """보드에 속하는 post.category 값 목록 (토픽 없으면 보드 라벨 자체)."""
-    b = BOARDS[board_key]
-    return b["topics"] or [b["label"]]
 
 
 def author_name(obj):
@@ -82,26 +84,20 @@ def _hot_top5():
 
 @bp.route("/")
 def list_():
-    board = request.args.get("board")
-    if board not in BOARDS:
-        board = None  # 전체
-    topic = request.args.get("topic")
+    """커뮤니티 — 전체(자유게시판+옥바라지 이야기) / 카테고리 칩."""
+    category = request.args.get("category")
+    if category not in COMMUNITY_CATS:
+        category = None
     sort = request.args.get("sort", "recent")
     page = max(request.args.get("page", 1, type=int), 1)
 
     q = CommunityPost.query.filter_by(status="open", is_notice=False).filter(
         CommunityPost.deleted_at.is_(None)
     ).options(joinedload(CommunityPost.user), joinedload(CommunityPost.comments))
-
-    topics = board_categories(board) if board else []
-    if board:
-        if topic and topic in topics:
-            q = q.filter_by(category=topic)
-        else:
-            topic = None
-            q = q.filter(CommunityPost.category.in_(topics))
+    if category:
+        q = q.filter_by(category=category)
     else:
-        topic = None
+        q = q.filter(CommunityPost.category.in_(COMMUNITY_CATS))
 
     if sort == "popular":
         q = q.order_by((CommunityPost.views + CommunityPost.likes * 3).desc())
@@ -127,11 +123,51 @@ def list_():
         total=total,
         page=page,
         has_next=total > page * PER_PAGE,
-        boards=BOARDS,
-        board=board,
-        board_topics=(BOARDS[board]["topics"] if board else []),
+        categories=COMMUNITY_CATS,
+        category=category,
+        sort=sort,
+        hot_posts=_hot_top5(),
+        author_name=author_name,
+    )
+
+
+@bp.route("/board/<key>")
+def board(key):
+    """정보 게시판 (교정시설/수용생활/양식 자료실) — GNB 별도 메뉴."""
+    if key not in INFO_BOARDS:
+        abort(404)
+    b = INFO_BOARDS[key]
+    topic = request.args.get("topic")
+    if topic not in b["topics"]:
+        topic = None
+    sort = request.args.get("sort", "recent")
+    page = max(request.args.get("page", 1, type=int), 1)
+
+    q = CommunityPost.query.filter_by(status="open", is_notice=False).filter(
+        CommunityPost.deleted_at.is_(None)
+    ).options(joinedload(CommunityPost.user), joinedload(CommunityPost.comments))
+    q = q.filter_by(category=topic) if topic else q.filter(
+        CommunityPost.category.in_(b["topics"])
+    )
+    if sort == "popular":
+        q = q.order_by((CommunityPost.views + CommunityPost.likes * 3).desc())
+    else:
+        q = q.order_by(CommunityPost.created_at.desc())
+
+    total = q.count()
+    items = q.offset((page - 1) * PER_PAGE).limit(PER_PAGE).all()
+    return render_template(
+        "community/board.html",
+        new_threshold=datetime.now() - timedelta(hours=24),
+        active_menu=key,
+        board_key=key,
+        board=b,
         topic=topic,
         sort=sort,
+        items=items,
+        total=total,
+        page=page,
+        has_next=total > page * PER_PAGE,
         hot_posts=_hot_top5(),
         author_name=author_name,
     )

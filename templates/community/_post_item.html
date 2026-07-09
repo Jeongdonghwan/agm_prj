@@ -1,0 +1,9 @@
+{% set live_comments = p.comments | selectattr('deleted_at', 'none') | list %}
+<div class="post">
+  <span class="tag">{{ p.category }}</span>
+  <div>
+    <a href="{{ url_for('community.detail', post_id=p.id) }}"><h4>{{ p.title }}{% if p.created_at > new_threshold %} <span class="badge-new">NEW</span>{% endif %}{% if live_comments %} <span class="cmt">[{{ live_comments | length }}]</span>{% endif %}</h4></a>
+    <p>{{ p.content[:80] }}</p>
+    <div class="meta"><span>{{ author_name(p) }}</span><span>{{ p.created_at.strftime('%m.%d') }}</span><span>조회 <b>{{ '{:,}'.format(p.views) }}</b></span><span>추천 <b>{{ p.likes }}</b></span></div>
+  </div>
+</div>
