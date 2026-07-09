@@ -29,8 +29,8 @@
     {# 공지 상단 고정 #}
     {% for n in notices %}
     <div class="post">
-      <span class="tag notice">공지</span>
-      <div>
+      <div class="bd">
+        <div class="pcat notice">공지</div>
         <a href="{{ url_for('community.detail', post_id=n.id) }}"><h4>{{ n.title }}</h4></a>
         <div class="meta"><span>{{ site_name }} 운영팀</span><span>{{ n.created_at.strftime('%Y.%m.%d') }}</span></div>
       </div>
