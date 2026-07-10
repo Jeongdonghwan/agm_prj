@@ -53,18 +53,19 @@ def _parse_banner(b):
 def get_home_data():
     now = datetime.now()
 
-    # 메인 사이드 배너 (B안 우측 EVENT 슬롯)
-    side_banner_row = (
-        Banner.query.filter(
+    # 메인 사이드 롤링 배너 (B안 우측 EVENT 슬롯)
+    side_banners = [
+        _parse_banner(b)
+        for b in Banner.query.filter(
             Banner.position == "main_side",
             Banner.is_active.is_(True),
             db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
             db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
         )
         .order_by(Banner.sort_order)
-        .first()
-    )
-    side_banner = _parse_banner(side_banner_row) if side_banner_row else None
+        .limit(4)
+        .all()
+    ]
 
     # 히어로 롤링 배너 (배너 관리 연동, sort_order 순)
     hero_banners = [
@@ -174,7 +175,7 @@ def get_home_data():
 
     return {
         "hero_banners": hero_banners,
-        "side_banner": side_banner,
+        "side_banners": side_banners,
         "hot_community": hot_community,
         "recent_cases": recent_cases,
         "cat_names": cat_names,

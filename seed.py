@@ -584,18 +584,24 @@ def run_seed(app):
                     ends_at=now + timedelta(days=365),
                 )
             )
-        # 메인 사이드 배너 (디자인 B 우측 EVENT 슬롯)
-        db.session.add(
-            Banner(
-                position="main_side",
-                title="카카오톡 채널 추가하고|상담 쿠폰 받기",
-                link_url="#",
-                sort_order=0,
-                is_active=True,
-                starts_at=now - timedelta(days=1),
-                ends_at=now + timedelta(days=365),
+        # 메인 사이드 롤링 배너 (디자인 B 우측 EVENT 슬롯)
+        side_banners = [
+            ("카카오톡 채널 추가하고|상담 쿠폰 받기", "#"),
+            ("변호사 회원 모집|프로필 등록하고 의뢰인 만나기", "/signup/lawyer"),
+            ("첫 상담 100% 지원 이벤트|신규 가입 혜택 받기", "/signup"),
+        ]
+        for i, (title, link_url) in enumerate(side_banners):
+            db.session.add(
+                Banner(
+                    position="main_side",
+                    title=title,
+                    link_url=link_url,
+                    sort_order=i,
+                    is_active=True,
+                    starts_at=now - timedelta(days=1),
+                    ends_at=now + timedelta(days=365),
+                )
             )
-        )
 
         db.session.commit()
 
