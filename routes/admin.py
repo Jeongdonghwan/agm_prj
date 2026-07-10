@@ -353,8 +353,13 @@ def banner_form(banner_id=None):
     if request.method == "POST":
         form = request.form
         if item is None:
-            item = Banner(position="main_hero")
+            item = Banner()
             db.session.add(item)
+        item.position = (
+            form.get("position")
+            if form.get("position") in ("main_hero", "main_side")
+            else "main_hero"
+        )
         item.title = form.get("title", "").strip()[:100]
         item.link_url = form.get("link_url", "").strip()[:300] or None
         item.sort_order = form.get("sort_order", type=int) or 0

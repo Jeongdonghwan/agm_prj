@@ -92,6 +92,14 @@ def author_name(obj):
     return obj.user.display_name if obj.user else "탈퇴회원"
 
 
+def first_image(post):
+    """첨부 중 첫 이미지 URL — 목록 우측 미리보기용."""
+    for a in post.attachments or []:
+        if (a.get("url") or "").lower().endswith((".jpg", ".jpeg", ".png")):
+            return a["url"]
+    return None
+
+
 def _hot_top5():
     """인기 TOP5: 최근 24h 우선(조회+추천×3), 부족하면 전체에서 보충."""
     score = CommunityPost.views + CommunityPost.likes * 3
@@ -157,6 +165,7 @@ def list_():
         sort=sort,
         hot_posts=_hot_top5(),
         author_name=author_name,
+        first_image=first_image,
     )
 
 
@@ -199,6 +208,7 @@ def board(key):
         has_next=total > page * PER_PAGE,
         hot_posts=_hot_top5(),
         author_name=author_name,
+        first_image=first_image,
     )
 
 
@@ -311,6 +321,7 @@ def detail(post_id):
         can_write=can_write,
         nickname_required=bool(g.user and _require_nickname()),
         author_name=author_name,
+        first_image=first_image,
     )
 
 

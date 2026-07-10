@@ -9,7 +9,7 @@
 .cat-nav a.on{color:var(--ink-900)}
 .cat-nav a:hover{color:var(--blue-600)}
 .cat-main h1{font-size:25px;font-weight:800;letter-spacing:-.5px;margin-bottom:28px}
-.cat-sec{margin-bottom:34px}
+.cat-sec{margin-bottom:34px;scroll-margin-top:130px}
 .cat-sec .band{background:var(--blue-050);border-radius:var(--radius-sm);padding:14px 20px;font-size:16px;font-weight:800;margin-bottom:6px}
 .sub-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 40px;padding:0 20px}
 .sub-item{padding:16px 0;border-bottom:1px solid var(--blue-050);display:block}

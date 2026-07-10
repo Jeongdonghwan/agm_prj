@@ -251,6 +251,7 @@ COMMUNITY_POSTS = [
     # 자유게시판 / 옥바라지 이야기
     ("자유게시판", "변호사 상담 처음 받아봤는데 생각보다 편했어요", False),
     ("자유게시판", "법률 드라마에서 본 장면, 실제로 가능한가요?", False),
+    # 이미지 첨부 데모 (목록 우측 미리보기)
     ("옥바라지 이야기", "면회 다녀오는 길, 같은 처지 가족분들께", False),
     ("옥바라지 이야기", "1년째 옥바라지 중입니다. 버티는 법을 나눠요", False),
 ]
@@ -436,6 +437,31 @@ def run_seed(app):
         # 양식 자료실 데모 첨부파일 생성 (uploads/community/samples/)
         sample_dir = os.path.join(Config.UPLOAD_FOLDER, "community", "samples")
         os.makedirs(sample_dir, exist_ok=True)
+
+        # 데모용 단색 PNG (목록 이미지 미리보기 확인용)
+        def _write_demo_png(path, rgb, size=(320, 240)):
+            import struct
+            import zlib
+
+            w, h = size
+            raw = b"".join(
+                b"\x00" + bytes(rgb) * w for _ in range(h)
+            )
+
+            def chunk(tag, data):
+                c = struct.pack(">I", len(data)) + tag + data
+                return c + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF)
+
+            png = (
+                b"\x89PNG\r\n\x1a\n"
+                + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+                + chunk(b"IDAT", zlib.compress(raw))
+                + chunk(b"IEND", b"")
+            )
+            with open(path, "wb") as fp:
+                fp.write(png)
+
+        _write_demo_png(os.path.join(sample_dir, "면회실_풍경.png"), (91, 141, 239))
         form_attachments = {}
         for topic, fname in [
             ("탄원서", "탄원서_양식.txt"),
@@ -448,6 +474,12 @@ def run_seed(app):
             form_attachments[topic] = [
                 {"name": fname, "url": f"/uploads/community/samples/{fname}"}
             ]
+        # 제목 기준 첨부 (이미지 미리보기 데모)
+        title_attachments = {
+            "면회 다녀오는 길, 같은 처지 가족분들께": [
+                {"name": "면회실_풍경.png", "url": "/uploads/community/samples/면회실_풍경.png"}
+            ]
+        }
 
         # 커뮤니티 (공지 1 + 19) + 댓글/추천 소량
         comm_posts = []
@@ -459,7 +491,7 @@ def run_seed(app):
                 content=f"{title} — 데모 본문입니다. 경험과 정보를 나누는 공간입니다.",
                 is_anonymous=(not is_notice and i % 3 == 0),
                 is_notice=is_notice,
-                attachments=form_attachments.get(category),
+                attachments=title_attachments.get(title) or form_attachments.get(category),
                 views=50 + i * 21,
                 likes=0,
                 # 최근 글일수록 촘촘하게 — 마지막 2~3개는 24시간 내(NEW 뱃지 데모)
@@ -552,6 +584,18 @@ def run_seed(app):
                     ends_at=now + timedelta(days=365),
                 )
             )
+        # 메인 사이드 배너 (디자인 B 우측 EVENT 슬롯)
+        db.session.add(
+            Banner(
+                position="main_side",
+                title="카카오톡 채널 추가하고|상담 쿠폰 받기",
+                link_url="#",
+                sort_order=0,
+                is_active=True,
+                starts_at=now - timedelta(days=1),
+                ends_at=now + timedelta(days=365),
+            )
+        )
 
         db.session.commit()
 

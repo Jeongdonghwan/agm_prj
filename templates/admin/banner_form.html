@@ -6,8 +6,14 @@
 {% block content %}
 <form method="post" enctype="multipart/form-data" class="panel" style="margin-top:0;max-width:640px">
   <div class="pf-body">
+    <div class="pf-field"><label>위치</label>
+      <select name="position">
+        <option value="main_hero" {% if not item or item.position == 'main_hero' %}selected{% endif %}>메인 히어로 (롤링)</option>
+        <option value="main_side" {% if item and item.position == 'main_side' %}selected{% endif %}>메인 사이드 (디자인 B EVENT)</option>
+      </select>
+    </div>
     <div class="pf-field"><label>제목 *</label><input type="text" name="title" value="{{ item.title if item else '' }}" required maxlength="100" placeholder="메인카피|포인트카피(파란 줄)|서브카피">
-      <small>히어로 배너 형식: <b>메인카피|포인트카피|서브카피</b> — 포인트카피는 파란색 둘째 줄로 표시됩니다.</small></div>
+      <small>형식: <b>메인카피|포인트카피|서브카피</b> — 포인트카피는 히어로에선 파란 줄, 사이드에선 둘째 줄로 표시됩니다.</small></div>
     <div class="pf-field"><label>링크 URL</label><input type="text" name="link_url" value="{{ item.link_url if item else '' }}" placeholder="/signup"></div>
     <div class="pf-field"><label>이미지 (jpg/png, 선택)</label>
       {% if item and item.image_url %}<div class="pf-photo-cur"><img src="{{ item.image_url }}" alt=""> 현재 이미지</div>{% endif %}

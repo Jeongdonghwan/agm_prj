@@ -25,7 +25,18 @@ def _slug(text: str) -> str:
 @bp.route("/")
 @cached_page(60)  # 비로그인 응답만 60초 캐시 (§2-2 — 로그인 헤더 분기 보존)
 def index():
-    return render_template("main/index.html", active_menu="home", **get_home_data())
+    return render_template(
+        "main/index.html", active_menu="home", design="a", **get_home_data()
+    )
+
+
+@bp.route("/main-b")
+@cached_page(60)
+def index_b():
+    """메인 디자인 B안 (비교용) — 네이비 히어로 + EVENT 사이드 배너 + 퀵메뉴."""
+    return render_template(
+        "main/index_b.html", active_menu="home", design="b", **get_home_data()
+    )
 
 
 @bp.route("/uploads/<path:filename>")

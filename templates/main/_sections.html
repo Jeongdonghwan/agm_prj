@@ -1,0 +1,130 @@
+<!-- 통합 콘텐츠 탭 (커뮤니티/판례/상담글/해결사례) -->
+<section class="wrap">
+  <h2 class="sec-title">지금 {{ site_name }}에서는</h2>
+  <div class="hub-tabs">
+    <button class="on" data-tab="hub-comm">커뮤니티 인기글 <span class="badge-new">NEW</span></button>
+    <button data-tab="hub-case">판례돋보기</button>
+    <button data-tab="hub-qna">최신 상담글</button>
+    <button data-tab="hub-solve">변호사 해결사례</button>
+  </div>
+
+  <div class="hub-panel on" id="hub-comm">
+    <div class="comm-band">
+      <div class="comm-grid">
+        {% for p in hot_community %}
+        <a class="comm-card" href="{{ url_for('community.detail', post_id=p.id) }}">
+          <span class="comm-tag">{{ p.category }}</span>
+          <h4>{{ p.title }}</h4>
+          <div class="comm-meta"><span>조회 <b>{{ '{:,}'.format(p.views) }}</b></span><span>댓글 <b>{{ p.comments | selectattr('deleted_at', 'none') | list | length }}</b></span><span>추천 <b>{{ p.likes }}</b></span></div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="more-pill"><a href="{{ url_for('community.list_') }}"><button>커뮤니티 더보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
+  </div>
+
+  <div class="hub-panel" id="hub-case">
+    <div class="case-grid">
+      {% for c in recent_cases %}
+      <a class="case-card" href="{{ url_for('contents.case_detail', case_id=c.id) }}">
+        <div class="case-tags">{% for cid in c.category_ids or [] %}{{ cat_names.get(cid, '') }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+        <h4>{{ c.title }}</h4>
+        <p>사건 개요: {{ c.summary }}</p>
+        <div class="case-no">{{ c.court }} {{ c.case_no }}</div>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="more-pill"><a href="{{ url_for('contents.cases') }}"><button>판례돋보기 더보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
+  </div>
+
+  <div class="hub-panel" id="hub-qna">
+    <div class="qna-grid">
+      {% for c in recent_consults %}
+      {% set live_answers = c.answers | selectattr('deleted_at', 'none') | list %}
+      <a class="qna-item" href="{{ url_for('counsel.detail', consult_id=c.id) }}" style="display:block">
+        <div class="cat">{{ c.category.name if c.category }}</div>
+        <h4>{{ c.title }}</h4>
+        <p>{{ c.content[:100] }}</p>
+        <div class="ans">
+          {% if live_answers %}
+          <div class="avs">{% for a in live_answers[:3] %}<span>{{ lawyer_initials.get(a.lawyer_id, '변') }}</span>{% endfor %}</div>변호사 답변 {{ live_answers | length }}
+          {% else %}
+          답변 대기 중
+          {% endif %}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="more-pill"><a href="{{ url_for('counsel.list_') }}"><button>최신 상담글 더 보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
+  </div>
+
+  <div class="hub-panel" id="hub-solve">
+    <div class="solve-grid">
+      {% for p in solve_posts %}
+      <a class="solve-item" href="{{ url_for('contents.post_detail', post_id=p.id) }}" style="display:block">
+        <div class="solve-by"><span>{% if p.lawyer.lawyer_profile and p.lawyer.lawyer_profile.photo_url %}<img src="{{ p.lawyer.lawyer_profile.photo_url }}" alt="" loading="lazy">{% else %}{{ p.lawyer.name[0] }}{% endif %}</span>{{ p.lawyer.name }} 변호사</div>
+        <h4>{{ p.title }}</h4>
+        <p>{{ p.content[:100] }}</p>
+        {% if p.result_badge %}<span class="solve-badge"><i data-lucide="gavel"></i>{{ p.result_badge }}</span>{% endif %}
+      </a>
+      {% endfor %}
+    </div>
+    <div class="more-pill"><a href="{{ url_for('contents.posts') }}"><button>해결사례 더 보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
+  </div>
+</section>
+
+<!-- 분야별 변호사 찾기 -->
+<section class="wrap">
+  <h2 class="sec-title">어떤 분야의 변호사를 찾으시나요?</h2>
+  <div class="cat-grid">
+    {% for c in categories %}
+    <a class="cat-item" href="{{ url_for('lawyers.list_', category=c.id) if c.id else url_for('lawyers.find') }}"><span class="ic" style="background:{{ c.bg }}"><img src="{{ url_for('static', filename='icons/' + c.icon + '.png') }}" alt="{{ c.name }}" loading="lazy"></span>{{ c.name }}</a>
+    {% endfor %}
+    <a class="cat-item more" href="{{ url_for('lawyers.find') }}"><span class="ic"><span class="em" style="font-size:20px;color:var(--ink-500)">＋</span></span>전체보기</a>
+  </div>
+</section>
+
+<!-- 지역별 변호사 찾기 -->
+<section class="wrap">
+  <h2 class="sec-title">어떤 지역의 변호사를 찾으시나요?</h2>
+  <div class="region-grid">
+    {% for r in regions %}
+    <a class="region-btn" href="{{ url_for('lawyers.list_', region=r.id) }}">{{ r.name }}</a>
+    {% endfor %}
+    <a class="region-btn" href="{{ url_for('lawyers.list_') }}" style="color:var(--blue-600);border-color:var(--blue-600)">전체보기</a>
+  </div>
+</section>
+
+<!-- 요즘 활발한 변호사 -->
+<section class="wrap">
+  <h2 class="sec-title">요즘 활발한 변호사</h2>
+  <div class="quick-grid">
+    {% for item in active_lawyers %}
+    {% set p = item.profile %}
+    <a class="quick-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}">
+      <div class="qav">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</div>
+      <div>
+        <div class="name">{{ p.user.name }} <small>변호사</small></div>
+        <div class="field">{{ p.categories[0].name if p.categories }} 전문 · {{ p.firm_name }}</div>
+        <div class="time-chips"><span>최근 답변 {{ item.answers }}건</span><span>조회 {{ '{:,}'.format(p.view_count or 0) }}</span></div>
+      </div>
+    </a>
+    {% else %}
+    <p style="font-size:13px;color:var(--ink-500)">최근 활동 데이터가 없습니다.</p>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- 새로 함께하는 변호사 -->
+<section class="wrap">
+  <h2 class="sec-title">새로 함께하는 변호사 <span class="badge-new">NEW</span></h2>
+  <div class="new-grid">
+    {% for p in new_lawyers %}
+    <a class="new-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}" style="display:block">
+      <span class="lb">{{ p.categories[0].name if p.categories else '변호사' }}</span>
+      <div class="row"><span class="nav2">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</span><h4>{{ p.user.name }} 변호사</h4></div>
+      <p>{{ p.headline }}</p>
+    </a>
+    {% endfor %}
+  </div>
+</section>

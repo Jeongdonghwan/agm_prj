@@ -69,5 +69,18 @@ document.querySelectorAll('.find-toggle button').forEach(btn=>{
     document.getElementById(btn.dataset.panel).classList.add('on');
   });
 });
+
+// 좌측 분야 메뉴 스크롤스파이: 클릭 시 포커싱 + 스크롤 위치 따라 on 자동 갱신
+(function(){
+  const links = [...document.querySelectorAll('.cat-nav a')];
+  const setOn = id => links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + id));
+  links.forEach(a => a.addEventListener('click', () => setOn(a.getAttribute('href').slice(1))));
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries.filter(e => e.isIntersecting)
+      .sort((x, y) => x.boundingClientRect.top - y.boundingClientRect.top);
+    if (visible.length) setOn(visible[0].target.id);
+  }, { rootMargin: '-130px 0px -60% 0px' });
+  document.querySelectorAll('.cat-sec').forEach(sec => observer.observe(sec));
+})();
 </script>
 {% endblock %}

@@ -29,7 +29,7 @@ class Banner(db.Model):
     __tablename__ = "banners"
 
     id = db.Column(db.Integer, primary_key=True)
-    position = db.Column(ENUM("main_hero"), default="main_hero")
+    position = db.Column(ENUM("main_hero", "main_side"), default="main_hero")
     title = db.Column(db.String(100))
     image_url = db.Column(db.String(300))
     link_url = db.Column(db.String(300))

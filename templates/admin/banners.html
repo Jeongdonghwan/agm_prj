@@ -10,7 +10,7 @@
     <tr><th>위치</th><th>제목</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
     {% for b in items %}
     <tr>
-      <td>메인 히어로</td>
+      <td>{{ '메인 사이드' if b.position == 'main_side' else '메인 히어로' }}</td>
       <td><b>{{ b.title }}</b></td>
       <td>{{ b.starts_at.strftime('%m.%d') if b.starts_at else '~' }} ~ {{ b.ends_at.strftime('%m.%d') if b.ends_at else '' }}</td>
       <td>{{ b.sort_order }}</td>

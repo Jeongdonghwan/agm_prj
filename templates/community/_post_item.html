@@ -1,4 +1,5 @@
 {% set live_comments = p.comments | selectattr('deleted_at', 'none') | list %}
+{% set thumb_url = first_image(p) %}
 <div class="post">
   <div class="bd">
     <div class="pcat">{{ p.category }}</div>
@@ -6,4 +7,7 @@
     <p>{{ p.content[:80] }}</p>
     <div class="meta"><span>{{ author_name(p) }}</span><span>{{ p.created_at.strftime('%m.%d') }}</span><span>조회 <b>{{ '{:,}'.format(p.views) }}</b></span><span>추천 <b>{{ p.likes }}</b></span></div>
   </div>
+  {% if thumb_url %}
+  <a class="pthumb" href="{{ url_for('community.detail', post_id=p.id) }}"><img src="{{ thumb_url }}" alt="" loading="lazy"></a>
+  {% endif %}
 </div>
