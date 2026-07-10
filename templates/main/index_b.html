@@ -25,7 +25,7 @@
 <!-- 히어로 B: 좌 네이비 배너 + 우 EVENT 배너 -->
 <div class="hero-b wrap">
   <div class="hero-b-grid">
-    <div class="hero-navy" id="hero-banner">
+    <div class="hero-navy" id="hero-banner" data-static="1">
       <span class="ad">AD</span>
       {% for b in hero_banners %}
       <a class="slide hero-slide{% if loop.first %} on{% endif %}" {% if b.link %}href="{{ b.link }}"{% endif %}>

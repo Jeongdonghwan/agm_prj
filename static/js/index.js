@@ -1,12 +1,15 @@
-// 롤링 배너 공용 헬퍼 — 랜덤 시작 + 주기 페이드 전환
-function initRolling(slideSelector, curId, intervalMs) {
-  const slides = document.querySelectorAll(slideSelector);
+// 배너 공용 헬퍼 — 접속마다 랜덤 배너 선택, 컨테이너에 data-static="1"이면
+// 슬라이딩 없이 랜덤 1장 고정, 아니면 주기 페이드 롤링
+function initRolling(containerSel, slideClass, curId, intervalMs) {
+  const container = document.querySelector(containerSel);
+  if (!container) return;
+  const slides = container.querySelectorAll(slideClass);
   const cur = document.getElementById(curId);
   if (!slides.length) return;
-  let i = Math.floor(Math.random() * slides.length); // 접속마다 랜덤 시작
+  let i = Math.floor(Math.random() * slides.length); // 페이지 진입마다 랜덤
   slides.forEach((s, idx) => s.classList.toggle('on', idx === i));
   if (cur) cur.textContent = i + 1;
-  if (slides.length < 2) return;
+  if (slides.length < 2 || container.dataset.static === '1') return;
   setInterval(() => {
     slides[i].classList.remove('on');
     i = (i + 1) % slides.length;
@@ -14,8 +17,8 @@ function initRolling(slideSelector, curId, intervalMs) {
     if (cur) cur.textContent = i + 1;
   }, intervalMs);
 }
-initRolling('#hero-banner .hero-slide', 'hero-cur', 4000);   // 좌측 히어로
-initRolling('#side-banner .side-slide', 'side-cur', 4500);   // 우측 EVENT (B안)
+initRolling('#hero-banner', '.hero-slide', 'hero-cur', 4000); // 히어로 (B안은 data-static 랜덤 고정)
+initRolling('#side-banner', '.side-slide', 'side-cur', 4500); // 우측 EVENT 롤링 (B안)
 
 // 통합 콘텐츠 탭 전환 (시안 index.html 스크립트 분리)
 document.querySelectorAll('.hub-tabs button').forEach(btn => {
