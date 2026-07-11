@@ -81,13 +81,13 @@ def get_home_data():
         .all()
     ]
 
-    # 탭1: 커뮤니티 인기글 3 (조회+추천×3)
+    # 탭1: 커뮤니티 인기글 6 (조회+추천×3)
     hot_community = (
         CommunityPost.query.filter_by(status="open", is_notice=False)
         .filter(CommunityPost.deleted_at.is_(None))
         .options(joinedload(CommunityPost.comments))
         .order_by((CommunityPost.views + CommunityPost.likes * 3).desc())
-        .limit(3)
+        .limit(6)
         .all()
     )
 

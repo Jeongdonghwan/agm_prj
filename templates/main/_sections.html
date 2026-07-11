@@ -13,7 +13,7 @@
       <div class="comm-grid">
         {% for p in hot_community %}
         <a class="comm-card" href="{{ url_for('community.detail', post_id=p.id) }}">
-          <span class="comm-tag">{{ p.category }}</span>
+          <div class="comm-cat">{{ p.category }}</div>
           <h4>{{ p.title }}</h4>
           <div class="comm-meta"><span>조회 <b>{{ '{:,}'.format(p.views) }}</b></span><span>댓글 <b>{{ p.comments | selectattr('deleted_at', 'none') | list | length }}</b></span><span>추천 <b>{{ p.likes }}</b></span></div>
         </a>

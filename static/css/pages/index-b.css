@@ -38,6 +38,6 @@
 
 @media (max-width:960px){
   .hero-b-grid{grid-template-columns:1fr}
-  .side-event{min-height:170px}
+  .side-event{display:none}  /* 모바일에서는 EVENT 사이드 배너 숨김 */
   .svc-cards{grid-template-columns:repeat(2,1fr)}
 }
