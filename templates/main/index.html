@@ -48,11 +48,14 @@
         <a class="side-card" href="{{ url_for('lawyers.find') }}"><h3>변호사 찾기 <i data-lucide="user-search" style="width:19px;height:19px"></i></h3><p>내게 딱 맞는 변호사 찾기</p></a>
         <a class="side-card" href="{{ url_for('counsel.list_') }}"><h3>온라인 상담 <i data-lucide="message-circle-question" style="width:19px;height:19px"></i></h3><p>부담 없이 먼저, 법률 조언</p></a>
       </div>
-      <div class="side-mini">
-        <a class="mini-item" href="{{ url_for('lawyers.find') }}"><i data-lucide="file-pen-line"></i>고소대리</a>
-        <a class="mini-item" href="{{ url_for('lawyers.find') }}"><i data-lucide="shield-check"></i>경찰조사동행</a>
-        <a class="mini-item" href="{{ url_for('lawyers.find') }}"><i data-lucide="mail-warning"></i>내용증명</a>
-      </div>
+      <a class="comm-quick" href="{{ url_for('community.list_') }}">
+        <img src="{{ url_for('static', filename='icons/defame.png') }}" alt="" loading="lazy">
+        <div class="tx">
+          <b>커뮤니티 바로가기</b>
+          <small>경험담·옥바라지 이야기를 나눠보세요</small>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
       <a class="kakao-card" href="#"><i data-lucide="message-square" style="width:20px;height:20px"></i>카카오톡 채널 추가하고 상담 쿠폰 받기</a>
     </div>
   </div>

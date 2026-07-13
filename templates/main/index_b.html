@@ -47,7 +47,11 @@
       <a class="side-slide{% if loop.first %} on{% endif %}" {% if b.link %}href="{{ b.link }}"{% endif %}>
         <span class="ev">EVENT</span>
         <h3>{{ b.main }}{% if b.point %}<br>{{ b.point }}{% endif %}</h3>
+        {% if b.image %}
+        <img src="{{ b.image }}" alt="" loading="lazy">
+        {% else %}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+        {% endif %}
       </a>
       {% else %}
       <a class="side-slide on" href="#">

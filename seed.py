@@ -584,18 +584,19 @@ def run_seed(app):
                     ends_at=now + timedelta(days=365),
                 )
             )
-        # 메인 사이드 롤링 배너 (디자인 B 우측 EVENT 슬롯)
+        # 메인 사이드 롤링 배너 (디자인 B 우측 EVENT 슬롯) — image_url 있으면 3D 아이콘 노출
         side_banners = [
-            ("카카오톡 채널 추가하고|상담 쿠폰 받기", "#"),
-            ("변호사 회원 모집|프로필 등록하고 의뢰인 만나기", "/signup/lawyer"),
-            ("첫 상담 100% 지원 이벤트|신규 가입 혜택 받기", "/signup"),
+            ("안기모 커뮤니티|지금 바로 이용해보세요", "/community/", "/static/icons/defame.png"),
+            ("변호사 회원 모집|프로필 등록하고 의뢰인 만나기", "/signup/lawyer", None),
+            ("첫 상담 100% 지원 이벤트|신규 가입 혜택 받기", "/signup", None),
         ]
-        for i, (title, link_url) in enumerate(side_banners):
+        for i, (title, link_url, image_url) in enumerate(side_banners):
             db.session.add(
                 Banner(
                     position="main_side",
                     title=title,
                     link_url=link_url,
+                    image_url=image_url,
                     sort_order=i,
                     is_active=True,
                     starts_at=now - timedelta(days=1),
