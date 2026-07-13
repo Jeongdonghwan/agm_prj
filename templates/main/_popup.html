@@ -1,0 +1,37 @@
+<!-- 메인 팝업 배너 (오늘 하루 보지 않기 지원) -->
+<div class="main-popup-bg" id="main-popup" hidden>
+  <div class="main-popup" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+    <div class="pp-head">
+      <img src="{{ url_for('static', filename='icons/defame.png') }}" alt="" loading="lazy">
+      <h2 id="popup-title">안쪽이를 기다리는<br>수용자 커뮤니티</h2>
+    </div>
+    <p class="pp-body">수용자의 가족, 지인, 그리고 응원하는 모든 분들이<br>서로 소통하고 정보를 나눌 수 있는 공간입니다.</p>
+    <a class="pp-cta" href="{{ url_for('community.list_') }}">커뮤니티 바로가기</a>
+    <div class="pp-foot">
+      <label><input type="checkbox" id="popup-today"> 오늘 하루 보지 않기</label>
+      <button type="button" id="popup-close">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const bg = document.getElementById('main-popup');
+  if (!bg) return;
+  const KEY = 'angimo_popup_hide_until';
+  const hideUntil = localStorage.getItem(KEY);
+  if (hideUntil && new Date(hideUntil) > new Date()) return; // 오늘 하루 숨김 중
+  bg.hidden = false;
+
+  function close() {
+    if (document.getElementById('popup-today').checked) {
+      const until = new Date();
+      until.setHours(24, 0, 0, 0); // 오늘 자정까지
+      localStorage.setItem(KEY, until.toISOString());
+    }
+    bg.hidden = true;
+  }
+  document.getElementById('popup-close').addEventListener('click', close);
+  bg.addEventListener('click', e => { if (e.target === bg) close(); });
+})();
+</script>

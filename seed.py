@@ -584,11 +584,9 @@ def run_seed(app):
                     ends_at=now + timedelta(days=365),
                 )
             )
-        # 메인 사이드 롤링 배너 (디자인 B 우측 EVENT 슬롯) — image_url 있으면 3D 아이콘 노출
+        # 메인 사이드 배너 (디자인 B 우측 슬롯) — 커뮤니티 배너 1장
         side_banners = [
             ("안기모 커뮤니티|지금 바로 이용해보세요", "/community/", "/static/icons/defame.png"),
-            ("변호사 회원 모집|프로필 등록하고 의뢰인 만나기", "/signup/lawyer", None),
-            ("첫 상담 100% 지원 이벤트|신규 가입 혜택 받기", "/signup", None),
         ]
         for i, (title, link_url, image_url) in enumerate(side_banners):
             db.session.add(

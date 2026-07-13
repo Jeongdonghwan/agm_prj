@@ -41,26 +41,30 @@
       <div class="indicator"><span id="hero-cur">1</span> / {{ hero_banners | length if hero_banners else 1 }}</div>
     </div>
 
-    <!-- 우측 EVENT 롤링 배너 -->
+    <!-- 우측 배너 (롤링 지원, 1장이면 고정) -->
     <div class="side-event" id="side-banner">
       {% for b in side_banners %}
       <a class="side-slide{% if loop.first %} on{% endif %}" {% if b.link %}href="{{ b.link }}"{% endif %}>
-        <span class="ev">EVENT</span>
+        <span class="ev">COMMUNITY</span>
         <h3>{{ b.main }}{% if b.point %}<br>{{ b.point }}{% endif %}</h3>
         {% if b.image %}
         <img src="{{ b.image }}" alt="" loading="lazy">
         {% else %}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
         {% endif %}
+        <span class="go">커뮤니티 바로가기 →</span>
       </a>
       {% else %}
-      <a class="side-slide on" href="#">
-        <span class="ev">EVENT</span>
-        <h3>카카오톡 채널 추가하고<br>상담 쿠폰 받기</h3>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C11 3 12 8 12 8s1-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg>
+      <a class="side-slide on" href="{{ url_for('community.list_') }}">
+        <span class="ev">COMMUNITY</span>
+        <h3>안기모 커뮤니티<br>지금 바로 이용해보세요</h3>
+        <img src="{{ url_for('static', filename='icons/defame.png') }}" alt="" loading="lazy">
+        <span class="go">커뮤니티 바로가기 →</span>
       </a>
       {% endfor %}
-      <div class="indicator"><span id="side-cur">1</span> / {{ side_banners | length if side_banners else 1 }}</div>
+      {% if side_banners | length > 1 %}
+      <div class="indicator"><span id="side-cur">1</span> / {{ side_banners | length }}</div>
+      {% endif %}
     </div>
   </div>
 
@@ -90,6 +94,8 @@
 {% include "main/_sections.html" %}
 
 {% include "main/_design_toggle.html" %}
+
+{% include "main/_popup.html" %}
 {% endblock %}
 
 {% block scripts %}
