@@ -9,10 +9,19 @@
 .sub-cats a:hover{color:var(--blue-600)}
 .sub-cats a.on{color:var(--blue-600);font-weight:800}
 .main-col{min-width:0}
-.region-row{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 14px;border-bottom:1px solid var(--ink-200)}
-.region-row a{font-size:12px;font-weight:600;color:var(--ink-500);padding:5px 10px;border-radius:var(--radius-sm)}
+/* 지역 필터 — 한 줄 좌우 슬라이드 */
+.region-slide{position:relative}
+.region-slide .hscroll{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding:0 0 14px;border-bottom:1px solid var(--ink-200)}
+.region-slide .hscroll::-webkit-scrollbar{display:none}
+.region-row a{font-size:13px;font-weight:600;color:var(--ink-500);padding:6px 12px;border-radius:var(--radius-sm);white-space:nowrap;flex-shrink:0;scroll-snap-align:start}
 .region-row a:hover{color:var(--blue-600)}
 .region-row a.on{background:var(--blue-100);color:var(--blue-700);font-weight:700}
+.region-slide .hs-btn{position:absolute;top:calc(50% - 7px);transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:#fff;border:1px solid var(--ink-200);box-shadow:0 3px 10px rgba(10,42,94,.12);display:flex;align-items:center;justify-content:center;z-index:5;color:var(--ink-900);transition:.15s}
+.region-slide .hs-btn svg{width:14px;height:14px}
+.region-slide .hs-btn:hover{border-color:var(--blue-600);color:var(--blue-600)}
+.region-slide .hs-btn[disabled]{opacity:0;pointer-events:none}
+.region-slide .hs-prev{left:-12px}
+.region-slide .hs-next{right:-12px}
 
 
 /* 광고 영역 — 해결사례 카드 그리드 */
