@@ -28,7 +28,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="wrap qa-layout">
+<div class="wrap qa-single">
   <div class="qa-detail">
     <div class="q-box">
       <div class="qa-cat">{{ consult.category.name if consult.category }}{% if not consult.is_public %} · 비공개{% endif %}</div>
@@ -72,6 +72,5 @@
     <div class="pager"><a href="{{ url_for('counsel.list_') }}">목록으로</a></div>
   </div>
 
-  {% include "counsel/_ranking.html" %}
 </div>
 {% endblock %}

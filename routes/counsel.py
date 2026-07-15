@@ -28,32 +28,6 @@ def _slug(text: str) -> str:
     return s[:40] or "consult"
 
 
-def _active_lawyer_ranking(limit=3):
-    """최근 30일 답변수 랭킹 (시안 우측 rank-box)."""
-    since = datetime.now() - timedelta(days=30)
-    rows = (
-        db.session.query(
-            ConsultationAnswer.lawyer_id, db.func.count(ConsultationAnswer.id).label("cnt")
-        )
-        .filter(ConsultationAnswer.created_at >= since, ConsultationAnswer.deleted_at.is_(None))
-        .group_by(ConsultationAnswer.lawyer_id)
-        .order_by(db.text("cnt DESC"))
-        .limit(limit)
-        .all()
-    )
-    profiles = {
-        p.user_id: p
-        for p in LawyerProfile.query.options(joinedload(LawyerProfile.user)).filter(
-            LawyerProfile.user_id.in_([r[0] for r in rows] or [0])
-        )
-    }
-    return [
-        {"profile": profiles[lid], "count": cnt}
-        for lid, cnt in rows
-        if lid in profiles
-    ]
-
-
 @bp.route("/")
 def list_():
     sort = request.args.get("sort", "recent_answer")
@@ -101,7 +75,6 @@ def list_():
         has_next=total > page * PER_PAGE,
         sort=sort,
         lawyer_names=lawyer_names,
-        ranking=_active_lawyer_ranking(),
         slug=_slug,
     )
 
@@ -181,7 +154,6 @@ def detail(consult_id, slug=None):
         profiles=profiles,
         is_owner=is_owner,
         can_edit=is_owner and not answers,  # 답변 전까지만 수정/삭제 (§4-2)
-        ranking=_active_lawyer_ranking(),
         canonical_slug=canonical,
     )
 
