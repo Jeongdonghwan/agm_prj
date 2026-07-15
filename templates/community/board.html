@@ -16,42 +16,32 @@
   {% endif %}
 </div></div>
 
-<div class="wrap comm-layout">
-  <div>
-    <div class="cat-chips">
-      <a href="{{ url_for('community.board', key=board_key, sort=sort) }}" class="{% if not topic %}on{% endif %}">전체</a>
-      {% for t in board.topics %}
-      <a href="{{ url_for('community.board', key=board_key, topic=t, sort=sort) }}" class="{% if topic == t %}on{% endif %}">{{ t }}</a>
-      {% endfor %}
-    </div>
-    <div class="sort-tabs">
-      <a href="{{ url_for('community.board', key=board_key, topic=topic, sort='recent') }}" class="{% if sort != 'popular' %}on{% endif %}">최신순</a>
-      <a href="{{ url_for('community.board', key=board_key, topic=topic, sort='popular') }}" class="{% if sort == 'popular' %}on{% endif %}">인기순</a>
-    </div>
-
-    {% for p in items %}
-    {% include "community/_post_item.html" %}
-    {% else %}
-    <div style="padding:60px 0;text-align:center;color:var(--ink-500)">게시글이 없습니다.</div>
+<div class="wrap comm-single">
+  <!-- 정렬 + 토픽 통합 칩 -->
+  <div class="cat-chips">
+    <a href="{{ url_for('community.board', key=board_key, topic=topic, sort='popular') }}" class="srt {% if sort == 'popular' %}on{% endif %}">인기</a>
+    <a href="{{ url_for('community.board', key=board_key, topic=topic, sort='recent') }}" class="srt {% if sort != 'popular' %}on{% endif %}">최신</a>
+    <span class="chip-div"></span>
+    <a href="{{ url_for('community.board', key=board_key, sort=sort) }}" class="{% if not topic %}on{% endif %}">전체</a>
+    {% for t in board.topics %}
+    <a href="{{ url_for('community.board', key=board_key, topic=t, sort=sort) }}" class="{% if topic == t %}on{% endif %}">{{ t }}</a>
     {% endfor %}
-
-    <div class="pager">
-      {% if page > 1 %}<a href="{{ url_for('community.board', key=board_key, topic=topic, sort=sort, page=page - 1) }}" rel="prev">이전</a>{% endif %}
-      {% if has_next %}<a href="{{ url_for('community.board', key=board_key, topic=topic, sort=sort, page=page + 1) }}" rel="next">다음</a>{% endif %}
-    </div>
   </div>
 
-  <aside>
-    <div class="hot-box">
-      <h3><i data-lucide="flame"></i>실시간 인기글</h3>
-      {% for h in hot_posts %}
-      <a class="hot-item" href="{{ url_for('community.detail', post_id=h.id) }}"><span class="rank">{{ loop.index }}</span><span>{{ h.title }}</span></a>
-      {% endfor %}
-    </div>
-    <div class="notice-box">
-      <b>{{ board.label }} 이용 안내</b>
-      실제 규정은 교정시설마다 다를 수 있어요. 방문 전 해당 기관에 꼭 확인해주세요.
-    </div>
-  </aside>
+  {% for p in items %}
+  {% include "community/_post_item.html" %}
+  {% else %}
+  <div style="padding:60px 0;text-align:center;color:var(--ink-500)">게시글이 없습니다.</div>
+  {% endfor %}
+
+  <div class="pager">
+    {% if page > 1 %}<a href="{{ url_for('community.board', key=board_key, topic=topic, sort=sort, page=page - 1) }}" rel="prev">이전</a>{% endif %}
+    {% if has_next %}<a href="{{ url_for('community.board', key=board_key, topic=topic, sort=sort, page=page + 1) }}" rel="next">다음</a>{% endif %}
+  </div>
+
+  <div class="notice-box">
+    <b>{{ board.label }} 이용 안내</b>
+    실제 규정은 교정시설마다 다를 수 있어요. 방문 전 해당 기관에 꼭 확인해주세요.
+  </div>
 </div>
 {% endblock %}

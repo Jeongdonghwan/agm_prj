@@ -100,25 +100,6 @@ def first_image(post):
     return None
 
 
-def _hot_top5():
-    """인기 TOP5: 최근 24h 우선(조회+추천×3), 부족하면 전체에서 보충."""
-    score = CommunityPost.views + CommunityPost.likes * 3
-    base = CommunityPost.query.filter_by(status="open", is_notice=False).filter(
-        CommunityPost.deleted_at.is_(None)
-    )
-    since = datetime.now() - timedelta(hours=24)
-    recent = base.filter(CommunityPost.created_at >= since).order_by(score.desc()).limit(5).all()
-    if len(recent) < 5:
-        seen = {p.id for p in recent}
-        for p in base.order_by(score.desc()).limit(10):
-            if p.id not in seen:
-                recent.append(p)
-                seen.add(p.id)
-            if len(recent) == 5:
-                break
-    return recent
-
-
 @bp.route("/")
 def list_():
     """커뮤니티 — 전체(자유게시판+옥바라지 이야기) / 카테고리 칩."""
@@ -163,7 +144,6 @@ def list_():
         categories=COMMUNITY_CATS,
         category=category,
         sort=sort,
-        hot_posts=_hot_top5(),
         author_name=author_name,
         first_image=first_image,
     )
@@ -206,7 +186,6 @@ def board(key):
         total=total,
         page=page,
         has_next=total > page * PER_PAGE,
-        hot_posts=_hot_top5(),
         author_name=author_name,
         first_image=first_image,
     )
