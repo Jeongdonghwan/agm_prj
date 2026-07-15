@@ -1,7 +1,7 @@
 import re
 
 from flask import Blueprint, abort, redirect, render_template, request, url_for
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from extensions import db
 from models import Category, ConsultationAnswer, LawyerPost, LawyerProfile, Region, User
@@ -34,7 +34,9 @@ def _visible_profiles_query():
         )
         .options(
             joinedload(LawyerProfile.user),
-            joinedload(LawyerProfile.categories),
+            # 다대다 컬렉션은 selectinload — joinedload+LIMIT은 조인 행 기준으로 잘려
+            # 엔티티 수가 모자라는 버그가 생긴다
+            selectinload(LawyerProfile.categories),
             joinedload(LawyerProfile.region),
         )
     )

@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from extensions import db
 from models import (
@@ -170,7 +170,7 @@ def get_home_data():
             LawyerProfile.is_visible.is_(True),
             LawyerProfile.show_in_new.is_(True),
         )
-        .options(joinedload(LawyerProfile.user), joinedload(LawyerProfile.categories))
+        .options(joinedload(LawyerProfile.user), selectinload(LawyerProfile.categories))
         .order_by(LawyerProfile.approved_at.desc())
         .limit(12)
         .all()

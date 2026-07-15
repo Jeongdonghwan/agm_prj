@@ -47,10 +47,12 @@
 .comm-quick>svg{width:16px;height:16px;color:var(--blue-600);flex-shrink:0}
 .kakao-card{background:var(--kakao);border-radius:var(--radius-md);padding:14px 16px;font-size:13px;font-weight:700;color:#3C1E1E;display:flex;align-items:center;gap:10px}
 
-/* ===== Section common — 섹션 간 간격을 넉넉하게 구분 ===== */
-section{padding:104px 0 0}
-section:first-of-type{padding-top:56px}
-section:last-of-type{padding-bottom:48px}
+/* ===== Section common — 섹션 간 간격을 넉넉하게 구분 =====
+   주의: .wrap(padding:0 20px)이 명시도가 높아 태그 셀렉터를 덮어쓰므로
+   section.wrap으로 지정하고 좌우 20px을 함께 명시한다 */
+section.wrap{padding:104px 20px 0}
+section.wrap:first-of-type{padding-top:56px}
+section.wrap:last-of-type{padding-bottom:48px}
 .sec-title{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-bottom:28px;display:flex;align-items:center;gap:10px}
 .sec-title::before{content:"";width:5px;height:20px;background:var(--blue-600);border-radius:99px}
 .sec-title a{font-size:13px;font-weight:600;color:var(--ink-500);margin-left:auto;display:flex;align-items:center;gap:2px}
