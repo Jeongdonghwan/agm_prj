@@ -1,3 +1,32 @@
+<!-- 통합 파인더: 분야로/지역으로 찾기 -->
+<section class="wrap">
+  <h2 class="sec-title">어떤 변호사를 찾으시나요?</h2>
+  <div class="finder">
+    <div class="finder-tabs">
+      <button type="button" class="on" data-panel="finder-cat">분야로 찾기</button>
+      <button type="button" data-panel="finder-region">지역으로 찾기</button>
+    </div>
+
+    <div class="finder-panel on" id="finder-cat">
+      <div class="cat-grid">
+        {% for c in categories %}
+        <a class="cat-item" href="{{ url_for('lawyers.find', category=c.id) if c.id else url_for('lawyers.find') }}"><span class="ic" style="background:{{ c.bg }}"><img src="{{ url_for('static', filename='icons/' + c.icon + '.png') }}" alt="{{ c.name }}" loading="lazy"></span>{{ c.name }}</a>
+        {% endfor %}
+        <a class="cat-item more" href="{{ url_for('lawyers.find') }}"><span class="ic"><span class="em" style="font-size:20px;color:var(--ink-500)">＋</span></span>전체보기</a>
+      </div>
+    </div>
+
+    <div class="finder-panel" id="finder-region">
+      <div class="region-chips">
+        {% for r in regions %}
+        <a class="region-btn" href="{{ url_for('lawyers.find', region=r.id) }}">{{ r.name }}</a>
+        {% endfor %}
+        <a class="region-btn" href="{{ url_for('lawyers.find') }}" style="color:var(--blue-600);border-color:var(--blue-600)">전체보기</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- 통합 콘텐츠 탭 (커뮤니티/판례/상담글/해결사례) -->
 <section class="wrap">
   <h2 class="sec-title">지금 {{ site_name }}에서는</h2>
@@ -70,28 +99,6 @@
       {% endfor %}
     </div>
     <div class="more-pill"><a href="{{ url_for('contents.posts') }}"><button>해결사례 더 보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
-  </div>
-</section>
-
-<!-- 분야별 변호사 찾기 -->
-<section class="wrap">
-  <h2 class="sec-title">어떤 분야의 변호사를 찾으시나요?</h2>
-  <div class="cat-grid">
-    {% for c in categories %}
-    <a class="cat-item" href="{{ url_for('lawyers.find', category=c.id) if c.id else url_for('lawyers.find') }}"><span class="ic" style="background:{{ c.bg }}"><img src="{{ url_for('static', filename='icons/' + c.icon + '.png') }}" alt="{{ c.name }}" loading="lazy"></span>{{ c.name }}</a>
-    {% endfor %}
-    <a class="cat-item more" href="{{ url_for('lawyers.find') }}"><span class="ic"><span class="em" style="font-size:20px;color:var(--ink-500)">＋</span></span>전체보기</a>
-  </div>
-</section>
-
-<!-- 지역별 변호사 찾기 -->
-<section class="wrap">
-  <h2 class="sec-title">어떤 지역의 변호사를 찾으시나요?</h2>
-  <div class="region-grid">
-    {% for r in regions %}
-    <a class="region-btn" href="{{ url_for('lawyers.find', region=r.id) }}">{{ r.name }}</a>
-    {% endfor %}
-    <a class="region-btn" href="{{ url_for('lawyers.find') }}" style="color:var(--blue-600);border-color:var(--blue-600)">전체보기</a>
   </div>
 </section>
 
