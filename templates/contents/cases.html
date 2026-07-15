@@ -10,7 +10,26 @@
 
 {% block content %}
 <div class="wrap case-layout">
-  <div>
+  <!-- 좌측 필터 메뉴 (변호사 찾기와 동일 스타일) -->
+  <aside class="side-filters">
+    <div class="grp">
+      <div class="grp-title">사건 종류</div>
+      <a href="{{ url_for('contents.cases', category=category_id) }}" class="{% if not case_type %}on{% endif %}">전체</a>
+      {% for value, label in case_types %}
+      <a href="{{ url_for('contents.cases', case_type=value, category=category_id) }}" class="{% if case_type == value %}on{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+    <div class="grp">
+      <div class="grp-title">분야</div>
+      <a href="{{ url_for('contents.cases', case_type=case_type) }}" class="{% if not category_id %}on{% endif %}">전체</a>
+      {% for p in parents %}
+      <a href="{{ url_for('contents.cases', case_type=case_type, category=p.id) }}" class="{% if category_id == p.id %}on{% endif %}">{{ p.name }}</a>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <!-- 우측 목록 -->
+  <div class="main-col">
     <div class="case-head">
       <h1>나와 비슷한 실제 사건이<br>어떻게 해결되었는지 살펴보세요.</h1>
       <span class="sort"><i data-lucide="arrow-down-narrow-wide" style="width:15px;height:15px"></i>최신 사건순</span>
@@ -32,22 +51,5 @@
       {% if has_next %}<a href="{{ url_for('contents.cases', case_type=case_type, category=category_id, page=page + 1) }}" rel="next">다음</a>{% endif %}
     </div>
   </div>
-
-  <aside>
-    <div class="filter-card">
-      <h3>사건 종류</h3>
-      <label><input type="radio" name="case_type" value="" {% if not case_type %}checked{% endif %} onclick="location.href='{{ url_for('contents.cases', category=category_id) }}'"> 전체</label>
-      {% for value, label in case_types %}
-      <label><input type="radio" name="case_type" value="{{ value }}" {% if case_type == value %}checked{% endif %} onclick="location.href='{{ url_for('contents.cases', case_type=value, category=category_id) }}'"> {{ label }}</label>
-      {% endfor %}
-    </div>
-    <div class="filter-card">
-      <h3>분야</h3>
-      <label><input type="radio" name="category" value="" {% if not category_id %}checked{% endif %} onclick="location.href='{{ url_for('contents.cases', case_type=case_type) }}'"> 전체</label>
-      {% for p in parents[:8] %}
-      <label><input type="radio" name="category" value="{{ p.id }}" {% if category_id == p.id %}checked{% endif %} onclick="location.href='{{ url_for('contents.cases', case_type=case_type, category=p.id) }}'"> {{ p.name }}</label>
-      {% endfor %}
-    </div>
-  </aside>
 </div>
 {% endblock %}

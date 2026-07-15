@@ -1,5 +1,12 @@
-/* ===== 판례돋보기 (시안 cases.html) ===== */
-.case-layout{display:grid;grid-template-columns:1fr 300px;gap:44px;margin-top:44px;align-items:start}
+/* ===== 판례돋보기 — 좌측 필터 메뉴 + 리스트 ===== */
+.case-layout{display:grid;grid-template-columns:190px 1fr;gap:44px;margin-top:36px;align-items:start}
+.side-filters{position:sticky;top:130px}
+.side-filters .grp{margin-bottom:26px}
+.side-filters .grp-title{font-size:13px;font-weight:800;color:var(--ink-900);margin-bottom:8px}
+.side-filters a{display:block;font-size:14.5px;font-weight:700;padding:6px 0;color:#C4CAD2}
+.side-filters a:hover{color:var(--blue-600)}
+.side-filters a.on{color:var(--ink-900)}
+.main-col{min-width:0}
 .case-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px}
 .case-head h1{font-size:28px;font-weight:800;letter-spacing:-.7px;line-height:1.4}
 .case-head .sort{font-size:14px;color:var(--ink-500);display:flex;align-items:center;gap:5px;padding-bottom:6px}
@@ -9,10 +16,6 @@
 .case-item h3:hover{color:var(--blue-600);cursor:pointer}
 .case-item p{margin-top:10px;font-size:14px;color:var(--ink-500);line-height:1.65;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .case-no{margin-top:12px;font-size:13px;color:var(--blue-700);font-weight:600}
-.filter-card{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:22px;margin-bottom:16px}
-.filter-card h3{font-size:15px;font-weight:800;margin-bottom:14px}
-.filter-card label{display:flex;align-items:center;gap:10px;font-size:14px;padding:8px 0;cursor:pointer;color:var(--ink-900)}
-.filter-card input{accent-color:var(--blue-600);width:16px;height:16px}
 .list-empty{padding:60px 0;text-align:center;color:var(--ink-500);font-size:14px}
 .pager{display:flex;justify-content:center;gap:8px;margin:30px 0}
 .pager a{border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:10px 22px;font-size:13px;font-weight:700}
@@ -27,4 +30,4 @@
 .article .summary{margin-top:24px;background:var(--blue-050);border-radius:var(--radius-md);padding:18px 20px;font-size:14px;line-height:1.7}
 .article .body{margin-top:28px;font-size:15px;line-height:1.9;white-space:pre-line;border-top:1px solid var(--ink-200);padding-top:28px}
 
-@media (max-width:960px){.case-layout{grid-template-columns:1fr}}
+@media (max-width:960px){.case-layout{grid-template-columns:1fr;gap:20px}.side-filters{position:static;display:flex;gap:28px;flex-wrap:wrap}.side-filters .grp{margin-bottom:0}}
