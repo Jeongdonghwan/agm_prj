@@ -77,27 +77,6 @@ section:last-of-type{padding-bottom:32px}
 .region-btn{border:1px solid var(--ink-200);border-radius:999px;padding:12px 22px;text-align:center;font-size:14px;font-weight:600;background:#fff;transition:.15s}
 .region-btn:hover{border-color:var(--blue-600);color:var(--blue-600);background:var(--blue-050)}
 
-/* ===== Community preview ===== */
-.comm-band{background:var(--blue-050);border-radius:var(--radius-lg);padding:28px;margin-top:6px}
-.comm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.comm-card{background:#fff;border-radius:14px;border-top:3px solid var(--blue-600);padding:18px;box-shadow:var(--shadow-card);transition:.2s}
-.comm-card:hover{transform:translateY(-3px)}
-/* 카테고리 라벨 — 게시판 목록(.pcat)과 동일한 텍스트 스타일로 통일 */
-.comm-cat{font-size:12px;font-weight:700;color:var(--blue-600);margin-bottom:6px}
-.comm-card h4{font-size:15px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.comm-meta{margin-top:12px;font-size:12px;color:var(--ink-500);display:flex;gap:14px;align-items:center}
-.comm-meta b{color:var(--ink-900);font-weight:700;margin-left:2px}
-
-/* ===== Case list ===== */
-.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.case-card{border:none;border-left:3px solid var(--blue-100);border-radius:0;padding:6px 0 18px 18px;transition:.15s;border-bottom:1px solid var(--ink-200)}
-.case-card:hover{border-left-color:var(--blue-600)}
-.case-card:hover h4{color:var(--blue-600)}
-.case-tags{font-size:12px;color:var(--blue-600);font-weight:700;margin-bottom:8px}
-.case-card h4{font-size:16px;font-weight:700;letter-spacing:-.3px}
-.case-card p{margin-top:8px;font-size:13px;color:var(--ink-500);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.case-no{margin-top:12px;font-size:12px;color:var(--ink-500)}
-
 /* ===== 통합 콘텐츠 탭 ===== */
 .hub-tabs{display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
 .hub-tabs::-webkit-scrollbar{display:none}
@@ -108,22 +87,22 @@ section:last-of-type{padding-bottom:32px}
 .hub-panel.on{display:block;animation:hubfade .25s ease}
 @keyframes hubfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
+/* 허브 패널 공통 카드 */
+.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hub-card{background:#fff;border:1px solid var(--ink-200);border-radius:14px;padding:18px 20px;display:block;transition:.15s}
+.hub-card:hover{border-color:var(--blue-600);box-shadow:var(--shadow-card);transform:translateY(-2px)}
+.hub-card:hover h4{color:var(--blue-600)}
+.hub-card .tag{display:inline-block;background:var(--blue-100);color:var(--blue-700);font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px}
+.hub-card .tag.result{background:var(--blue-900);color:#fff}
+.hub-card h4{margin-top:10px;font-size:15px;font-weight:700;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hub-card .meta{margin-top:10px;font-size:12px;color:var(--ink-500)}
+.hub-card .meta b{color:var(--ink-900);font-weight:700}
+
 /* ===== 메인 하단 추가 섹션 ===== */
 .more-pill{display:flex;justify-content:center;margin-top:28px}
 .more-pill button{border:none;background:var(--blue-050);border-radius:999px;padding:12px 26px;font-size:13px;font-weight:700;color:var(--blue-700);display:flex;align-items:center;gap:6px}
 .more-pill button:hover{background:var(--blue-100)}
 .more-pill i{width:14px;height:14px}
-/* 최신 상담글 */
-.qna-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px}
-.qna-item{padding:18px 20px;border:none;background:var(--blue-050);border-radius:14px;margin-bottom:12px}
-.qna-item .cat{font-size:12px;color:var(--blue-600);font-weight:700}
-.qna-item h4{font-size:15px;font-weight:800;margin-top:6px;letter-spacing:-.3px}
-.qna-item h4:hover{color:var(--blue-600);cursor:pointer}
-.qna-item p{margin-top:6px;font-size:13px;color:var(--ink-500);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.qna-item .ans{margin-top:10px;font-size:12px;color:var(--ink-500);display:flex;align-items:center;gap:7px}
-.qna-item .avs{display:flex}
-.qna-item .avs span{width:22px;height:22px;border-radius:50%;background:var(--blue-100);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--blue-600);margin-left:-7px}
-.qna-item .avs span:first-child{margin-left:0}
 /* 칩 필터 행 */
 .chip-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:14px;margin-bottom:16px;scrollbar-width:none}
 .chip-row::-webkit-scrollbar{display:none}
@@ -162,21 +141,11 @@ section:last-of-type{padding-bottom:32px}
 .new-card h4{font-size:14.5px;font-weight:800}
 .new-card p{margin-top:12px;font-size:12.5px;color:var(--ink-500);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* 변호사 해결사례 */
-.solve-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 44px}
-.solve-item{padding:22px 0;border-bottom:1px solid var(--ink-200)}
-.solve-by{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-500)}
-.solve-by span{width:24px;height:24px;border-radius:50%;background:var(--blue-100);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--blue-600);overflow:hidden}
-.solve-by span img{width:100%;height:100%;object-fit:cover}
-.solve-item h4{margin-top:10px;font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.4}
-.solve-item h4:hover{color:var(--blue-600);cursor:pointer}
-.solve-item p{margin-top:7px;font-size:13px;color:var(--ink-500);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.solve-badge{display:inline-flex;align-items:center;gap:5px;margin-top:12px;background:var(--blue-100);color:var(--blue-700);font-size:11px;font-weight:800;padding:5px 12px;border-radius:999px}
-.solve-badge i{width:12px;height:12px}
 
 @media (max-width:960px){
   .hero-grid{grid-template-columns:1fr}
   .cat-grid{grid-template-columns:repeat(4,1fr)}
-  .comm-grid,.case-grid,.qna-grid,.solve-grid{grid-template-columns:1fr}
+  .hub-grid{grid-template-columns:1fr}
   .hs-prev{left:-6px}
   .hs-next{right:-6px}
 }

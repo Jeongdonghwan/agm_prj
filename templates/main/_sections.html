@@ -9,28 +9,25 @@
   </div>
 
   <div class="hub-panel on" id="hub-comm">
-    <div class="comm-band">
-      <div class="comm-grid">
-        {% for p in hot_community %}
-        <a class="comm-card" href="{{ url_for('community.detail', post_id=p.id) }}">
-          <div class="comm-cat">{{ p.category }}</div>
-          <h4>{{ p.title }}</h4>
-          <div class="comm-meta"><span>조회 <b>{{ '{:,}'.format(p.views) }}</b></span><span>댓글 <b>{{ p.comments | selectattr('deleted_at', 'none') | list | length }}</b></span><span>추천 <b>{{ p.likes }}</b></span></div>
-        </a>
-        {% endfor %}
-      </div>
+    <div class="hub-grid">
+      {% for p in hot_community[:4] %}
+      <a class="hub-card" href="{{ url_for('community.detail', post_id=p.id) }}">
+        <span class="tag">{{ p.category }}</span>
+        <h4>{{ p.title }}</h4>
+        <div class="meta">조회 <b>{{ '{:,}'.format(p.views) }}</b> · 댓글 <b>{{ p.comments | selectattr('deleted_at', 'none') | list | length }}</b> · 추천 <b>{{ p.likes }}</b></div>
+      </a>
+      {% endfor %}
     </div>
     <div class="more-pill"><a href="{{ url_for('community.list_') }}"><button>커뮤니티 더보기 <i data-lucide="chevron-right" style="width:14px;height:14px"></i></button></a></div>
   </div>
 
   <div class="hub-panel" id="hub-case">
-    <div class="case-grid">
-      {% for c in recent_cases %}
-      <a class="case-card" href="{{ url_for('contents.case_detail', case_id=c.id) }}">
-        <div class="case-tags">{% for cid in c.category_ids or [] %}{{ cat_names.get(cid, '') }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+    <div class="hub-grid">
+      {% for c in recent_cases[:4] %}
+      <a class="hub-card" href="{{ url_for('contents.case_detail', case_id=c.id) }}">
+        <span class="tag">{{ cat_names.get((c.category_ids or [None])[0], '판례') }}</span>
         <h4>{{ c.title }}</h4>
-        <p>사건 개요: {{ c.summary }}</p>
-        <div class="case-no">{{ c.court }} {{ c.case_no }}</div>
+        <div class="meta">{{ c.court }} {{ c.case_no }} · 조회 <b>{{ '{:,}'.format(c.views or 0) }}</b></div>
       </a>
       {% endfor %}
     </div>
@@ -38,20 +35,13 @@
   </div>
 
   <div class="hub-panel" id="hub-qna">
-    <div class="qna-grid">
-      {% for c in recent_consults %}
+    <div class="hub-grid">
+      {% for c in recent_consults[:4] %}
       {% set live_answers = c.answers | selectattr('deleted_at', 'none') | list %}
-      <a class="qna-item" href="{{ url_for('counsel.detail', consult_id=c.id) }}" style="display:block">
-        <div class="cat">{{ c.category.name if c.category }}</div>
+      <a class="hub-card" href="{{ url_for('counsel.detail', consult_id=c.id) }}">
+        <span class="tag">{{ c.category.name if c.category else '상담' }}</span>
         <h4>{{ c.title }}</h4>
-        <p>{{ c.content[:100] }}</p>
-        <div class="ans">
-          {% if live_answers %}
-          <div class="avs">{% for a in live_answers[:3] %}<span>{{ lawyer_initials.get(a.lawyer_id, '변') }}</span>{% endfor %}</div>변호사 답변 {{ live_answers | length }}
-          {% else %}
-          답변 대기 중
-          {% endif %}
-        </div>
+        <div class="meta">변호사 답변 <b>{{ live_answers | length }}</b> · 조회 <b>{{ '{:,}'.format(c.views or 0) }}</b></div>
       </a>
       {% endfor %}
     </div>
@@ -59,13 +49,12 @@
   </div>
 
   <div class="hub-panel" id="hub-solve">
-    <div class="solve-grid">
-      {% for p in solve_posts %}
-      <a class="solve-item" href="{{ url_for('contents.post_detail', post_id=p.id) }}" style="display:block">
-        <div class="solve-by"><span>{% if p.lawyer.lawyer_profile and p.lawyer.lawyer_profile.photo_url %}<img src="{{ p.lawyer.lawyer_profile.photo_url }}" alt="" loading="lazy">{% else %}{{ p.lawyer.name[0] }}{% endif %}</span>{{ p.lawyer.name }} 변호사</div>
+    <div class="hub-grid">
+      {% for p in solve_posts[:4] %}
+      <a class="hub-card" href="{{ url_for('contents.post_detail', post_id=p.id) }}">
+        <span class="tag result">{{ p.result_badge or '해결' }}</span>
         <h4>{{ p.title }}</h4>
-        <p>{{ p.content[:100] }}</p>
-        {% if p.result_badge %}<span class="solve-badge"><i data-lucide="gavel"></i>{{ p.result_badge }}</span>{% endif %}
+        <div class="meta">{{ p.lawyer.name }} 변호사 · 조회 <b>{{ '{:,}'.format(p.views or 0) }}</b></div>
       </a>
       {% endfor %}
     </div>
