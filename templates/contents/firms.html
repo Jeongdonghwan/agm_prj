@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="wrap">
+<div class="wrap firm-single">
   <div class="firm-chips">
     <a href="{{ url_for('contents.firms') }}" class="{% if not category_id %}on{% endif %}">전체</a>
     {% for c in chips %}
