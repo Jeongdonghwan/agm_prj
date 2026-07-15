@@ -390,19 +390,26 @@ def run_seed(app):
             db.session.add(c)
             db.session.flush()
             if i < 8:
-                lawyer = lawyer_users[i % len(lawyer_users)]
-                db.session.add(
-                    ConsultationAnswer(
-                        consultation_id=c.id,
-                        lawyer_id=lawyer.id,
-                        content=(
-                            "안녕하세요, 답변드립니다. 우선 관련 자료(계약서, 대화 내역 등)를 "
-                            "확보해 두시는 것이 중요합니다. 사안에 따라 진행 절차가 달라지므로 "
-                            "가까운 사무소 상담을 권해드립니다."
-                        ),
-                        created_at=c.created_at + timedelta(hours=6),
+                # 앞 3건은 여러 변호사 답변(3개), 나머지는 1개
+                answerer_idx = [i % 10] + ([(i + 3) % 10, (i + 6) % 10] if i < 3 else [])
+                answer_texts = [
+                    "안녕하세요, 답변드립니다. 우선 관련 자료(계약서, 대화 내역 등)를 "
+                    "확보해 두시는 것이 중요합니다. 사안에 따라 진행 절차가 달라지므로 "
+                    "가까운 사무소 상담을 권해드립니다.",
+                    "유사 사건을 다수 수행한 경험으로 말씀드리면, 초기 대응 방향에 따라 "
+                    "결과가 크게 달라질 수 있습니다. 시간 순서대로 사실관계를 정리해 두세요.",
+                    "쟁점이 되는 부분에 대한 증거 확보가 관건입니다. 상대방과의 연락은 "
+                    "기록이 남는 방식으로 하시고, 정식 상담에서 구체적 전략을 잡으시길 권합니다.",
+                ]
+                for j, li in enumerate(answerer_idx):
+                    db.session.add(
+                        ConsultationAnswer(
+                            consultation_id=c.id,
+                            lawyer_id=lawyer_users[li].id,
+                            content=answer_texts[j % len(answer_texts)],
+                            created_at=c.created_at + timedelta(hours=6 + j * 5),
+                        )
                     )
-                )
 
         # 판례 8
         for i, (title, summary, court, case_no, case_type, cats) in enumerate(

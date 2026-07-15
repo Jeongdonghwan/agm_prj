@@ -39,15 +39,19 @@
       {% endfor %}
     </div>
     {% if solve_cases %}
-    <!-- 맞춤 법률 정보: 관련 분야 해결사례 -->
-    <div class="info-box">
-      <div class="head"><i data-lucide="sparkles"></i>맞춤 법률 정보 <span class="tag">관련도 높음</span><span class="ad">광고</span></div>
-      <div class="info-grid">
+    <!-- 광고: 관련 분야 해결사례 -->
+    <div class="solve-ad">
+      <div class="head"><h3>이런 고민, 이렇게 해결됩니다</h3>{% if category %}<span class="chip">{{ category.name }} 분야</span>{% endif %}</div>
+      <div class="sa-grid">
         {% for post in solve_cases %}
-        <div class="info-item">
-          <div class="bd"><div class="cat">해결사례</div><h5>{{ post.title }}</h5></div>
-          <div class="who"><span class="av">{{ post.lawyer.name[0] }}</span>{{ post.lawyer.name }} 변호사</div>
-        </div>
+        <a class="sa-card" href="{{ url_for('contents.post_detail', post_id=post.id) }}">
+          <div class="lb">해결사례</div>
+          <h4>{{ post.title }}</h4>
+          <div class="who">
+            <span class="av">{% if post.lawyer.lawyer_profile and post.lawyer.lawyer_profile.photo_url %}<img src="{{ post.lawyer.lawyer_profile.photo_url }}" alt="{{ post.lawyer.name }} 변호사" loading="lazy">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>
+            {{ post.lawyer.name }} 변호사
+          </div>
+        </a>
         {% endfor %}
       </div>
     </div>

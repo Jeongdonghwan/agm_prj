@@ -68,7 +68,7 @@ def list_():
         q = q.order_by(Consultation.views.desc())
     elif sort == "recent":
         q = q.order_by(Consultation.created_at.desc())
-    else:  # 최신 답변순: 마지막 답변 시각 우선
+    else:  # 최신 답변순: 답변 있는 글(최근 답변순) 먼저, 무답변 글은 뒤(최신 질문순)
         last_answer = (
             db.session.query(
                 ConsultationAnswer.consultation_id,
@@ -79,7 +79,9 @@ def list_():
             .subquery()
         )
         q = q.outerjoin(last_answer, Consultation.id == last_answer.c.consultation_id).order_by(
-            db.func.coalesce(last_answer.c.last_at, Consultation.created_at).desc()
+            last_answer.c.last_at.is_(None),
+            last_answer.c.last_at.desc(),
+            Consultation.created_at.desc(),
         )
 
     total = q.count()
