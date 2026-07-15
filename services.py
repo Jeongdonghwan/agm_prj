@@ -18,23 +18,22 @@ from models import (
     User,
 )
 
-# 분야 그리드 아이콘 매핑 (시안 index.html cat-grid 1:1 — 이름은 seed와 일치)
+# 분야 그리드 아이콘 매핑 (대분류 14종 — 이름은 seed CATEGORIES와 일치)
 CATEGORY_ICONS = [
+    ("형사일반", "criminal", "#EFE9FF"),
     ("성범죄", "sex-crime", "#FFE9EE"),
-    ("재산범죄", "property", "#FFF3DF"),
-    ("교통사고/범죄", "traffic", "#E4EEFF"),
-    ("형사절차", "criminal", "#EFE9FF"),
-    ("폭행/협박", "assault", "#FFEDE3"),
-    ("명예훼손/모욕", "defame", "#E6F7EF"),
-    ("기타 형사범죄", "etc-criminal", "#F0F1F5"),
+    ("폭행/협박/모욕", "assault", "#FFEDE3"),
+    ("절도/사기", "etc-criminal", "#F0F1F5"),
+    ("교통", "traffic", "#E4EEFF"),
+    ("민사일반", "etc-civil", "#EDF1FF"),
+    ("금전/손해배상", "contract", "#FFF8D9"),
     ("부동산/임대차", "realestate", "#E2F5FF"),
-    ("금전/계약 문제", "contract", "#FFF8D9"),
-    ("민사절차", "civil", "#E7FBF2"),
-    ("기타 민사문제", "etc-civil", "#EDF1FF"),
-    ("가족", "family", "#FFE8F3"),
-    ("회사", "company", "#E7EFFE"),
-    ("의료/세금/행정", "medical", "#E4FAF7"),
-    ("IT/지식재산/금융", "it", "#F3E9FF"),
+    ("이혼/가족", "family", "#FFE8F3"),
+    ("기업/노동", "company", "#E7EFFE"),
+    ("의료", "medical", "#E4FAF7"),
+    ("세금/행정", "civil", "#E7FBF2"),
+    ("금융/보험", "property", "#FFF3DF"),
+    ("IT/지적재산", "it", "#F3E9FF"),
 ]
 
 
@@ -138,7 +137,7 @@ def get_home_data():
 
     regions = Region.query.order_by(Region.sort_order).all()
 
-    # 요즘 활발한 변호사 4 (최근 30일 답변수)
+    # 지금 법률전문가와 상담하기 — 최근 30일 답변수 상위 (가로 슬라이더)
     since = datetime.now() - timedelta(days=30)
     active_rows = (
         db.session.query(
@@ -148,7 +147,7 @@ def get_home_data():
         .filter(ConsultationAnswer.created_at >= since, ConsultationAnswer.deleted_at.is_(None))
         .group_by(ConsultationAnswer.lawyer_id)
         .order_by(db.text("cnt DESC"))
-        .limit(4)
+        .limit(10)
         .all()
     )
     profiles_by_id = {
@@ -163,13 +162,17 @@ def get_home_data():
         if lid in profiles_by_id
     ]
 
-    # 새로 함께하는 변호사 4 (최근 승인 순)
+    # 새로 함께하는 변호사 — 최근 승인 순, 관리자 노출 설정(show_in_new) 반영 (가로 슬라이더)
     new_lawyers = (
         LawyerProfile.query.join(User, LawyerProfile.user_id == User.id)
-        .filter(User.status == "active", LawyerProfile.is_visible.is_(True))
+        .filter(
+            User.status == "active",
+            LawyerProfile.is_visible.is_(True),
+            LawyerProfile.show_in_new.is_(True),
+        )
         .options(joinedload(LawyerProfile.user), joinedload(LawyerProfile.categories))
         .order_by(LawyerProfile.approved_at.desc())
-        .limit(4)
+        .limit(12)
         .all()
     )
 

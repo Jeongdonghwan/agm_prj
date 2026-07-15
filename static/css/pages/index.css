@@ -122,21 +122,31 @@ section:first-of-type{padding-top:48px}
 .chip-row::-webkit-scrollbar{display:none}
 .chip-row button{flex-shrink:0;border:1px solid var(--ink-200);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--ink-500);white-space:nowrap}
 .chip-row button.on{background:var(--blue-600);border-color:var(--blue-600);color:#fff;font-weight:700}
-/* 빠른 상담 변호사 */
-.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.quick-card{border:1px solid var(--ink-200);border-radius:18px;padding:26px 24px;display:flex;gap:18px;transition:.15s;align-items:center}
-.quick-card:hover{border-color:var(--blue-600);box-shadow:var(--shadow-card)}
-.quick-card .qav{width:64px;height:64px;border-radius:20px;background:linear-gradient(135deg,var(--blue-100),var(--blue-050));display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:18px;flex-shrink:0;overflow:hidden}
-.quick-card .qav img{width:100%;height:100%;object-fit:cover;border-radius:20px}
-.quick-card .name{font-size:15.5px;font-weight:800}
-.quick-card .name small{font-size:12px;font-weight:600;color:var(--ink-500);margin-left:4px}
-.quick-card .field{font-size:12.5px;color:var(--ink-500);margin-top:4px}
-.time-chips{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
-.time-chips span{background:var(--blue-100);color:var(--blue-700);font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;cursor:pointer}
-.time-chips span:hover{background:var(--blue-600);color:#fff}
+/* ===== 가로 슬라이더 공통 ===== */
+.hs-wrap{position:relative}
+.hscroll{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 2px 8px}
+.hscroll::-webkit-scrollbar{display:none}
+.hscroll>*{scroll-snap-align:start;flex-shrink:0}
+.hs-btn{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--ink-200);box-shadow:0 4px 14px rgba(10,42,94,.14);display:flex;align-items:center;justify-content:center;z-index:5;color:var(--ink-900);transition:.15s}
+.hs-btn svg{width:18px;height:18px}
+.hs-btn:hover{border-color:var(--blue-600);color:var(--blue-600)}
+.hs-btn[disabled]{opacity:.3;pointer-events:none}
+.hs-prev{left:-18px}
+.hs-next{right:-18px}
+
+/* 법률전문가 상담 프로필 카드 */
+.pro-card{width:212px;border:1px solid var(--ink-200);border-radius:18px;padding:26px 18px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:.15s;background:#fff}
+.pro-card:hover{border-color:var(--blue-600);box-shadow:var(--shadow-card);transform:translateY(-3px)}
+.pro-card .pav{width:76px;height:76px;border-radius:50%;background:linear-gradient(135deg,var(--blue-100),var(--blue-050));display:flex;align-items:center;justify-content:center;color:var(--blue-600);font-weight:800;font-size:22px;overflow:hidden}
+.pro-card .pav img{width:100%;height:100%;object-fit:cover}
+.pro-card h3{margin-top:12px;font-size:15.5px;font-weight:800;letter-spacing:-.3px}
+.pro-card small{margin-top:3px;font-size:12px;color:var(--ink-500)}
+.pro-card .chips{display:flex;gap:5px;margin-top:11px;flex-wrap:wrap;justify-content:center;min-height:24px}
+.pro-card .chips span{background:var(--blue-050);color:var(--blue-700);font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px}
+.pro-card .cta{display:block;width:100%;margin-top:14px;background:var(--blue-600);color:#fff;font-size:13px;font-weight:800;padding:11px 0;border-radius:var(--radius-sm)}
+.pro-card:hover .cta{background:var(--blue-700)}
 /* 새로 함께하는 변호사 */
-.new-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-.new-card{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:22px 20px;transition:.15s}
+.new-card{width:248px;display:block;border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:22px 20px;transition:.15s;background:#fff}
 .new-card:hover{border-color:var(--blue-600);box-shadow:var(--shadow-card)}
 .new-card .lb{font-size:11px;font-weight:700;color:var(--blue-600);background:var(--blue-050);padding:3px 9px;border-radius:999px;display:inline-block}
 .new-card .row{display:flex;align-items:center;gap:11px;margin-top:14px}
@@ -160,6 +170,7 @@ section:first-of-type{padding-top:48px}
   .hero-grid{grid-template-columns:1fr}
   .cat-grid{grid-template-columns:repeat(4,1fr)}
   .region-grid{grid-template-columns:repeat(4,1fr)}
-  .comm-grid,.case-grid,.qna-grid,.quick-grid,.solve-grid{grid-template-columns:1fr}
-  .new-grid{grid-template-columns:1fr 1fr}
+  .comm-grid,.case-grid,.qna-grid,.solve-grid{grid-template-columns:1fr}
+  .hs-prev{left:-6px}
+  .hs-next{right:-6px}
 }

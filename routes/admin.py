@@ -168,6 +168,20 @@ def lawyer_toggle_visible(user_id):
     return redirect(url_for("admin.lawyers", status="all"))
 
 
+@bp.route("/lawyers/<int:user_id>/toggle-new", methods=["POST"])
+@role_required("admin")
+def lawyer_toggle_new(user_id):
+    """메인 '새로 함께하는 변호사' 섹션 노출 on/off."""
+    prof = db.session.get(LawyerProfile, user_id)
+    if prof is None:
+        abort(404)
+    prof.show_in_new = not prof.show_in_new
+    _log("lawyer_toggle_new", f"user:{user_id}", {"show_in_new": prof.show_in_new})
+    db.session.commit()
+    flash("메인 신규 섹션 노출 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.lawyers", status="all"))
+
+
 @bp.route("/verification-files/<int:file_id>")
 @role_required("admin")
 def verification_file(file_id):

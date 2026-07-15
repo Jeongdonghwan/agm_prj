@@ -39,8 +39,16 @@
 .svc-card:hover .foot{color:var(--blue-600)}
 .svc-card .foot svg{width:14px;height:14px}
 
+/* B안 전용: 커뮤니티 인기글을 판례 탭처럼 무채색 2열 리스트로 */
+.comm-band{background:none;padding:0;border-radius:0;margin-top:0}
+.comm-grid{grid-template-columns:1fr 1fr;gap:0 44px}
+.comm-card{box-shadow:none;border:none;border-radius:0;border-bottom:1px solid var(--ink-200);padding:22px 0;background:none}
+.comm-card:hover{transform:none}
+.comm-card:hover h4{color:var(--blue-600)}
+
 @media (max-width:960px){
   .hero-b-grid{grid-template-columns:1fr}
   .side-event{display:none}  /* 모바일에서는 EVENT 사이드 배너 숨김 */
   .svc-cards{grid-template-columns:repeat(2,1fr)}
+  .comm-grid{grid-template-columns:1fr}
 }

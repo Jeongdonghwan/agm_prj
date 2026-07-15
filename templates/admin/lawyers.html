@@ -43,6 +43,9 @@
         <form method="post" action="{{ url_for('admin.lawyer_toggle_visible', user_id=u.id) }}" style="display:inline">
           <button class="btn line" type="submit">{{ '노출 정지' if u.lawyer_profile.is_visible else '노출 재개' }}</button>
         </form>
+        <form method="post" action="{{ url_for('admin.lawyer_toggle_new', user_id=u.id) }}" style="display:inline">
+          <button class="btn line" type="submit" title="메인 '새로 함께하는 변호사' 섹션 노출">{{ '신규 숨김' if u.lawyer_profile.show_in_new else '신규 노출' }}</button>
+        </form>
         {% endif %}
       </td>
     </tr>

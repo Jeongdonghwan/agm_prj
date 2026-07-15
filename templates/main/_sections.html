@@ -95,36 +95,43 @@
   </div>
 </section>
 
-<!-- 요즘 활발한 변호사 -->
+<!-- 지금 법률전문가와 상담하기 (가로 슬라이더) -->
 <section class="wrap">
-  <h2 class="sec-title">요즘 활발한 변호사</h2>
-  <div class="quick-grid">
-    {% for item in active_lawyers %}
-    {% set p = item.profile %}
-    <a class="quick-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}">
-      <div class="qav">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</div>
-      <div>
-        <div class="name">{{ p.user.name }} <small>변호사</small></div>
-        <div class="field">{{ p.categories[0].name if p.categories }} 전문 · {{ p.firm_name }}</div>
-        <div class="time-chips"><span>최근 답변 {{ item.answers }}건</span><span>조회 {{ '{:,}'.format(p.view_count or 0) }}</span></div>
-      </div>
-    </a>
-    {% else %}
-    <p style="font-size:13px;color:var(--ink-500)">최근 활동 데이터가 없습니다.</p>
-    {% endfor %}
+  <h2 class="sec-title">지금 법률전문가와 상담하기</h2>
+  <div class="hs-wrap">
+    <button class="hs-btn hs-prev" type="button" aria-label="이전"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+    <div class="hscroll">
+      {% for item in active_lawyers %}
+      {% set p = item.profile %}
+      <a class="pro-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}">
+        <div class="pav">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</div>
+        <h3>{{ p.user.name }} 변호사</h3>
+        <small>{{ p.firm_name }}</small>
+        <div class="chips">{% for c in p.categories[:2] %}<span>{{ c.name }}</span>{% endfor %}</div>
+        <span class="cta">프로필 보기</span>
+      </a>
+      {% else %}
+      <p style="font-size:13px;color:var(--ink-500)">최근 활동 데이터가 없습니다.</p>
+      {% endfor %}
+    </div>
+    <button class="hs-btn hs-next" type="button" aria-label="다음"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
 </section>
 
-<!-- 새로 함께하는 변호사 -->
+<!-- 새로 함께하는 변호사 (가로 슬라이더) -->
 <section class="wrap">
   <h2 class="sec-title">새로 함께하는 변호사 <span class="badge-new">NEW</span></h2>
-  <div class="new-grid">
-    {% for p in new_lawyers %}
-    <a class="new-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}" style="display:block">
-      <span class="lb">{{ p.categories[0].name if p.categories else '변호사' }}</span>
-      <div class="row"><span class="nav2">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</span><h4>{{ p.user.name }} 변호사</h4></div>
-      <p>{{ p.headline }}</p>
-    </a>
-    {% endfor %}
+  <div class="hs-wrap">
+    <button class="hs-btn hs-prev" type="button" aria-label="이전"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+    <div class="hscroll">
+      {% for p in new_lawyers %}
+      <a class="new-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}">
+        <span class="lb">{{ p.categories[0].name if p.categories else '변호사' }}</span>
+        <div class="row"><span class="nav2">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</span><h4>{{ p.user.name }} 변호사</h4></div>
+        <p>{{ p.headline }}</p>
+      </a>
+      {% endfor %}
+    </div>
+    <button class="hs-btn hs-next" type="button" aria-label="다음"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
 </section>
