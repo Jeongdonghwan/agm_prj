@@ -11,7 +11,7 @@
 {% block content %}
 <div class="wrap">
   <div class="news-promos">
-    <a class="promo" href="#">생활 속 법률 상식<br>뉴스레터 구독<small>바로가기 →</small></a>
+    <a class="promo" href="{{ url_for('contents.cases') }}">생활 속 법률 상식<br>판례돋보기<small>바로가기 →</small></a>
     <a class="promo" href="{{ url_for('community.list_') }}">나눔과 소통의 공간<br>{{ site_name }} 커뮤니티<small>바로가기 →</small></a>
     <a class="promo" href="{{ url_for('counsel.list_') }}">법률 고민 해결<br>온라인 상담<small>바로가기 →</small></a>
     <a class="promo" href="{{ url_for('lawyers.find') }}">분야별 전문 변호사<br>바로 찾기<small>바로가기 →</small></a>
