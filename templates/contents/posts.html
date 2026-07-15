@@ -58,7 +58,6 @@
         <h3>{{ post.title }}</h3>
         <p>{{ post.content[:140] }}</p>
         <div class="meta">
-          {% if post.result_badge %}<span class="result-badge"><i data-lucide="gavel"></i>{{ post.result_badge }}</span>{% endif %}
           <span>{{ post.published_at.strftime('%Y.%m.%d') if post.published_at }}</span>
           <span>조회 {{ '{:,}'.format(post.views or 0) }}</span>
         </div>

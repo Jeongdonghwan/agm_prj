@@ -1,18 +1,19 @@
-/* ===== 변호사 찾기 (분야 탭 + 리스트 통합) ===== */
-.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:20px 0 4px}
-.cat-tabs a{border:1px solid var(--ink-200);border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--ink-500);white-space:nowrap}
-.cat-tabs a:hover{border-color:var(--blue-600);color:var(--blue-600)}
-.cat-tabs a.on{background:var(--blue-900);border-color:var(--blue-900);color:#fff;font-weight:700}
-.sub-chips{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 0}
-.sub-chips a{background:var(--blue-050);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--ink-500);white-space:nowrap}
-.sub-chips a:hover{color:var(--blue-600)}
-.sub-chips a.on{background:var(--blue-600);color:#fff;font-weight:700}
-.region-row{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:1px solid var(--ink-200)}
+/* ===== 변호사 찾기 (좌측 카테고리 메뉴 + 리스트) ===== */
+.find-layout{display:grid;grid-template-columns:190px 1fr;gap:44px;margin-top:32px;align-items:start}
+.side-cats{position:sticky;top:130px;display:flex;flex-direction:column}
+.side-cats a.top{display:block;font-size:15px;font-weight:700;padding:7px 0;color:#C4CAD2}
+.side-cats a.top.on{color:var(--ink-900)}
+.side-cats a.top:hover{color:var(--blue-600)}
+.sub-cats{display:flex;flex-direction:column;margin:2px 0 6px;padding-left:12px;border-left:2px solid var(--blue-100)}
+.sub-cats a{font-size:13px;font-weight:600;color:var(--ink-500);padding:5px 0}
+.sub-cats a:hover{color:var(--blue-600)}
+.sub-cats a.on{color:var(--blue-600);font-weight:800}
+.main-col{min-width:0}
+.region-row{display:flex;gap:6px;flex-wrap:wrap;padding:0 0 14px;border-bottom:1px solid var(--ink-200)}
 .region-row a{font-size:12px;font-weight:600;color:var(--ink-500);padding:5px 10px;border-radius:var(--radius-sm)}
 .region-row a:hover{color:var(--blue-600)}
 .region-row a.on{background:var(--blue-100);color:var(--blue-700);font-weight:700}
 
-.list-layout{display:grid;grid-template-columns:1fr 300px;gap:32px;margin-top:24px;align-items:start}
 
 /* 맞춤 법률 정보 */
 .info-box{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:20px}
@@ -31,14 +32,6 @@
 .info-item .who .av img{width:100%;height:100%;object-fit:cover}
 
 /* 우측 안내 카드 */
-.side-guide{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:22px;position:sticky;top:130px}
-.side-guide h3{font-size:15px;font-weight:800;line-height:1.5}
-.guide-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--blue-050);font-size:13px}
-.guide-row:last-child{border-bottom:none}
-.guide-row .ic{width:38px;height:38px;border-radius:50%;background:var(--blue-050);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.guide-row .ic i{width:18px;height:18px;color:var(--blue-600)}
-.guide-row b{display:block;font-size:14px}
-.guide-row small{color:var(--ink-500)}
 
 /* 변호사 섹션 */
 .sec-title{font-size:19px;font-weight:800;margin:34px 0 6px;display:flex;align-items:center;gap:8px}
@@ -88,4 +81,4 @@
 .more-btn:hover{border-color:var(--blue-600);color:var(--blue-600)}
 .empty-note{padding:40px 0;text-align:center;color:var(--ink-500);font-size:14px}
 
-@media (max-width:960px){.list-layout{grid-template-columns:1fr}.side-guide{position:static}.info-grid{grid-template-columns:1fr}.ad-card .photo{width:96px;height:120px}}
+@media (max-width:960px){.find-layout{grid-template-columns:1fr;gap:20px}.side-cats{position:static;flex-direction:row;flex-wrap:wrap;gap:2px 14px}.sub-cats{flex-direction:row;flex-wrap:wrap;gap:2px 12px;border-left:none;padding-left:0}.info-grid{grid-template-columns:1fr}.ad-card .photo{width:96px;height:120px}}

@@ -13,37 +13,31 @@
 {% endblock %}
 
 {% block content %}
-<!-- 분야 탭: 클릭 시 해당 분야 변호사 바로 표시 -->
-<div class="wrap">
-  <div class="cat-tabs">
-    <a href="{{ url_for('lawyers.find', region=region.id if region else none) }}" class="{% if not parent_sel %}on{% endif %}">전체</a>
+<div class="wrap find-layout">
+  <!-- 좌측 카테고리 메뉴: 클릭 시 해당 분야 변호사 바로 표시 -->
+  <aside class="side-cats">
+    <a href="{{ url_for('lawyers.find', region=region.id if region else none) }}" class="top {% if not parent_sel %}on{% endif %}">전체</a>
     {% for p in parents %}
-    <a href="{{ url_for('lawyers.find', category=p.id, region=region.id if region else none) }}" class="{% if parent_sel and parent_sel.id == p.id %}on{% endif %}">{{ p.name }}</a>
+    <a href="{{ url_for('lawyers.find', category=p.id, region=region.id if region else none) }}" class="top {% if parent_sel and parent_sel.id == p.id %}on{% endif %}">{{ p.name }}</a>
+    {% if parent_sel and parent_sel.id == p.id and children %}
+    <div class="sub-cats">
+      {% for c in children %}
+      <a href="{{ url_for('lawyers.find', category=c.id, region=region.id if region else none) }}" class="{% if selected.id == c.id %}on{% endif %}">{{ c.name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
     {% endfor %}
-  </div>
+  </aside>
 
-  {% if children %}
-  <!-- 선택 대분류의 세부분야 칩 -->
-  <div class="sub-chips">
-    <a href="{{ url_for('lawyers.find', category=parent_sel.id, region=region.id if region else none) }}" class="{% if selected.id == parent_sel.id %}on{% endif %}">전체</a>
-    {% for c in children %}
-    <a href="{{ url_for('lawyers.find', category=c.id, region=region.id if region else none) }}" class="{% if selected.id == c.id %}on{% endif %}">{{ c.name }}</a>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <!-- 지역 필터 -->
-  <div class="region-row">
-    <a href="{{ url_for('lawyers.find', category=selected.id if selected else none) }}" class="{% if not region %}on{% endif %}">지역 전체</a>
-    {% for r in regions %}
-    <a href="{{ url_for('lawyers.find', category=selected.id if selected else none, region=r.id) }}" class="{% if region and region.id == r.id %}on{% endif %}">{{ r.name }}</a>
-    {% endfor %}
-  </div>
-</div>
-
-<div class="wrap list-layout">
-  <!-- 좌측 -->
-  <div>
+  <!-- 우측 본문 -->
+  <div class="main-col">
+    <!-- 지역 필터 -->
+    <div class="region-row">
+      <a href="{{ url_for('lawyers.find', category=selected.id if selected else none) }}" class="{% if not region %}on{% endif %}">지역 전체</a>
+      {% for r in regions %}
+      <a href="{{ url_for('lawyers.find', category=selected.id if selected else none, region=r.id) }}" class="{% if region and region.id == r.id %}on{% endif %}">{{ r.name }}</a>
+      {% endfor %}
+    </div>
     {% if solve_cases %}
     <!-- 맞춤 법률 정보: 관련 분야 해결사례 -->
     <div class="info-box">
@@ -113,23 +107,6 @@
     <a class="more-btn" href="{{ url_for('lawyers.find', category=category.id if category else none, region=region.id if region else none, page=page + 1) }}" rel="next">변호사 {{ remaining }}명 더보기</a>
     {% endif %}
   </div>
-
-  <!-- 우측 안내 -->
-  <aside class="side-guide">
-    <h3>프로필에서 연락처 확인하고<br>부담 없이 문의해보세요.</h3>
-    <div class="guide-row">
-      <div class="ic"><i data-lucide="phone"></i></div>
-      <div><b>사무소 전화</b><small>프로필의 전화번호로 바로 연결</small></div>
-    </div>
-    <div class="guide-row">
-      <div class="ic"><i data-lucide="message-circle"></i></div>
-      <div><b>카카오톡 문의</b><small>변호사 채널로 간편하게 문의</small></div>
-    </div>
-    <div class="guide-row">
-      <div class="ic"><i data-lucide="file-text"></i></div>
-      <div><b>온라인 상담글</b><small>상담사례에 질문 남기고 답변 받기</small></div>
-    </div>
-  </aside>
 </div>
 {% endblock %}
 
