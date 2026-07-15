@@ -55,16 +55,16 @@ section:last-of-type{padding-bottom:32px}
 .sec-title::before{content:"";width:5px;height:20px;background:var(--blue-600);border-radius:99px}
 .sec-title a{font-size:13px;font-weight:600;color:var(--ink-500);margin-left:auto;display:flex;align-items:center;gap:2px}
 
-/* ===== Category grid ===== */
+/* ===== Category grid — 흰 바탕 아이콘 (스쿼클 배경 없음) ===== */
 .cat-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:10px}
-.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 4px;border-radius:var(--radius-md);transition:.15s;font-size:13px;font-weight:600;color:var(--ink-900);text-align:center}
-.cat-item:hover{color:var(--ink-900)}
-.cat-item .ic{width:56px;height:56px;border-radius:19px;background:var(--blue-050);display:flex;align-items:center;justify-content:center;transition:.18s;box-shadow:0 2px 8px rgba(10,42,94,.05)}
-.cat-item:hover .ic{transform:translateY(-4px) scale(1.06);box-shadow:0 8px 18px rgba(10,42,94,.12)}
-.cat-item .ic i{width:25px;height:25px;color:var(--blue-600)}
-.cat-item .ic .em{font-size:26px;line-height:1}
-.cat-item .ic img{width:34px;height:34px;object-fit:contain}
-.cat-item.more .ic{background:#fff;border:1.5px dashed var(--ink-300, #B0B8C1)}
+.cat-item{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 4px;border-radius:var(--radius-md);font-size:13px;font-weight:600;color:var(--ink-900);text-align:center}
+.cat-item .ic{width:64px;height:64px;display:flex;align-items:center;justify-content:center}
+.cat-item .ic img{width:50px;height:50px;object-fit:contain;filter:drop-shadow(0 4px 6px rgba(10,42,94,.12));transition:.18s}
+.cat-item:hover .ic img{transform:translateY(-4px) scale(1.08);filter:drop-shadow(0 8px 12px rgba(10,42,94,.18))}
+.cat-item.more .ic{width:50px;height:50px;margin:7px 0;border-radius:50%;background:#F4F6FA;border:1.5px dashed #C9CFD8;transition:.18s}
+.cat-item.more .ic .em{font-size:22px;line-height:1;color:var(--ink-500)}
+.cat-item.more:hover .ic{background:var(--blue-050);border-color:var(--blue-600)}
+.cat-item.more:hover .ic .em{color:var(--blue-600)}
 
 /* ===== 통합 파인더 (분야로/지역으로 찾기) ===== */
 .finder{background:#fff;border:1px solid var(--ink-200);border-radius:16px;padding:26px 28px;box-shadow:var(--shadow-card)}

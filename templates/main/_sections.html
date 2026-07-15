@@ -74,9 +74,9 @@
     <div class="finder-panel on" id="finder-cat">
       <div class="cat-grid">
         {% for c in categories %}
-        <a class="cat-item" href="{{ url_for('lawyers.find', category=c.id) if c.id else url_for('lawyers.find') }}"><span class="ic" style="background:{{ c.bg }}"><img src="{{ url_for('static', filename='icons/' + c.icon + '.png') }}" alt="{{ c.name }}" loading="lazy"></span>{{ c.name }}</a>
+        <a class="cat-item" href="{{ url_for('lawyers.find', category=c.id) if c.id else url_for('lawyers.find') }}"><span class="ic"><img src="{{ url_for('static', filename='icons/' + c.icon + '.png') }}" alt="{{ c.name }}" loading="lazy"></span>{{ c.name }}</a>
         {% endfor %}
-        <a class="cat-item more" href="{{ url_for('lawyers.find') }}"><span class="ic"><span class="em" style="font-size:20px;color:var(--ink-500)">＋</span></span>전체보기</a>
+        <a class="cat-item more" href="{{ url_for('lawyers.find') }}"><span class="ic"><span class="em">＋</span></span>전체보기</a>
       </div>
     </div>
 
