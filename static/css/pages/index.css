@@ -48,10 +48,10 @@
 .kakao-card{background:var(--kakao);border-radius:var(--radius-md);padding:14px 16px;font-size:13px;font-weight:700;color:#3C1E1E;display:flex;align-items:center;gap:10px}
 
 /* ===== Section common — 섹션 간 간격을 넉넉하게 구분 ===== */
-section{padding:88px 0 0}
+section{padding:96px 0 0}
 section:first-of-type{padding-top:56px}
-section:last-of-type{padding-bottom:32px}
-.sec-title{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-bottom:26px;display:flex;align-items:center;gap:10px}
+section:last-of-type{padding-bottom:48px}
+.sec-title{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-bottom:28px;display:flex;align-items:center;gap:10px}
 .sec-title::before{content:"";width:5px;height:20px;background:var(--blue-600);border-radius:99px}
 .sec-title a{font-size:13px;font-weight:600;color:var(--ink-500);margin-left:auto;display:flex;align-items:center;gap:2px}
 
@@ -73,9 +73,10 @@ section:last-of-type{padding-bottom:32px}
 .finder-tabs button.on{background:#fff;color:var(--blue-600);box-shadow:var(--shadow-card)}
 .finder-panel{display:none}
 .finder-panel.on{display:block;animation:hubfade .25s ease}
-.region-chips{display:flex;flex-wrap:wrap;gap:10px}
-.region-btn{border:1px solid var(--ink-200);border-radius:999px;padding:12px 22px;text-align:center;font-size:14px;font-weight:600;background:#fff;transition:.15s}
-.region-btn:hover{border-color:var(--blue-600);color:var(--blue-600);background:var(--blue-050)}
+/* 지역 패널 — 6열 2줄 균일 그리드 */
+.region-chips{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.region-btn{background:#F4F6FA;border:none;border-radius:12px;padding:17px 0;text-align:center;font-size:15px;font-weight:600;color:var(--ink-900);transition:.15s}
+.region-btn:hover{background:var(--blue-050);color:var(--blue-600)}
 
 /* ===== 통합 콘텐츠 탭 ===== */
 .hub-tabs{display:flex;gap:8px;margin-bottom:22px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}

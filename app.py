@@ -1,13 +1,24 @@
+import time
+
 from flask import Flask, g, session
 from flask_compress import Compress
 
 from config import Config
 from extensions import cache, db
 
+# 정적 자산 캐시버스팅 버전 — 서버 재시작(배포)마다 갱신되어
+# 30일 Cache-Control에도 브라우저가 새 CSS/JS를 즉시 받는다
+ASSET_VERSION = int(time.time())
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    @app.url_defaults
+    def _static_cache_bust(endpoint, values):
+        if endpoint == "static":
+            values.setdefault("v", ASSET_VERSION)
 
     db.init_app(app)
     cache.init_app(app)
