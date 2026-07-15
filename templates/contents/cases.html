@@ -10,20 +10,12 @@
 
 {% block content %}
 <div class="wrap case-layout">
-  <!-- 좌측 필터 메뉴 (변호사 찾기와 동일 스타일) -->
+  <!-- 좌측 분야 메뉴 (변호사 찾기와 동일 스타일) -->
   <aside class="side-filters">
     <div class="grp">
-      <div class="grp-title">사건 종류</div>
-      <a href="{{ url_for('contents.cases', category=category_id) }}" class="{% if not case_type %}on{% endif %}">전체</a>
-      {% for value, label in case_types %}
-      <a href="{{ url_for('contents.cases', case_type=value, category=category_id) }}" class="{% if case_type == value %}on{% endif %}">{{ label }}</a>
-      {% endfor %}
-    </div>
-    <div class="grp">
-      <div class="grp-title">분야</div>
-      <a href="{{ url_for('contents.cases', case_type=case_type) }}" class="{% if not category_id %}on{% endif %}">전체</a>
+      <a href="{{ url_for('contents.cases') }}" class="{% if not category_id %}on{% endif %}">전체</a>
       {% for p in parents %}
-      <a href="{{ url_for('contents.cases', case_type=case_type, category=p.id) }}" class="{% if category_id == p.id %}on{% endif %}">{{ p.name }}</a>
+      <a href="{{ url_for('contents.cases', category=p.id) }}" class="{% if category_id == p.id %}on{% endif %}">{{ p.name }}</a>
       {% endfor %}
     </div>
   </aside>
@@ -47,8 +39,8 @@
     {% endfor %}
 
     <div class="pager">
-      {% if page > 1 %}<a href="{{ url_for('contents.cases', case_type=case_type, category=category_id, page=page - 1) }}" rel="prev">이전</a>{% endif %}
-      {% if has_next %}<a href="{{ url_for('contents.cases', case_type=case_type, category=category_id, page=page + 1) }}" rel="next">다음</a>{% endif %}
+      {% if page > 1 %}<a href="{{ url_for('contents.cases', category=category_id, page=page - 1) }}" rel="prev">이전</a>{% endif %}
+      {% if has_next %}<a href="{{ url_for('contents.cases', category=category_id, page=page + 1) }}" rel="next">다음</a>{% endif %}
     </div>
   </div>
 </div>
