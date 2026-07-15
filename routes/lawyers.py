@@ -41,53 +41,38 @@ def _visible_profiles_query():
 
 
 @bp.route("/")
-@cached_page(300)
-def find():
-    """1단계 — 분야로/지역으로 찾기 (시안 lawyers.html)."""
-    parents = (
-        Category.query.filter_by(parent_id=None)
-        .order_by(Category.sort_order)
-        .all()
-    )
-    children = (
-        Category.query.filter(Category.parent_id.isnot(None))
-        .order_by(Category.sort_order)
-        .all()
-    )
-    by_parent = {}
-    for c in children:
-        by_parent.setdefault(c.parent_id, []).append(c)
-    regions = Region.query.order_by(Region.sort_order).all()
-    return render_template(
-        "lawyers/find.html",
-        active_menu="lawyers",
-        parents=parents,
-        by_parent=by_parent,
-        regions=regions,
-    )
-
-
-@bp.route("/list")
 @cached_page(120)
-def list_():
-    """2단계 — 변호사 리스트 (시안 lawyers-list.html)."""
+def find():
+    """변호사 찾기 — 대분류 탭 클릭 시 바로 해당 분야 변호사 리스트."""
     category_id = request.args.get("category", type=int)
     region_id = request.args.get("region", type=int)
     page = max(request.args.get("page", 1, type=int), 1)
 
-    q = _visible_profiles_query()
+    parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
 
-    category = None
+    # 선택 분야: 대분류/세부분야 모두 허용
+    selected = None
+    parent_sel = None
     if category_id:
-        category = db.session.get(Category, category_id)
-        if category is None:
+        selected = db.session.get(Category, category_id)
+        if selected is None:
             abort(404)
-        # 세부분야 선택 시 부모 분야 보유 변호사도 매칭 (시드는 대분류 지정)
-        cat_ids = [category.id]
-        if category.parent_id:
-            cat_ids.append(category.parent_id)
+        parent_sel = selected.parent if selected.parent_id else selected
+    children = (
+        Category.query.filter_by(parent_id=parent_sel.id)
+        .order_by(Category.sort_order)
+        .all()
+        if parent_sel
+        else []
+    )
+
+    q = _visible_profiles_query()
+    if selected:
+        cat_ids = [selected.id]
+        if selected.parent_id:
+            cat_ids.append(selected.parent_id)  # 세부 선택 시 대분류 보유 변호사도 매칭
         else:
-            cat_ids += [c.id for c in Category.query.filter_by(parent_id=category.id)]
+            cat_ids += [c.id for c in children]
         q = q.filter(LawyerProfile.categories.any(Category.id.in_(cat_ids)))
 
     region = None
@@ -104,18 +89,18 @@ def list_():
         .limit(PER_PAGE)
         .all()
     )
-    # 상위 2명은 AD LAWYERS 카드 (데모: 조회수 상위 — firm_ads와 무관)
+    # 상위 2명은 AD LAWYERS 카드 (데모: 조회수 상위)
     ad_profiles = profiles[:2] if page == 1 else []
     plain_profiles = profiles[2:] if page == 1 else profiles
 
-    # 맞춤 법률 정보: 관련 분야 published 해결사례 6개 (Phase 3 전에는 비어 있음)
+    # 맞춤 법률 정보: 관련 분야 published 해결사례 6개
     cases_q = LawyerPost.query.filter_by(type="case", status="published").filter(
         LawyerPost.deleted_at.is_(None)
     )
-    if category:
+    if selected:
         cases_q = cases_q.filter(
             LawyerPost.category_id.in_(
-                [category.id] + ([category.parent_id] if category.parent_id else [])
+                [selected.id] + ([selected.parent_id] if selected.parent_id else [])
             )
         )
     solve_cases = (
@@ -136,10 +121,16 @@ def list_():
         .all()
     )
 
+    regions = Region.query.order_by(Region.sort_order).all()
     has_more = total > page * PER_PAGE
     return render_template(
         "lawyers/list.html",
         active_menu="lawyers",
+        parents=parents,
+        parent_sel=parent_sel,
+        selected=selected,
+        children=children,
+        regions=regions,
         profiles=profiles,
         ad_profiles=ad_profiles,
         plain_profiles=plain_profiles,
@@ -147,12 +138,18 @@ def list_():
         page=page,
         has_more=has_more,
         remaining=max(total - page * PER_PAGE, 0),
-        category=category,
+        category=selected,
         region=region,
         solve_cases=solve_cases,
         answer_counts=answer_counts,
         slugify=_slugify,
     )
+
+
+@bp.route("/list")
+def list_():
+    """구 리스트 URL — 통합된 찾기 페이지로 리다이렉트 (기존 링크 호환)."""
+    return redirect(url_for("lawyers.find", **request.args), code=301)
 
 
 @bp.route("/<int:user_id>")

@@ -1,9 +1,16 @@
-/* ===== 변호사 리스트 2단계 (시안 lawyers-list.html) ===== */
-.kw-row{border-bottom:1px solid var(--ink-200)}
-.kw-row .wrap{display:flex;gap:8px;align-items:center;padding:12px 20px;overflow-x:auto;scrollbar-width:none}
-.kw-row .lb{font-size:12px;font-weight:800;color:var(--blue-600);flex-shrink:0}
-.kw-row a{flex-shrink:0;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:6px 13px;font-size:13px;font-weight:600;color:var(--ink-500);white-space:nowrap}
-.kw-row a:hover{border-color:var(--blue-600);color:var(--blue-600)}
+/* ===== 변호사 찾기 (분야 탭 + 리스트 통합) ===== */
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:20px 0 4px}
+.cat-tabs a{border:1px solid var(--ink-200);border-radius:999px;padding:9px 16px;font-size:13.5px;font-weight:600;color:var(--ink-500);white-space:nowrap}
+.cat-tabs a:hover{border-color:var(--blue-600);color:var(--blue-600)}
+.cat-tabs a.on{background:var(--blue-900);border-color:var(--blue-900);color:#fff;font-weight:700}
+.sub-chips{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 0}
+.sub-chips a{background:var(--blue-050);border-radius:999px;padding:7px 14px;font-size:12.5px;font-weight:600;color:var(--ink-500);white-space:nowrap}
+.sub-chips a:hover{color:var(--blue-600)}
+.sub-chips a.on{background:var(--blue-600);color:#fff;font-weight:700}
+.region-row{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:1px solid var(--ink-200)}
+.region-row a{font-size:12px;font-weight:600;color:var(--ink-500);padding:5px 10px;border-radius:var(--radius-sm)}
+.region-row a:hover{color:var(--blue-600)}
+.region-row a.on{background:var(--blue-100);color:var(--blue-700);font-weight:700}
 
 .list-layout{display:grid;grid-template-columns:1fr 300px;gap:32px;margin-top:24px;align-items:start}
 

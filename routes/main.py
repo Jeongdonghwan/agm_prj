@@ -84,7 +84,6 @@ def sitemap():
     urls = [
         url_for("main.index", _external=True),
         url_for("lawyers.find", _external=True),
-        url_for("lawyers.list_", _external=True),
         url_for("counsel.list_", _external=True),
         url_for("contents.posts", _external=True),
         url_for("contents.cases", _external=True),

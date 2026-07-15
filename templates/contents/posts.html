@@ -50,13 +50,20 @@
   </div>
 
   {% if items %}
-  <div class="post-grid">
+  <div class="post-list">
     {% for post in items %}
-    <a class="post-card" href="{{ url_for('contents.post_detail', post_id=post.id, slug=slug(post.title)) }}">
-      <div class="post-by"><span class="av">{% if post.lawyer.lawyer_profile and post.lawyer.lawyer_profile.photo_url %}<img src="{{ post.lawyer.lawyer_profile.photo_url }}" alt="" loading="lazy">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>{{ post.lawyer.name }} 변호사</div>
-      <h3>{{ post.title }}</h3>
-      <p>{{ post.content[:120] }}</p>
-      {% if post.result_badge %}<span class="result-badge"><i data-lucide="gavel"></i>{{ post.result_badge }}</span>{% endif %}
+    <a class="post-row" href="{{ url_for('contents.post_detail', post_id=post.id, slug=slug(post.title)) }}">
+      <div class="body">
+        <div class="post-by"><span class="av">{% if post.lawyer.lawyer_profile and post.lawyer.lawyer_profile.photo_url %}<img src="{{ post.lawyer.lawyer_profile.photo_url }}" alt="" loading="lazy">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>{{ post.lawyer.name }} 변호사{% if post.category %} · {{ post.category.name }}{% endif %}</div>
+        <h3>{{ post.title }}</h3>
+        <p>{{ post.content[:140] }}</p>
+        <div class="meta">
+          {% if post.result_badge %}<span class="result-badge"><i data-lucide="gavel"></i>{{ post.result_badge }}</span>{% endif %}
+          <span>{{ post.published_at.strftime('%Y.%m.%d') if post.published_at }}</span>
+          <span>조회 {{ '{:,}'.format(post.views or 0) }}</span>
+        </div>
+      </div>
+      <div class="thumb">{% if post.thumbnail_url %}<img src="{{ post.thumbnail_url }}" alt="{{ post.title }}" loading="lazy">{% else %}<i data-lucide="image"></i>{% endif %}</div>
     </a>
     {% endfor %}
   </div>

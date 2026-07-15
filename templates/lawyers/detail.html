@@ -37,7 +37,7 @@
   <a href="#info">변호사정보</a>
   <a href="#solve">해결사례</a>
   <a href="#office">사무소 안내</a>
-  <a href="{{ url_for('lawyers.list_') }}" class="back"><i data-lucide="chevron-left"></i>목록으로</a>
+  <a href="{{ url_for('lawyers.find') }}" class="back"><i data-lucide="chevron-left"></i>목록으로</a>
 </div></div>
 
 <div class="wrap profile-layout">
@@ -57,7 +57,7 @@
       <div class="meta-rows">
         <div class="meta-row"><div class="k">분야</div><div class="v">
           {%- for c in profile.categories -%}
-          <a href="{{ url_for('lawyers.list_', category=c.id) }}">{{ c.name }}</a>{% if not loop.last %}, {% endif %}
+          <a href="{{ url_for('lawyers.find', category=c.id) }}">{{ c.name }}</a>{% if not loop.last %}, {% endif %}
           {%- endfor -%}
         </div></div>
         <div class="meta-row"><div class="k">자격</div><div class="v">변호사 등록번호 {{ profile.license_no }}</div></div>
