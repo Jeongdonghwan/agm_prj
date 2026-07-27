@@ -1,0 +1,4 @@
+# 테스트 전용 의존성 — .venv\Scripts\pip install -r requirements-dev.txt
+pytest>=8
+# conftest가 _make_scoped_session/get_bind 내부 동작(engines dict 스왑)에 의존 — 버전 고정
+flask-sqlalchemy==3.1.1
