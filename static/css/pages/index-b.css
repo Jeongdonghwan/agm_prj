@@ -1,6 +1,6 @@
 /* ===== 메인 디자인 B — 네이비 히어로 + EVENT 사이드 배너 + 원형 퀵메뉴 ===== */
 .hero-b{padding:24px 0 8px}
-.hero-b-grid{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:stretch}
+.hero-b-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
 
 /* 좌측 네이비 롤링 배너 */
 .hero-navy{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(150deg,#123B7E 0%,var(--blue-900) 75%);min-height:230px;display:block}
@@ -14,17 +14,20 @@
 .hero-navy p{margin-top:12px;font-size:14px;color:rgba(255,255,255,.75);font-weight:500}
 .hero-navy .indicator{position:absolute;bottom:14px;right:18px;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;font-size:11.5px;font-weight:600;padding:4px 12px;z-index:3;letter-spacing:1px}
 
-/* 우측 커뮤니티 배너 (브랜드 블루 톤) */
-.side-event{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(165deg,#EDF3FF 0%,var(--blue-100) 60%,#D8E4FF 100%);min-height:230px;color:var(--blue-900)}
-.side-event::after{content:"";position:absolute;right:-46px;bottom:-46px;width:150px;height:150px;border-radius:50%;background:rgba(27,92,255,.10)}
-.side-event .side-slide{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:26px 22px;color:var(--blue-900);z-index:1}
+/* 우측 커뮤니티 배너 (반반 분할 — 라이트 톤, 좌 텍스트 + 우 원형 일러스트) */
+.side-event{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(150deg,#FDFEFF 0%,var(--blue-050) 55%,#E4EDFF 100%);min-height:230px;color:var(--ink-900)}
+.side-event::after{content:"";position:absolute;right:-46px;bottom:-46px;width:150px;height:150px;border-radius:50%;background:rgba(27,92,255,.07)}
+.side-event .side-slide{display:none;position:absolute;inset:0;align-items:center;justify-content:space-between;gap:18px;padding:0 40px;z-index:1}
 .side-event .side-slide.on{display:flex;animation:heroBFade .45s ease}
-.side-event .ev{background:var(--blue-900);color:#fff;font-size:10px;font-weight:800;letter-spacing:1.5px;padding:4px 12px;border-radius:999px}
-.side-event h3{font-size:16.5px;font-weight:800;line-height:1.5;letter-spacing:-.4px}
-.side-event .side-slide>svg{width:44px;height:44px;color:var(--blue-600)}
-.side-event .side-slide>img{width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(10,42,94,.2));animation:heroFloat 3.2s ease-in-out infinite}
-.side-event .go{font-size:12.5px;font-weight:800;color:var(--blue-600);background:#fff;border-radius:999px;padding:8px 16px;box-shadow:0 2px 8px rgba(10,42,94,.1)}
-.side-event .side-slide:hover .go{background:var(--blue-600);color:#fff}
+.side-event .tx{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.side-event .ev{font-size:11.5px;font-weight:700;color:var(--ink-500);letter-spacing:.6px}
+.side-event h3{margin-top:8px;font-size:21px;font-weight:800;line-height:1.35;letter-spacing:-.6px;color:var(--ink-900)}
+.side-event h3 b{display:block;font-size:27px;color:var(--blue-600);letter-spacing:-.8px}
+.side-event .tx p{margin-top:10px;font-size:13.5px;color:var(--ink-500);font-weight:500}
+.side-event .go{margin-top:16px;font-size:12.5px;font-weight:800;color:#fff;background:var(--blue-900);border-radius:999px;padding:9px 18px;box-shadow:0 4px 12px rgba(10,42,94,.22)}
+.side-event .side-slide:hover .go{background:var(--blue-600)}
+.side-event .art{position:relative;flex-shrink:0;width:150px;height:150px;border-radius:50%;background:#fff;box-shadow:0 10px 28px rgba(10,42,94,.12);display:flex;align-items:center;justify-content:center}
+.side-event .art img{width:84px;height:84px;object-fit:contain;filter:drop-shadow(0 10px 16px rgba(10,42,94,.18));animation:heroFloat 3.2s ease-in-out infinite}
 .side-event .indicator{position:absolute;bottom:12px;right:14px;background:rgba(10,42,94,.4);color:#fff;border-radius:999px;font-size:11px;font-weight:600;padding:3px 10px;z-index:3;letter-spacing:1px}
 
 /* 하단 서비스 카드 퀵메뉴 5 (숨고 스타일) */
@@ -40,8 +43,13 @@
 .svc-card .foot svg{width:14px;height:14px}
 
 
+/* 모바일 전용 커뮤니티 바 — 데스크톱은 우측 배너가 있어 숨김 */
+.hero-b .comm-quick{display:none}
+
 @media (max-width:960px){
   .hero-b-grid{grid-template-columns:1fr}
-  .side-event{display:none}  /* 모바일에서는 EVENT 사이드 배너 숨김 */
+  .side-event{display:none}  /* 모바일에서는 사이드 배너 숨김 → 하단 comm-quick 바로 대체 */
   .svc-cards{grid-template-columns:repeat(2,1fr)}
+  .svc-card:last-child{grid-column:1/-1}  /* 카드 5종 홀수 배치 해소 */
+  .hero-b .comm-quick{display:flex;margin-top:14px}
 }
