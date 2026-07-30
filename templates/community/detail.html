@@ -23,11 +23,23 @@
     <div class="body">{{ post.content }}</div>
 
     {% if post.attachments %}
+    {# 이미지 첨부는 본문 아래 인라인 표시, 나머지는 다운로드 링크 #}
+    {% set img_atts = [] %}{% set file_atts = [] %}
+    {% for a in post.attachments %}{% if (a.url or '').lower().endswith(('.jpg', '.jpeg', '.png')) %}{% set _ = img_atts.append(a) %}{% else %}{% set _ = file_atts.append(a) %}{% endif %}{% endfor %}
+    {% if img_atts %}
+    <div class="attach-imgs">
+      {% for a in img_atts %}
+      <img src="{{ a.url }}" alt="{{ a.name }}" loading="lazy">
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if file_atts %}
     <div class="attach-list">
-      {% for a in post.attachments %}
+      {% for a in file_atts %}
       <a href="{{ a.url }}" download="{{ a.name }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>{{ a.name }}</a>
       {% endfor %}
     </div>
+    {% endif %}
     {% endif %}
 
     <div class="act-row">

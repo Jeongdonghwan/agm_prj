@@ -16,8 +16,9 @@
 .my-form label{font-size:12.5px;font-weight:700;color:var(--ink-500)}
 .my-form input{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:12px 14px;font-size:14px;font-family:inherit;outline:none;margin-top:4px}
 .my-form input:focus{outline:2px solid var(--blue-600);background:#fff}
-.my-form button{align-self:flex-start;background:var(--blue-600);color:#fff;font-size:13px;font-weight:800;padding:10px 20px;border-radius:var(--radius-sm)}
-.my-form button.danger{background:#fff;border:1px solid #FCA5A5;color:#B91C1C}
+.my-form button[type=submit]{align-self:flex-start;background:var(--blue-600);color:#fff;font-size:13px;font-weight:800;padding:10px 20px;border-radius:var(--radius-sm)}
+.my-form button[type=submit].danger{background:#fff;border:1px solid #FCA5A5;color:#B91C1C}
+.nick-link{background:none;border:none;padding:0;font-size:inherit;color:var(--blue-600);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 </style>
 {% endblock %}
 
@@ -59,7 +60,7 @@
       <div><label>이름</label><input type="text" name="name" value="{{ current_user.name or '' }}"></div>
       <div><label>휴대폰</label><input type="tel" name="phone" value="{{ current_user.phone or '' }}"></div>
       <div><label>닉네임</label><input type="text" value="{{ current_user.nickname or '미설정' }}" disabled>
-        <small style="font-size:12px;color:var(--ink-500)">닉네임 설정/변경(30일 1회)은 <button type="button" id="open-nick" style="color:var(--blue-600);font-weight:700">여기서</button> 할 수 있어요.</small></div>
+        <small style="font-size:12px;color:var(--ink-500)">닉네임 설정/변경(30일 1회)은 <button type="button" id="open-nick" class="nick-link">여기서</button> 할 수 있어요.</small></div>
       <button type="submit">저장</button>
     </form>
   </div>

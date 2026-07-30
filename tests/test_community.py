@@ -128,11 +128,13 @@ class TestAttachments:
             fname = atts[0]["url"].split("/")[-1]
             assert os.path.exists(os.path.join(
                 app.config["UPLOAD_FOLDER"], "community", str(uid), fname))
-        # 상세에서 첨부 렌더 + 공개 서빙 200
-        assert "사진.png" in client.get(f"/community/{pid}").get_data(as_text=True)
+        # 상세: 이미지는 본문 아래 인라인 <img>, 일반 파일은 다운로드 링크
+        html = client.get(f"/community/{pid}").get_data(as_text=True)
         with app.app_context():
-            url = atts[0]["url"]
-        assert client.get(url).status_code == 200
+            img_url, pdf_name = atts[0]["url"], atts[1]["name"]
+        assert f'<img src="{img_url}"' in html  # 이미지 인라인 표시
+        assert pdf_name in html and "attach-list" in html  # pdf는 링크 유지
+        assert client.get(img_url).status_code == 200  # 공개 서빙
 
     def test_bad_extension_rejected(self, app, client, login_as, sample_file):
         self._login(app, login_as)
