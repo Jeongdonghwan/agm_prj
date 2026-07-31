@@ -14,7 +14,9 @@
     </div>
     <div class="pf-field"><label>썸네일 (jpg/png)</label>
       {% if item and item.thumbnail_url %}<div class="pf-photo-cur"><img src="{{ item.thumbnail_url }}" alt=""> 현재 썸네일 (새 파일 업로드 시 교체)</div>{% endif %}
-      <input type="file" name="thumbnail" accept=".jpg,.jpeg,.png">
+      <div class="filebox" data-label="썸네일 선택 (jpg / png)">
+        <input type="file" name="thumbnail" accept=".jpg,.jpeg,.png">
+      </div>
     </div>
     <button class="btn pri" type="submit" style="padding:12px 0">저장</button>
   </div>

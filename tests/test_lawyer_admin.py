@@ -114,7 +114,10 @@ class TestVisibility:
             name = prof.user.name
             prof.photo_url = None  # 필수 필드 제거
             db.session.commit()
-        assert name not in client.get("/lawyers/").get_data(as_text=True)
+        # 상단 해결사례 광고 영역(관리자 지정 노출)은 제외하고 변호사 목록 섹션만 검사
+        html = client.get("/lawyers/").get_data(as_text=True)
+        list_section = html.split('sec-title">변호사')[1]
+        assert name not in list_section
 
     def test_invisible_detail_404(self, app, client):
         uid = _lawyer(app, 1)

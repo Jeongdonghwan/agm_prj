@@ -1,0 +1,58 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'users' %}
+{% block title %}회원 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}회원 관리{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+  {% for st, label in [('all', '전체'), ('active', '활동중'), ('suspended', '정지'), ('withdrawn', '탈퇴')] %}
+  <a class="btn {% if status == st %}pri{% else %}line{% endif %}" href="{{ url_for('admin.users', status=st, q=keyword) }}">{{ label }}</a>
+  {% endfor %}
+  <form method="get" action="{{ url_for('admin.users') }}" style="display:flex;gap:6px;margin-left:auto">
+    <input type="hidden" name="status" value="{{ status }}">
+    <input type="text" name="q" value="{{ keyword }}" placeholder="이메일/이름/닉네임 검색" style="border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;width:220px">
+    <button class="btn line" type="submit">검색</button>
+  </form>
+</div>
+
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>일반회원 <span class="cnt">{{ total }}</span>{% if total > 50 %} <small style="font-weight:500;color:var(--ink-500)">(최근 50명 표시 — 검색으로 좁혀주세요)</small>{% endif %}</h2></div>
+  <table>
+    <tr><th>가입일</th><th>이메일</th><th>이름</th><th>닉네임</th><th>휴대폰</th><th>상태</th><th>사유</th><th></th></tr>
+    {% for u in items %}
+    <tr>
+      <td>{{ u.created_at.strftime('%y.%m.%d') }}</td>
+      <td>{{ u.email }}</td>
+      <td><b>{{ u.name or '-' }}</b></td>
+      <td>{{ u.nickname or '-' }}</td>
+      <td>{{ u.phone or '-' }}</td>
+      <td>
+        {% if u.status == 'active' %}<span class="badge ok">활동중</span>
+        {% elif u.status == 'suspended' %}<span class="badge red">정지</span>
+        {% elif u.status == 'withdrawn' %}<span class="badge wait">탈퇴</span>
+        {% else %}<span class="badge wait">{{ u.status }}</span>{% endif %}
+      </td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ u.status_reason or '' }}">{{ u.status_reason or '-' }}</td>
+      <td style="white-space:nowrap">
+        {% if u.status == 'active' %}
+        <form method="post" action="{{ url_for('admin.user_suspend', user_id=u.id) }}" style="display:inline" onsubmit="var r=prompt('정지 사유를 입력하세요'); if(r===null) return false; this.reason.value=r;">
+          <input type="hidden" name="reason"><button class="btn danger" type="submit">정지</button>
+        </form>
+        {% elif u.status == 'suspended' %}
+        <form method="post" action="{{ url_for('admin.user_activate', user_id=u.id) }}" style="display:inline">
+          <button class="btn pri" type="submit">정지 해제</button>
+        </form>
+        {% endif %}
+        {% if u.status != 'withdrawn' %}
+        <form method="post" action="{{ url_for('admin.user_withdraw', user_id=u.id) }}" style="display:inline" onsubmit="return confirm('{{ u.email }} 회원을 탈퇴 처리할까요? 복구할 수 없습니다.')">
+          <button class="btn line" type="submit">탈퇴 처리</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="8" style="color:var(--ink-500)">해당 조건의 회원이 없습니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

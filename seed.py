@@ -547,6 +547,8 @@ def run_seed(app):
                     category_id=cat_by_name[cat_name].id,
                     views=80 + i * 33,
                     status=status,
+                    # 앞쪽 해결사례 2건은 변호사 목록 상단 광고 노출 데모
+                    is_featured=(ptype == "case" and status == "published" and i < 4),
                     published_at=published_at,
                     reject_reason=reject_reason,
                     created_at=now - timedelta(days=15 - i),

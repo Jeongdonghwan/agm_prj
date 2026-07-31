@@ -104,6 +104,71 @@ def dashboard():
     )
 
 
+# ─────────────────────────── 회원 관리 (§4-4) ───────────────────────────
+@bp.route("/users")
+@role_required("admin")
+def users():
+    status = request.args.get("status", "all")
+    keyword = request.args.get("q", "").strip()
+    q = User.query.filter_by(role="user")
+    if status in ("active", "suspended", "withdrawn"):
+        q = q.filter_by(status=status)
+    if keyword:
+        like = f"%{keyword}%"
+        q = q.filter(
+            db.or_(User.email.like(like), User.name.like(like), User.nickname.like(like))
+        )
+    total = q.count()
+    items = q.order_by(User.created_at.desc()).limit(50).all()
+    return render_template(
+        "admin/users.html", items=items, total=total, status=status, keyword=keyword
+    )
+
+
+def _get_plain_user(user_id):
+    user = db.session.get(User, user_id)
+    if user is None or user.role != "user":
+        abort(404)
+    return user
+
+
+@bp.route("/users/<int:user_id>/suspend", methods=["POST"])
+@role_required("admin")
+def user_suspend(user_id):
+    user = _get_plain_user(user_id)
+    reason = request.form.get("reason", "").strip()
+    user.status = "suspended"
+    user.status_reason = reason[:300] or "운영 정책 위반"
+    _log("user_suspend", f"user:{user_id}", {"reason": user.status_reason})
+    db.session.commit()
+    flash(f"{user.display_name} 회원을 정지했습니다.", "success")
+    return redirect(url_for("admin.users"))
+
+
+@bp.route("/users/<int:user_id>/activate", methods=["POST"])
+@role_required("admin")
+def user_activate(user_id):
+    user = _get_plain_user(user_id)
+    user.status = "active"
+    user.status_reason = None
+    _log("user_activate", f"user:{user_id}")
+    db.session.commit()
+    flash(f"{user.display_name} 회원의 정지를 해제했습니다.", "success")
+    return redirect(url_for("admin.users"))
+
+
+@bp.route("/users/<int:user_id>/withdraw", methods=["POST"])
+@role_required("admin")
+def user_withdraw(user_id):
+    user = _get_plain_user(user_id)
+    user.status = "withdrawn"
+    user.deleted_at = datetime.now()  # soft delete (§11)
+    _log("user_withdraw", f"user:{user_id}")
+    db.session.commit()
+    flash(f"{user.display_name} 회원을 탈퇴 처리했습니다.", "success")
+    return redirect(url_for("admin.users"))
+
+
 # ─────────────────────────── 변호사 관리 ───────────────────────────
 @bp.route("/lawyers")
 @role_required("admin")
@@ -226,6 +291,20 @@ def post_approve(post_id):
     db.session.commit()
     flash("포스트를 승인·게시했습니다.", "success")
     return redirect(url_for("admin.posts"))
+
+
+@bp.route("/posts/<int:post_id>/toggle-featured", methods=["POST"])
+@role_required("admin")
+def post_toggle_featured(post_id):
+    """변호사 목록 상단 '해결사례 광고' 노출 on/off — 게시중 해결사례만."""
+    post = db.session.get(LawyerPost, post_id)
+    if post is None or post.status != "published" or post.type != "case":
+        abort(404)
+    post.is_featured = not post.is_featured
+    _log("post_toggle_featured", f"post:{post_id}", {"is_featured": post.is_featured})
+    db.session.commit()
+    flash("해결사례 광고 노출 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.posts", status="published"))
 
 
 @bp.route("/posts/<int:post_id>/reject", methods=["POST"])

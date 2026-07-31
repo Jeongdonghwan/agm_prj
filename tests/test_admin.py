@@ -52,6 +52,102 @@ def test_dashboard(client, login_as):
     assert "승인 대기" in html and "검수" in html
 
 
+class TestUserManagement:
+    def test_list_and_search(self, client, login_as):
+        login_as(ADMIN)
+        html = client.get("/admin/users").get_data(as_text=True)
+        assert "user1@example.com" in html and "일반회원" in html
+        html = client.get("/admin/users?q=user1").get_data(as_text=True)
+        assert "user1@example.com" in html and "user2@example.com" not in html
+
+    def test_suspend_blocks_login_then_activate(self, app, client, login_as):
+        with app.app_context():
+            uid = User.query.filter_by(email="user3@example.com").first().id
+        login_as(ADMIN)
+        r = client.post(f"/admin/users/{uid}/suspend", data={"reason": "욕설 반복"},
+                        follow_redirects=True)
+        assert "정지했습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            u = db.session.get(User, uid)
+            assert u.status == "suspended" and u.status_reason == "욕설 반복"
+        # 정지 회원 로그인 차단
+        c2 = app.test_client()
+        r = c2.post("/login", data={"email": "user3@example.com", "password": "user-1234"})
+        assert "정지된 계정" in r.get_data(as_text=True)
+        # 해제 → 로그인 가능
+        client.post(f"/admin/users/{uid}/activate")
+        with app.app_context():
+            u = db.session.get(User, uid)
+            assert u.status == "active" and u.status_reason is None
+        r = c2.post("/login", data={"email": "user3@example.com", "password": "user-1234"},
+                    follow_redirects=False)
+        assert r.status_code == 302 and "/login" not in (r.headers.get("Location") or "")
+
+    def test_withdraw(self, app, client, login_as):
+        with app.app_context():
+            uid = User.query.filter_by(email="user4@example.com").first().id
+        login_as(ADMIN)
+        client.post(f"/admin/users/{uid}/withdraw")
+        with app.app_context():
+            u = db.session.get(User, uid)
+            assert u.status == "withdrawn" and u.deleted_at is not None
+
+    def test_lawyer_guarded_404(self, app, client, login_as):
+        with app.app_context():
+            lid = User.query.filter_by(email="lawyer1@angimo.kr").first().id
+        login_as(ADMIN)
+        assert client.post(f"/admin/users/{lid}/suspend", data={"reason": "x"}).status_code == 404
+
+    def test_action_logged(self, app, client, login_as):
+        with app.app_context():
+            uid = User.query.filter_by(email="user5@example.com").first().id
+        login_as(ADMIN)
+        client.post(f"/admin/users/{uid}/suspend", data={"reason": "로그 검증"})
+        with app.app_context():
+            log = AdminLog.query.filter_by(action="user_suspend").order_by(
+                AdminLog.id.desc()).first()
+            assert log and log.target == f"user:{uid}"
+
+
+class TestFeaturedCase:
+    def _published_case(self, app, title="광고 후보 사례"):
+        with app.app_context():
+            from datetime import datetime
+            lawyer = User.query.filter_by(email="lawyer1@angimo.kr").first()
+            p = LawyerPost(lawyer_id=lawyer.id, type="case", title=title, content="본문",
+                           status="published", published_at=datetime.now())
+            db.session.add(p)
+            db.session.commit()
+            return p.id
+
+    def test_toggle_featured(self, app, client, login_as):
+        pid = self._published_case(app)
+        login_as(ADMIN)
+        r = client.post(f"/admin/posts/{pid}/toggle-featured", follow_redirects=True)
+        assert "광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            assert db.session.get(LawyerPost, pid).is_featured is True
+        # 변호사 목록 상단 광고 영역 최상단 노출 + AD 뱃지 (관리자 액션이 캐시 무효화)
+        c2 = app.test_client()
+        html = c2.get("/lawyers/").get_data(as_text=True)
+        first_card = html.split('class="sa-card"')[1]
+        assert "광고 후보 사례" in first_card and "ad-tag" in first_card
+
+    def test_pending_or_non_case_404(self, app, client, login_as):
+        with app.app_context():
+            lawyer = User.query.filter_by(email="lawyer1@angimo.kr").first()
+            pending = LawyerPost(lawyer_id=lawyer.id, type="case", title="대기", content="c",
+                                 status="pending")
+            guide = LawyerPost(lawyer_id=lawyer.id, type="guide", title="가이드", content="c",
+                               status="published")
+            db.session.add_all([pending, guide])
+            db.session.commit()
+            pid1, pid2 = pending.id, guide.id
+        login_as(ADMIN)
+        assert client.post(f"/admin/posts/{pid1}/toggle-featured").status_code == 404
+        assert client.post(f"/admin/posts/{pid2}/toggle-featured").status_code == 404
+
+
 class TestLawyerApproval:
     def test_approve(self, app, client, login_as, sample_file):
         uid = _signup_pending_lawyer(app, app.test_client, sample_file)

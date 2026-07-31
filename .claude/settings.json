@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($html=\\(Invoke-WebRequest -Uri http://127.0.0.1:5001/ -UseBasicParsing\\).Content; [regex]::Matches\\($html,'<link[^>]+>'\\) | ForEach-Object { $_.Value } | Select-Object -First 8)",
+      "PowerShell($env:PYTHONUTF8='1'; .venv\\\\Scripts\\\\python -m pytest -q 2>$null; \"EXIT=$LASTEXITCODE\")"
+    ]
+  }
+}

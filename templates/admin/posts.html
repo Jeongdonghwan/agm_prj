@@ -19,6 +19,7 @@
       {% elif p.status == 'published' %}<span class="badge ok">게시중</span>
       {% elif p.status == 'rejected' %}<span class="badge red">반려</span>{% endif %}
       {% if p.result_badge %}<span class="badge blue">{{ p.result_badge }}</span>{% endif %}
+      {% if p.is_featured %}<span class="badge blue">AD 노출중</span>{% endif %}
     </div>
     <div class="m" style="margin-top:6px">{{ p.lawyer.name }} 변호사 · {{ p.created_at.strftime('%Y.%m.%d') }} 제출{% if p.reject_reason %} · 반려 사유: {{ p.reject_reason }}{% endif %}</div>
     <div class="m" style="margin-top:8px;white-space:pre-line">{{ p.content[:200] }}{% if p.content | length > 200 %}…{% endif %}</div>
@@ -31,6 +32,11 @@
       {% if p.status != 'rejected' %}
       <form method="post" action="{{ url_for('admin.post_reject', post_id=p.id) }}" style="display:inline" onsubmit="var r=prompt('반려 사유를 입력하세요'); if(r===null) return false; this.reason.value=r;">
         <input type="hidden" name="reason"><button class="btn danger" type="submit">반려</button>
+      </form>
+      {% endif %}
+      {% if p.status == 'published' and p.type == 'case' %}
+      <form method="post" action="{{ url_for('admin.post_toggle_featured', post_id=p.id) }}" style="display:inline">
+        <button class="btn line" type="submit" title="변호사 목록 상단 '이런 고민, 이렇게 해결됩니다' 광고 영역 노출">{{ '광고 해제' if p.is_featured else '광고 노출' }}</button>
       </form>
       {% endif %}
     </div>

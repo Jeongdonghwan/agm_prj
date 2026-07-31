@@ -106,8 +106,9 @@ def find():
             )
         )
     solve_cases = (
-        cases_q.options(joinedload(LawyerPost.lawyer))
-        .order_by(LawyerPost.published_at.desc())
+        cases_q.options(joinedload(LawyerPost.lawyer).joinedload(User.lawyer_profile))
+        # 관리자 지정 광고(is_featured) 우선, 부족분은 최신순으로 채움
+        .order_by(LawyerPost.is_featured.desc(), LawyerPost.published_at.desc())
         .limit(6)
         .all()
     )

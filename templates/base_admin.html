@@ -9,6 +9,7 @@
 <script src="{{ url_for('static', filename='js/lucide.min.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/file-input.css') }}">
 {% block styles %}{% endblock %}
 </head>
 <body>
@@ -40,6 +41,7 @@
   </div>
 </div>
 <script>lucide.createIcons();</script>
+<script src="{{ url_for('static', filename='js/file-input.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -75,7 +75,7 @@ td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
 .pf-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .pf-field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink-500);margin-bottom:5px}
 .pf-field label .req{color:var(--red-500)}
-.pf-field input[type=text],.pf-field input[type=tel],.pf-field select,.pf-field textarea{width:100%;border:1px solid var(--ink-200);background:#fff;border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit;outline:none}
+.pf-field input[type=text],.pf-field input[type=tel],.pf-field input[type=datetime-local],.pf-field select,.pf-field textarea{width:100%;border:1px solid var(--ink-200);background:#fff;border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit;outline:none}
 .pf-field input:focus,.pf-field select:focus,.pf-field textarea:focus{border-color:var(--blue-600)}
 .pf-field small{display:block;margin-top:4px;font-size:12px;color:var(--ink-500)}
 .pf-field input[type=file]{font-size:13px}

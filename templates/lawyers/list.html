@@ -48,14 +48,18 @@
       <div class="head"><h3>이런 고민, 이렇게 해결됩니다</h3>{% if category %}<span class="chip">{{ category.name }} 분야</span>{% endif %}</div>
       <div class="sa-grid">
         {% for post in solve_cases %}
-        <a class="sa-card" href="{{ url_for('contents.post_detail', post_id=post.id) }}">
-          <div class="lb">해결사례</div>
-          <h4>{{ post.title }}</h4>
-          <div class="who">
-            <span class="av">{% if post.lawyer.lawyer_profile and post.lawyer.lawyer_profile.photo_url %}<img src="{{ post.lawyer.lawyer_profile.photo_url }}" alt="{{ post.lawyer.name }} 변호사" loading="lazy">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>
-            {{ post.lawyer.name }} 변호사
-          </div>
-        </a>
+        {% set prof = post.lawyer.lawyer_profile %}
+        <div class="sa-card">
+          <a class="sa-main" href="{{ url_for('contents.post_detail', post_id=post.id) }}">
+            <div class="lb">해결사례{% if post.is_featured %}<span class="ad-tag">AD</span>{% endif %}{% if post.result_badge %}<span class="rb">{{ post.result_badge }}</span>{% endif %}</div>
+            <h4>{{ post.title }}</h4>
+          </a>
+          <a class="who" href="{{ url_for('lawyers.detail', user_id=post.lawyer_id) }}">
+            <span class="av">{% if prof and prof.photo_url %}<img src="{{ prof.photo_url }}" alt="{{ post.lawyer.name }} 변호사" loading="lazy">{% else %}{{ post.lawyer.name[0] }}{% endif %}</span>
+            <span class="nm">{{ post.lawyer.name }} 변호사{% if prof and prof.firm_name %}<small>{{ prof.firm_name }}</small>{% endif %}</span>
+            <span class="go">프로필 →</span>
+          </a>
+        </div>
         {% endfor %}
       </div>
     </div>

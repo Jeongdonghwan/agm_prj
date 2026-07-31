@@ -7,7 +7,7 @@
 {% block sidebar_nav %}
 <a href="{{ url_for('admin.dashboard') }}" class="{% if admin_active == 'dashboard' %}on{% endif %}"><i data-lucide="layout-dashboard"></i>대시보드</a>
 <div class="grp">회원</div>
-<a href="#"><i data-lucide="users"></i>회원 관리</a>
+<a href="{{ url_for('admin.users') }}" class="{% if admin_active == 'users' %}on{% endif %}"><i data-lucide="users"></i>회원 관리</a>
 <a href="{{ url_for('admin.lawyers') }}" class="{% if admin_active == 'lawyers' %}on{% endif %}"><i data-lucide="badge-check"></i>변호사 관리</a>
 <div class="grp">게시판</div>
 <a href="{{ url_for('admin.consultations') }}" class="{% if admin_active == 'consultations' %}on{% endif %}"><i data-lucide="message-square-text"></i>상담 관리</a>
