@@ -6,3 +6,4 @@ uploads/
 instance/
 *.log
 .DS_Store
+.claude/
