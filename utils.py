@@ -33,6 +33,14 @@ def render_body(text):
     return Markup(esc.replace("\n", "<br>"))
 
 
+def body_text(text):
+    """본문에서 [img] 토큰을 제거한 순수 텍스트 — 목록 미리보기/meta용."""
+    if not text:
+        return ""
+    stripped = re.sub(r"\[img\][^\[\]]*\[/img\]", " ", text)
+    return re.sub(r"\s+", " ", stripped).strip()
+
+
 def validate_nickname(value: str):
     """(ok, reason) — 2~10자 한글/영문/숫자 + 금칙어 필터."""
     if not NICKNAME_RE.match(value or ""):

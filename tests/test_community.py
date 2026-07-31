@@ -316,9 +316,10 @@ class TestBodyEditor:
         uid = self._login(app, login_as)
         _write(client, title="본문 이미지 썸네일 글",
                content=f"글\n[img]/uploads/community/{uid}/thumb.png[/img]")
-        # 목록 썸네일에 본문 이미지 사용
+        # 목록 썸네일에 본문 이미지 사용 + 미리보기 텍스트에 토큰 미노출
         html = client.get("/community/").get_data(as_text=True)
         assert f"/uploads/community/{uid}/thumb.png" in html
+        assert "[img]" not in html
 
 
 class TestHidden:

@@ -2,7 +2,7 @@
 
 {% block title %}{{ post.title }} - 커뮤니티 | {{ site_name }}{% endblock %}
 {% block meta %}
-<meta name="description" content="{{ post.content[:150] }}">
+<meta name="description" content="{{ (post.content | body_text)[:150] }}">
 {% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css') }}">

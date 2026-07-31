@@ -30,9 +30,10 @@ def create_app(config_class=Config):
 
     register_blueprints(app)
 
-    from utils import render_body
+    from utils import body_text, render_body
 
     app.jinja_env.filters["render_body"] = render_body
+    app.jinja_env.filters["body_text"] = body_text
 
     @app.before_request
     def load_current_user():

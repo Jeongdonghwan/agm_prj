@@ -2,7 +2,17 @@
 """utils 순수 단위 — 마스킹, 닉네임 검증."""
 import pytest
 
-from utils import mask_privacy, validate_nickname
+from utils import body_text, mask_privacy, validate_nickname
+
+
+class TestBodyText:
+    def test_strips_img_tokens(self):
+        raw = "앞 텍스트\n[img]/uploads/community/1/a.png[/img]\n뒤 텍스트"
+        assert body_text(raw) == "앞 텍스트 뒤 텍스트"
+
+    def test_plain_untouched(self):
+        assert body_text("그냥 본문") == "그냥 본문"
+        assert body_text("") == ""
 
 
 class TestMaskPrivacy:

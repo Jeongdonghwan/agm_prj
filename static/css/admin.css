@@ -53,6 +53,9 @@ td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
 .badge.red{background:#FEE2E2;color:#B91C1C}
 .btn{font-size:12px;font-weight:700;padding:7px 14px;border-radius:var(--radius-sm)}
 .btn.pri{background:var(--blue-600);color:#fff}.btn.pri:hover{background:var(--blue-700)}
+/* p-head 링크 회색(.panel .p-head a)이 버튼 글자색을 덮지 않도록 */
+.panel .p-head a.btn.pri{color:#fff}
+.panel .p-head a.btn.line{color:var(--ink-500)}
 .btn.line{border:1px solid var(--ink-200);color:var(--ink-500)}.btn.line:hover{border-color:var(--blue-600);color:var(--blue-600)}
 .btn.danger{border:1px solid #FCA5A5;color:#B91C1C}
 .two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px}
