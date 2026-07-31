@@ -212,6 +212,9 @@ def post_new():
             errors.append("제목을 입력해주세요.")
         if not content:
             errors.append("본문을 입력해주세요.")
+        # 분야는 유저 화면 필터·해결사례 광고 매칭 기준이므로 필수
+        if not form.get("category_id", type=int):
+            errors.append("분야를 선택해주세요.")
 
         thumbnail_url = None
         thumb = request.files.get("thumbnail")

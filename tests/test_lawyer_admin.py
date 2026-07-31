@@ -187,7 +187,7 @@ class TestPosts:
         uid = login_as("lawyer1@angimo.kr")
         client.post("/lawyer/posts/new",
                     data={"type": "guide", "title": "썸네일 가이드", "content": "본문",
-                          "thumbnail": sample_file("thumb.png")},
+                          "category_id": "1", "thumbnail": sample_file("thumb.png")},
                     content_type="multipart/form-data")
         with app.app_context():
             p = LawyerPost.query.filter_by(lawyer_id=uid, title="썸네일 가이드").first()
@@ -197,7 +197,7 @@ class TestPosts:
         login_as("lawyer1@angimo.kr")
         r = client.post("/lawyer/posts/new",
                         data={"type": "guide", "title": "t", "content": "c",
-                              "thumbnail": sample_file("bad.webp", b"RIFF")},
+                              "category_id": "1", "thumbnail": sample_file("bad.webp", b"RIFF")},
                         content_type="multipart/form-data")
         assert "jpg, jpeg, png만" in r.get_data(as_text=True)
 
@@ -206,10 +206,11 @@ class TestPosts:
         r = client.post("/lawyer/posts/new", data={"type": "bad", "title": "", "content": ""})
         html = r.get_data(as_text=True)
         assert "타입" in html and "제목" in html and "본문" in html
+        assert "분야를 선택해주세요" in html  # 분야 필수 — 필터/광고 매칭 기준
 
     def test_delete_own_soft(self, app, client, login_as):
         uid = login_as("lawyer1@angimo.kr")
-        client.post("/lawyer/posts/new", data={"type": "essay", "title": "삭제될 글", "content": "c"})
+        client.post("/lawyer/posts/new", data={"type": "essay", "title": "삭제될 글", "content": "c", "category_id": "1"})
         with app.app_context():
             pid = LawyerPost.query.filter_by(lawyer_id=uid, title="삭제될 글").first().id
         client.post(f"/lawyer/posts/{pid}/delete")
@@ -218,7 +219,7 @@ class TestPosts:
 
     def test_cannot_delete_others_post(self, app, client, login_as):
         uid = login_as("lawyer1@angimo.kr")
-        client.post("/lawyer/posts/new", data={"type": "essay", "title": "남의 글", "content": "c"})
+        client.post("/lawyer/posts/new", data={"type": "essay", "title": "남의 글", "content": "c", "category_id": "1"})
         with app.app_context():
             pid = LawyerPost.query.filter_by(lawyer_id=uid, title="남의 글").first().id
         login_as("lawyer2@angimo.kr")

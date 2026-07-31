@@ -217,10 +217,21 @@ class TestPostReview:
         with app.app_context():
             lawyer = User.query.filter_by(email="lawyer1@angimo.kr").first()
             p = LawyerPost(lawyer_id=lawyer.id, type="case", title=title,
-                           content="본문", status="pending")
+                           content="본문", status="pending", category_id=1)
             db.session.add(p)
             db.session.commit()
             return p.id
+
+    def test_lawyer_written_post_shows_in_pending(self, app, client, login_as):
+        """변호사 작성 플로우 → 어드민 승인 대기 탭 노출 (엔드투엔드)."""
+        login_as("lawyer1@angimo.kr")
+        client.post("/lawyer/posts/new", data={
+            "type": "case", "title": "플로우 검증 사례", "content": "본문",
+            "category_id": "1", "result_badge": "승소"})
+        login_as(ADMIN)
+        html = client.get("/admin/posts?status=pending").get_data(as_text=True)
+        assert "플로우 검증 사례" in html
+        assert "플로우 검증 사례" in client.get("/admin/").get_data(as_text=True)  # 대시보드 검수 대기
 
     def test_approve_publishes(self, app, client, login_as):
         pid = self._pending_post(app)
@@ -230,9 +241,13 @@ class TestPostReview:
         with app.app_context():
             p = db.session.get(LawyerPost, pid)
             assert p.status == "published" and p.published_at is not None
-        # 공개 목록 노출 (관리자 액션이 페이지 캐시도 무효화)
+        # 공개 목록 노출 + 분야 필터 매칭 (관리자 액션이 페이지 캐시도 무효화)
         c2 = app.test_client()
         assert "검수용 포스트" in c2.get("/posts?type=case").get_data(as_text=True)
+        assert "검수용 포스트" in c2.get("/posts?type=case&category=1").get_data(as_text=True)
+        assert "검수용 포스트" not in c2.get("/posts?type=case&category=7").get_data(as_text=True)
+        # 해당 분야 변호사 목록 상단 해결사례 영역에도 매칭
+        assert "검수용 포스트" in c2.get("/lawyers/?category=1").get_data(as_text=True)
 
     def test_reject_with_reason(self, app, client, login_as):
         pid = self._pending_post(app, "반려될 포스트")

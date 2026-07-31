@@ -16,8 +16,8 @@
           {% endfor %}
         </select>
       </div>
-      <div class="pf-field"><label>분야</label>
-        <select name="category_id">
+      <div class="pf-field"><label>분야 *</label>
+        <select name="category_id" required>
           <option value="">선택</option>
           {% for p in parents %}
           <option value="{{ p.id }}">{{ p.name }}</option>
