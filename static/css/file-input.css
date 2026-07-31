@@ -1,0 +1,18 @@
+/* ===== 파일첨부 공용 컴포넌트 (.filebox) — 미리보기 + 개별 제거 ===== */
+.filebox{display:flex;flex-direction:column;gap:10px}
+.fb-native{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.fb-trigger{display:flex;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--ink-200);border-radius:var(--radius-md);padding:16px;font-size:13px;font-weight:700;color:var(--ink-500);background:#fff;cursor:pointer;transition:.15s;width:100%}
+.fb-trigger:hover{border-color:var(--blue-600);color:var(--blue-600);background:var(--blue-050)}
+.fb-trigger svg{width:16px;height:16px;flex-shrink:0}
+.fb-list{display:flex;flex-wrap:wrap;gap:10px}
+.fb-list:empty{display:none}
+.fb-item{position:relative}
+.fb-item.img{width:84px;height:84px;border-radius:10px;overflow:hidden;border:1px solid var(--ink-200);background:var(--blue-050)}
+.fb-item.img img{width:100%;height:100%;object-fit:cover;display:block}
+.fb-item.doc{display:flex;align-items:center;gap:8px;background:var(--blue-050);border-radius:999px;padding:8px 34px 8px 12px;font-size:12.5px;font-weight:600;max-width:230px}
+.fb-item.doc .ext{background:var(--blue-600);color:#fff;font-size:10px;font-weight:800;border-radius:4px;padding:2px 5px;flex-shrink:0;letter-spacing:.5px}
+.fb-item.doc .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-900)}
+.fb-x{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(25,31,40,.65);color:#fff;font-size:13px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;padding:0}
+.fb-x:hover{background:var(--red-500)}
+.fb-item.doc .fb-x{top:50%;right:8px;transform:translateY(-50%);background:none;color:var(--ink-500);font-size:15px}
+.fb-item.doc .fb-x:hover{background:none;color:var(--red-500)}

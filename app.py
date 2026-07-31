@@ -30,6 +30,10 @@ def create_app(config_class=Config):
 
     register_blueprints(app)
 
+    from utils import render_body
+
+    app.jinja_env.filters["render_body"] = render_body
+
     @app.before_request
     def load_current_user():
         g.user = None

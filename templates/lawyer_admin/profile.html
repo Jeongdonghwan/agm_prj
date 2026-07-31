@@ -32,7 +32,9 @@
           {% if profile.photo_url %}
           <div class="pf-photo-cur"><img src="{{ profile.photo_url }}" alt="현재 프로필 사진"> 현재 등록된 사진 (새 파일 업로드 시 교체)</div>
           {% endif %}
-          <input type="file" name="photo" accept=".jpg,.jpeg,.png">
+          <div class="filebox" data-label="사진 선택 (jpg / png)">
+            <input type="file" name="photo" accept=".jpg,.jpeg,.png">
+          </div>
         </div>
       </div>
     </div>

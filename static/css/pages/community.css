@@ -50,7 +50,11 @@
 .comm-detail .head{padding:28px 0 20px;border-bottom:1px solid var(--ink-200)}
 .comm-detail .head h1{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.45;margin-top:10px}
 .comm-detail .meta{margin-top:12px;font-size:13px;color:var(--ink-500);display:flex;gap:12px;flex-wrap:wrap}
-.comm-detail .body{padding:24px 0;font-size:15px;line-height:1.85;white-space:pre-line;border-bottom:1px solid var(--ink-200)}
+.comm-detail .body{padding:24px 0;font-size:15px;line-height:1.85;border-bottom:1px solid var(--ink-200)} /* 개행은 render_body 필터가 <br>로 처리 */
+.comm-detail .body .body-img{max-width:100%;border-radius:var(--radius-md);margin:10px 0;display:block;box-shadow:var(--shadow-card)}
+.comm-detail .own-actions{margin-top:14px;display:flex;gap:8px;justify-content:flex-end}
+.comm-detail .own-actions a,.comm-detail .own-actions button{font-size:12px;font-weight:700;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 14px;color:var(--ink-500);background:#fff}
+.comm-detail .own-actions .del{border-color:#FCA5A5;color:#B91C1C}
 /* 첨부파일 */
 .attach-imgs{display:flex;flex-direction:column;gap:12px;padding:16px 0}
 .attach-imgs img{max-width:100%;border-radius:var(--radius-md);box-shadow:var(--shadow-card)}
@@ -89,6 +93,22 @@
 .comm-form input[type=text],.comm-form select,.comm-form textarea{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none}
 .comm-form input:focus,.comm-form select:focus,.comm-form textarea:focus{outline:2px solid var(--blue-600);background:#fff}
 .comm-form .anon{font-size:14px;display:flex;align-items:center;gap:6px;font-weight:600}
+/* 간이 에디터 */
+.comm-form .editor{width:100%;min-height:220px;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;line-height:1.8;outline:none}
+.comm-form .editor:focus{outline:2px solid var(--blue-600);background:#fff}
+.comm-form .editor:empty::before{content:attr(data-placeholder);color:var(--ink-500);opacity:.7;pointer-events:none}
+.comm-form .editor img{max-width:100%;border-radius:var(--radius-sm);margin:8px 0;display:block}
+.editor-tools{display:flex;align-items:center;gap:10px;margin-top:8px}
+.editor-tools button{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:var(--blue-600);background:var(--blue-050);border-radius:999px;padding:8px 14px}
+.editor-tools button:hover{background:var(--blue-100)}
+.editor-tools button svg{width:14px;height:14px}
+.editor-tools small{font-size:11.5px;color:var(--ink-500)}
+/* 수정 모드 — 기존 첨부 목록 */
+.old-atts{display:flex;flex-direction:column;gap:6px}
+.old-att{display:flex;align-items:center;gap:8px;font-size:13px;background:var(--blue-050);border-radius:var(--radius-sm);padding:9px 12px}
+.old-att .nm{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.old-att .rm{margin-left:auto;font-size:11px;color:var(--ink-500);flex-shrink:0}
+.old-att:has(input:checked){background:#FEF2F2;text-decoration:line-through}
 .comm-form .submit{width:100%;background:var(--blue-600);color:#fff;font-size:15px;font-weight:800;padding:14px 0;border-radius:var(--radius-md);margin-top:8px}
 .comm-form .submit:hover{background:var(--blue-700)}
 .pager{display:flex;justify-content:center;gap:8px;margin:30px 0}

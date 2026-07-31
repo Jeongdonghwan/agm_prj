@@ -190,6 +190,137 @@ class TestComments:
                            data={"content": "변호사 댓글"}).status_code == 403
 
 
+class TestOwnPost:
+    """내 글 수정/삭제 — 언제든 가능."""
+
+    def _mine(self, app, client, login_as, title="수정 대상 커뮤 글"):
+        _set_nickname(app, "user1@example.com", "테스트닉넴")
+        login_as("user1@example.com")
+        r = _write(client, title=title)
+        return int(r.headers["Location"].rstrip("/").split("/")[-1])
+
+    def test_owner_sees_actions(self, app, client, login_as):
+        pid = self._mine(app, client, login_as)
+        html = client.get(f"/community/{pid}").get_data(as_text=True)
+        assert "own-actions" in html and f"/community/{pid}/edit" in html
+
+    def test_edit(self, app, client, login_as):
+        pid = self._mine(app, client, login_as)
+        r = client.post(f"/community/{pid}/edit", data={
+            "category": "옥바라지 이야기", "title": "수정된 제목", "content": "수정된 본문",
+        }, content_type="multipart/form-data", follow_redirects=True)
+        assert "글이 수정되었습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            p = db.session.get(CommunityPost, pid)
+            assert p.title == "수정된 제목" and p.category == "옥바라지 이야기"
+
+    def test_edit_allowed_with_comments(self, app, client, login_as):
+        pid = self._mine(app, client, login_as)
+        client.post(f"/community/{pid}/comments", data={"content": "댓글"})
+        r = client.post(f"/community/{pid}/edit", data={
+            "category": "자유게시판", "title": "댓글 있어도 수정", "content": "c",
+        }, content_type="multipart/form-data", follow_redirects=True)
+        assert "글이 수정되었습니다" in r.get_data(as_text=True)
+
+    def test_edit_removes_attachment(self, app, client, login_as, sample_file):
+        _set_nickname(app, "user1@example.com", "테스트닉넴")
+        login_as("user1@example.com")
+        r = _write(client, title="첨부 수정 글",
+                   files=[sample_file("a.png"), sample_file("b.pdf", b"%PDF-1.4")])
+        pid = int(r.headers["Location"].rstrip("/").split("/")[-1])
+        with app.app_context():
+            remove_url = db.session.get(CommunityPost, pid).attachments[0]["url"]
+        client.post(f"/community/{pid}/edit", data={
+            "category": "자유게시판", "title": "첨부 수정 글", "content": "c",
+            "remove_attachments": remove_url,
+        }, content_type="multipart/form-data")
+        with app.app_context():
+            atts = db.session.get(CommunityPost, pid).attachments
+            assert len(atts) == 1 and atts[0]["name"] == "b.pdf"
+
+    def test_delete_soft(self, app, client, login_as):
+        pid = self._mine(app, client, login_as)
+        r = client.post(f"/community/{pid}/delete", follow_redirects=True)
+        assert "글이 삭제되었습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            p = db.session.get(CommunityPost, pid)
+            assert p.status == "deleted" and p.deleted_at is not None
+        assert client.get(f"/community/{pid}").status_code == 404
+
+    def test_others_cannot_edit_or_delete(self, app, client, login_as):
+        pid = self._mine(app, client, login_as)
+        _set_nickname(app, "user3@example.com", "다른유저닉")
+        login_as("user3@example.com")
+        assert client.get(f"/community/{pid}/edit").status_code == 404
+        assert client.post(f"/community/{pid}/delete").status_code == 404
+        # 타인 화면에는 수정/삭제 버튼 미노출
+        assert "own-actions" not in client.get(f"/community/{pid}").get_data(as_text=True)
+
+    def test_anon_redirects(self, app, client, login_as):
+        pid = self._mine(app, client, login_as)
+        client.get("/logout")
+        assert client.get(f"/community/{pid}/edit", follow_redirects=False).status_code == 302
+
+
+class TestBodyEditor:
+    """본문 이미지 간이 에디터 — 업로드 API + [img] 토큰 렌더."""
+
+    def _login(self, app, login_as):
+        _set_nickname(app, "user1@example.com", "테스트닉넴")
+        return login_as("user1@example.com")
+
+    def test_upload_image(self, app, client, login_as, sample_file):
+        uid = self._login(app, login_as)
+        r = client.post("/community/upload-image", data={"image": sample_file("body.png")},
+                        content_type="multipart/form-data")
+        assert r.status_code == 200
+        url = r.get_json()["url"]
+        assert url.startswith(f"/uploads/community/{uid}/")
+        assert client.get(url).status_code == 200  # 공개 서빙
+
+    def test_upload_bad_ext(self, app, client, login_as, sample_file):
+        self._login(app, login_as)
+        r = client.post("/community/upload-image", data={"image": sample_file("x.gif", b"GIF89a")},
+                        content_type="multipart/form-data")
+        assert r.status_code == 400 and r.get_json()["error"]["code"] == "INVALID_TYPE"
+
+    def test_upload_requires_login(self, client, sample_file):
+        r = client.post("/community/upload-image", data={"image": sample_file()},
+                        content_type="multipart/form-data", follow_redirects=False)
+        assert r.status_code == 302
+
+    def test_lawyer_403(self, client, login_as, sample_file):
+        login_as("lawyer1@angimo.kr")
+        r = client.post("/community/upload-image", data={"image": sample_file()},
+                        content_type="multipart/form-data")
+        assert r.status_code == 403
+
+    def test_body_token_renders_img(self, app, client, login_as):
+        uid = self._login(app, login_as)
+        body = f"첫 줄입니다\n[img]/uploads/community/{uid}/demo.png[/img]\n마지막 줄"
+        r = _write(client, title="에디터 본문 글", content=body)
+        pid = int(r.headers["Location"].rstrip("/").split("/")[-1])
+        html = client.get(f"/community/{pid}").get_data(as_text=True)
+        assert f'<img class="body-img" src="/uploads/community/{uid}/demo.png"' in html
+        assert "[img]" not in html.split("comm-detail")[1].split("cmt-sec")[0]
+
+    def test_external_token_stripped(self, app, client, login_as):
+        self._login(app, login_as)
+        r = _write(client, title="외부 이미지 글", content="본문 [img]https://evil.com/x.png[/img] 끝")
+        pid = int(r.headers["Location"].rstrip("/").split("/")[-1])
+        with app.app_context():
+            content = db.session.get(CommunityPost, pid).content
+        assert "evil.com" not in content
+
+    def test_first_image_from_body(self, app, client, login_as):
+        uid = self._login(app, login_as)
+        _write(client, title="본문 이미지 썸네일 글",
+               content=f"글\n[img]/uploads/community/{uid}/thumb.png[/img]")
+        # 목록 썸네일에 본문 이미지 사용
+        html = client.get("/community/").get_data(as_text=True)
+        assert f"/uploads/community/{uid}/thumb.png" in html
+
+
 class TestHidden:
     def test_hidden_post_404_except_admin(self, app, client, login_as):
         with app.app_context():

@@ -37,6 +37,15 @@ nav.gnb a.has-badge{padding:0 14px}
 .btn-write:hover{background:var(--blue-700)}
 /* 인라인 svg 아이콘 (lucide 치환 svg 포함) */
 .btn-write i,.btn-write svg{width:14px;height:14px;flex-shrink:0}
+.btn-write .caret{font-size:10px;margin-left:-2px}
+/* 글쓰기 드롭다운 (상담글/커뮤니티) */
+.write-dd{position:relative}
+.write-dd .write-menu{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--ink-200);border-radius:var(--radius-md);box-shadow:0 8px 24px rgba(10,42,94,.12);min-width:230px;padding:6px;z-index:120}
+.write-dd.open .write-menu{display:block}
+.write-menu a{display:block;padding:10px 12px;border-radius:var(--radius-sm)}
+.write-menu a:hover{background:var(--blue-050)}
+.write-menu b{display:block;font-size:13.5px;color:var(--ink-900)}
+.write-menu small{display:block;font-size:11.5px;color:var(--ink-500);margin-top:2px;font-weight:500}
 
 /* ===== Flash 메시지 ===== */
 .flash-stack{max-width:1080px;margin:14px auto 0;padding:0 20px;display:flex;flex-direction:column;gap:8px}

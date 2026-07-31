@@ -43,7 +43,9 @@
       </div>
       <div>
         <label>인증 서류 업로드 <span class="req">*</span></label>
-        <input type="file" name="verification_files" accept=".jpg,.jpeg,.png,.pdf" multiple required>
+        <div class="filebox" data-max="5" data-label="인증 서류 추가 (jpg / png / pdf)">
+          <input type="file" name="verification_files" accept=".jpg,.jpeg,.png,.pdf" multiple required>
+        </div>
         <div class="hint">변호사 신분증, 자격 증명 등 (jpg / png / pdf, 여러 장 가능, 최대 10MB)</div>
       </div>
       <button class="btn-submit" type="submit">가입 신청하기</button>

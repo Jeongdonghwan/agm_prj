@@ -17,6 +17,22 @@ def mask_privacy(text: str) -> str:
     return text
 
 
+_BODY_IMG_RE = re.compile(r"\[img\](/uploads/community/[\w/.\-]+)\[/img\]")
+
+
+def render_body(text):
+    """본문 렌더 필터 — escape 후 [img]…[/img] 토큰을 <img>로, 개행을 <br>로 치환."""
+    from markupsafe import Markup, escape
+
+    if not text:
+        return ""
+    esc = str(escape(text))
+    esc = _BODY_IMG_RE.sub(
+        lambda m: f'<img class="body-img" src="{m.group(1)}" alt="" loading="lazy">', esc
+    )
+    return Markup(esc.replace("\n", "<br>"))
+
+
 def validate_nickname(value: str):
     """(ok, reason) — 2~10자 한글/영문/숫자 + 금칙어 필터."""
     if not NICKNAME_RE.match(value or ""):

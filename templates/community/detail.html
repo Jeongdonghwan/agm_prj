@@ -20,7 +20,16 @@
         <span>조회 {{ '{:,}'.format(post.views) }} · 추천 <b id="like-count">{{ post.likes }}</b></span>
       </div>
     </div>
-    <div class="body">{{ post.content }}</div>
+    <div class="body">{{ post.content | render_body }}</div>
+
+    {% if is_owner %}
+    <div class="own-actions">
+      <a href="{{ url_for('community.edit', post_id=post.id) }}">수정</a>
+      <form method="post" action="{{ url_for('community.delete', post_id=post.id) }}" onsubmit="return confirm('글을 삭제할까요?')" style="display:inline">
+        <button class="del" type="submit">삭제</button>
+      </form>
+    </div>
+    {% endif %}
 
     {% if post.attachments %}
     {# 이미지 첨부는 본문 아래 인라인 표시, 나머지는 다운로드 링크 #}

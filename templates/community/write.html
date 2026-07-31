@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}글쓰기 - 커뮤니티 | {{ site_name }}{% endblock %}
+{% block title %}{{ '글 수정' if post else '글쓰기' }} - 커뮤니티 | {{ site_name }}{% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css') }}">
 {% endblock %}
 
 {% block content %}
 <div class="comm-form">
-  <h1>커뮤니티 글쓰기</h1>
+  <h1>{{ '커뮤니티 글 수정' if post else '커뮤니티 글쓰기' }}</h1>
   <form method="post" enctype="multipart/form-data" {% if nickname_required %}data-need-nickname="1"{% endif %}>
     <div class="field">
       <label>게시판</label>
@@ -15,6 +15,7 @@
         {% for key, b in boards.items() %}
         <option value="{{ key }}" {% if key == default_board %}selected{% endif %}>{{ b.label }}</option>
         {% endfor %}
+        {% if not post %}<option value="__counsel">상담사례 질문 (변호사 답변)</option>{% endif %}
       </select>
     </div>
     <div class="field" id="topic-field">
@@ -23,20 +24,38 @@
     </div>
     <div class="field">
       <label>제목</label>
-      <input type="text" name="title" required maxlength="200" value="{{ form.get('title', '') }}">
+      <input type="text" name="title" required maxlength="200" value="{{ form.get('title') or (post.title if post else '') }}">
     </div>
     <div class="field">
       <label>내용</label>
-      <textarea name="content" rows="10" required placeholder="전화번호·주민등록번호는 자동으로 가려집니다.">{{ form.get('content', '') }}</textarea>
+      <div class="editor" id="body-editor" contenteditable="true" data-upload-url="{{ url_for('community.upload_image') }}" data-placeholder="내용을 입력하세요. 전화번호·주민등록번호는 자동으로 가려집니다."></div>
+      <input type="hidden" name="content" id="body-hidden" value="{{ form.get('content') or (post.content if post else '') }}">
+      <div class="editor-tools">
+        <button type="button" id="btn-add-photo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>사진 추가</button>
+        <small>사진은 본문 커서 위치에 바로 들어갑니다.</small>
+        <input type="file" id="editor-img-input" accept=".jpg,.jpeg,.png" style="display:none">
+      </div>
     </div>
+    {% if post and post.attachments %}
+    <div class="field">
+      <label>기존 첨부</label>
+      <div class="old-atts">
+        {% for a in post.attachments %}
+        <label class="old-att"><input type="checkbox" name="remove_attachments" value="{{ a.url }}"> <span class="nm">{{ a.name }}</span> <span class="rm">체크 시 삭제</span></label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
     <div class="field">
       <label>파일 첨부 <small style="font-weight:500;color:var(--ink-500)">(최대 5개 — pdf, hwp, doc, xls, txt, 이미지, zip / 10MB)</small></label>
-      <input type="file" name="attachments" multiple accept=".pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.zip">
+      <div class="filebox" data-max="5">
+        <input type="file" name="attachments" multiple accept=".pdf,.hwp,.hwpx,.doc,.docx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.zip">
+      </div>
     </div>
     <div class="field">
-      <label class="anon"><input type="checkbox" name="is_anonymous" value="1" {% if form.get('is_anonymous') %}checked{% endif %}> 익명으로 작성</label>
+      <label class="anon"><input type="checkbox" name="is_anonymous" value="1" {% if form.get('is_anonymous') or (post and post.is_anonymous) %}checked{% endif %}> 익명으로 작성</label>
     </div>
-    <button class="submit" type="submit">등록하기</button>
+    <button class="submit" type="submit">{{ '수정하기' if post else '등록하기' }}</button>
   </form>
 </div>
 
@@ -45,14 +64,19 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/nickname-modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/comm-editor.js') }}"></script>
 <script>
-// 게시판 → 세부 주제 종속 선택
+// 게시판 → 세부 주제 종속 선택 (+ 상담사례 선택 시 상담글 작성으로 이동)
 const BOARDS = {{ boards | tojson }};
 const boardSel = document.getElementById('board-select');
 const topicSel = document.getElementById('topic-select');
 const topicField = document.getElementById('topic-field');
-const prev = {{ form.get('category') | tojson }};
+const prev = {{ (form.get('category') or (post.category if post else None)) | tojson }};
 function fillTopics() {
+  if (boardSel.value === '__counsel') {
+    location.href = '{{ url_for('counsel.write') }}';
+    return;
+  }
   const b = BOARDS[boardSel.value];
   const opts = b.topics.length ? b.topics : [b.label];
   topicSel.innerHTML = opts.map(t => `<option value="${t}"${t === prev ? ' selected' : ''}>${t}</option>`).join('');

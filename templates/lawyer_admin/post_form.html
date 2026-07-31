@@ -29,7 +29,11 @@
     <div class="pf-field"><label>본문 *</label><textarea name="content" rows="12" required></textarea></div>
     <div class="pf-row">
       <div class="pf-field"><label>결과 뱃지 (해결사례용)</label><input type="text" name="result_badge" maxlength="30" placeholder="무죄 / 집행유예 / 승소 등"></div>
-      <div class="pf-field"><label>썸네일 (jpg/png)</label><input type="file" name="thumbnail" accept=".jpg,.jpeg,.png"></div>
+      <div class="pf-field"><label>썸네일 (jpg/png)</label>
+        <div class="filebox" data-label="썸네일 선택">
+          <input type="file" name="thumbnail" accept=".jpg,.jpeg,.png">
+        </div>
+      </div>
     </div>
     <button class="btn pri" type="submit" style="padding:12px 0">검수 요청 (제출)</button>
   </div>

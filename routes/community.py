@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from datetime import datetime, timedelta
 
@@ -49,10 +50,27 @@ ATTACH_EXTENSIONS = {"pdf", "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "txt", 
 MAX_ATTACHMENTS = 5
 
 
-def _save_attachments(files):
+# 본문 이미지 토큰: [img]/uploads/community/…[/img] — 에디터가 삽입, 렌더 시 <img> 치환
+_BODY_IMG_RE = re.compile(r"\[img\](.*?)\[/img\]", re.S)
+BODY_IMG_PREFIX = "/uploads/community/"
+
+
+def _clean_body(text: str) -> str:
+    """본문 이미지 토큰 검증 — 내부 업로드 경로가 아닌 토큰은 제거(외부 이미지 차단)."""
+    def _keep(m):
+        url = m.group(1).strip()
+        if url.startswith(BODY_IMG_PREFIX) and re.fullmatch(r"[\w/.\-]+", url):
+            return f"[img]{url}[/img]"
+        return ""
+    return _BODY_IMG_RE.sub(_keep, text or "")
+
+
+def _save_attachments(files, limit=None):
     """첨부파일 저장 → [{name, url}] 반환. 허용 외 확장자는 (None, 에러메시지)."""
     saved = []
-    for f in files[:MAX_ATTACHMENTS]:
+    if limit is None:
+        limit = MAX_ATTACHMENTS
+    for f in files[:max(limit, 0)]:
         if not f or not f.filename:
             continue
         ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
@@ -93,10 +111,13 @@ def author_name(obj):
 
 
 def first_image(post):
-    """첨부 중 첫 이미지 URL — 목록 우측 미리보기용."""
+    """첨부 또는 본문 첫 이미지 URL — 목록 우측 미리보기용."""
     for a in post.attachments or []:
         if (a.get("url") or "").lower().endswith((".jpg", ".jpeg", ".png")):
             return a["url"]
+    m = _BODY_IMG_RE.search(post.content or "")
+    if m and m.group(1).startswith(BODY_IMG_PREFIX):
+        return m.group(1)
     return None
 
 
@@ -211,6 +232,7 @@ def write():
                 default_board=default_board,
                 nickname_required=True,
                 form=request.form,
+                post=None,
             )
         title = request.form.get("title", "").strip()
         content = request.form.get("content", "").strip()
@@ -226,7 +248,7 @@ def write():
                     user_id=g.user.id,
                     category=category,
                     title=mask_privacy(title)[:200],
-                    content=mask_privacy(content),
+                    content=_clean_body(mask_privacy(content)),
                     is_anonymous=request.form.get("is_anonymous") == "1",
                     is_notice=False,
                     attachments=attachments or None,
@@ -242,7 +264,84 @@ def write():
         default_board=default_board,
         nickname_required=nickname_required,
         form=request.form,
+        post=None,
     )
+
+
+@bp.route("/<int:post_id>/edit", methods=["GET", "POST"])
+@role_required("user", "admin")
+def edit(post_id):
+    """내 글 수정 — 작성자 본인만, 언제든 가능."""
+    p = CommunityPost.query.filter_by(id=post_id, user_id=g.user.id, status="open").filter(
+        CommunityPost.deleted_at.is_(None)
+    ).first()
+    if p is None:
+        abort(404)
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        content = request.form.get("content", "").strip()
+        category = request.form.get("category")
+        if not title or not content or category not in CATEGORY_TO_BOARD:
+            flash("게시판/제목/내용을 확인해주세요.", "error")
+        else:
+            removed = set(request.form.getlist("remove_attachments"))
+            kept = [a for a in (p.attachments or []) if a.get("url") not in removed]
+            new_atts, err = _save_attachments(
+                request.files.getlist("attachments"), limit=MAX_ATTACHMENTS - len(kept)
+            )
+            if err:
+                flash(err, "error")
+            else:
+                p.category = category
+                p.title = mask_privacy(title)[:200]
+                p.content = _clean_body(mask_privacy(content))
+                p.is_anonymous = request.form.get("is_anonymous") == "1"
+                p.attachments = (kept + (new_atts or [])) or None
+                db.session.commit()
+                flash("글이 수정되었습니다.", "success")
+                return redirect(url_for("community.detail", post_id=p.id))
+    return render_template(
+        "community/write.html",
+        active_menu="community",
+        boards=BOARDS,
+        default_board=CATEGORY_TO_BOARD.get(p.category, "free"),
+        nickname_required=False,
+        form=request.form,
+        post=p,
+    )
+
+
+@bp.route("/<int:post_id>/delete", methods=["POST"])
+@role_required("user", "admin")
+def delete(post_id):
+    """내 글 삭제 — soft delete (§11)."""
+    p = CommunityPost.query.filter_by(id=post_id, user_id=g.user.id).filter(
+        CommunityPost.deleted_at.is_(None)
+    ).first()
+    if p is None:
+        abort(404)
+    p.status = "deleted"
+    p.deleted_at = datetime.now()
+    db.session.commit()
+    flash("글이 삭제되었습니다.", "success")
+    return redirect(url_for("community.list_"))
+
+
+@bp.route("/upload-image", methods=["POST"])
+@role_required("user", "admin")
+def upload_image():
+    """본문 에디터 이미지 업로드 — 저장 후 공개 URL 반환."""
+    f = request.files.get("image")
+    if not f or not f.filename:
+        return {"error": {"code": "MISSING_FILE", "message": "이미지 파일이 없습니다."}}, 400
+    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
+    if ext not in ("jpg", "jpeg", "png"):
+        return {"error": {"code": "INVALID_TYPE", "message": "jpg, jpeg, png만 업로드할 수 있습니다."}}, 400
+    d = os.path.join(current_app.config["UPLOAD_FOLDER"], "community", str(g.user.id))
+    os.makedirs(d, exist_ok=True)
+    fname = f"{uuid.uuid4().hex}.{ext}"
+    f.save(os.path.join(d, fname))
+    return {"ok": True, "url": url_for("main.uploads", filename=f"community/{g.user.id}/{fname}")}
 
 
 @bp.route("/<int:post_id>")
@@ -290,6 +389,7 @@ def detail(post_id):
             ).first()
         )
     can_write = g.user and g.user.role in ("user", "admin")
+    is_owner = bool(g.user and g.user.id == p.user_id and not p.is_notice)
     return render_template(
         "community/detail.html",
         active_menu="community",
@@ -298,6 +398,7 @@ def detail(post_id):
         replies=replies,
         liked=liked,
         can_write=can_write,
+        is_owner=is_owner,
         nickname_required=bool(g.user and _require_nickname()),
         author_name=author_name,
         first_image=first_image,
