@@ -16,6 +16,7 @@ from models import (
     Report,
     User,
 )
+from utils import invalidate_page_cache
 
 ADMIN = "admin@angimo.kr"
 
@@ -158,6 +159,21 @@ class TestLawyerAdToggle:
         html = c2.get("/lawyers/").get_data(as_text=True)
         assert "AD LAWYERS" in html and f"{name} 변호사" in html
         assert 'class="sa-grid"' not in html  # 포토카드 영역은 미노출
+
+    def test_adlist_has_no_headcount_limit(self, app, client):
+        """AD LAWYERS는 인원 제한 없이 지정한 만큼 전부 노출."""
+        self._clear_all_ads(app)
+        with app.app_context():
+            profs = LawyerProfile.query.limit(5).all()
+            names = [p.user.name for p in profs]
+            for p in profs:
+                p.show_in_adlist = True
+            db.session.commit()
+            invalidate_page_cache()
+        html = app.test_client().get("/lawyers/").get_data(as_text=True)
+        ad_area = html.split("AD LAWYERS", 1)[1].split("plain-label", 1)[0]
+        for name in names:
+            assert f"{name} 변호사" in ad_area, name
 
     def test_only_designated_lawyers_shown(self, app, client, login_as):
         self._clear_all_ads(app)

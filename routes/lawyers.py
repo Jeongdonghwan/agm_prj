@@ -98,19 +98,18 @@ def find():
     plain_profiles = profiles
 
     # 광고 상품 2종 — 각각 별도 지정, 지정이 없으면 해당 영역만 미노출
-    def _ad_query(flag, limit):
+    def _ad_query(flag, limit=None):
         if page != 1:
             return []
-        return (
+        query = (
             _apply_filters(_visible_profiles_query())
             .filter(flag.is_(True))
             .order_by(LawyerProfile.view_count.desc())
-            .limit(limit)
-            .all()
         )
+        return (query.limit(limit) if limit else query).all()
 
-    ad_cards = _ad_query(LawyerProfile.show_in_ad, 6)  # ① 최상단 포토카드
-    ad_profiles = _ad_query(LawyerProfile.show_in_adlist, 2)  # ② AD LAWYERS
+    ad_cards = _ad_query(LawyerProfile.show_in_ad, 6)  # ① 최상단 포토카드(그리드 6장)
+    ad_profiles = _ad_query(LawyerProfile.show_in_adlist)  # ② AD LAWYERS(인원 제한 없음)
 
     answer_counts = dict(
         db.session.query(

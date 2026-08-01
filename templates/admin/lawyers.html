@@ -14,7 +14,7 @@
   <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% elif status == 'ad' %}광고 노출중{% else %}전체 변호사{% endif %} <span class="cnt">{{ users | length }}</span></h2></div>
   <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
     💡 <b>광고 상품 2종은 각각 따로 지정</b>합니다 — <a href="{{ url_for('admin.lawyers', status='all') }}" style="color:var(--blue-600);font-weight:700">[전체] 탭</a>에서 변호사 오른쪽 버튼으로:
-    <b>[포토카드]</b> = 변호사 목록 <b>최상단 사진 카드</b>(최대 6명) · <b>[AD리스트]</b> = 목록 중간 <b>AD LAWYERS 배너 카드</b>(최대 2명).
+    <b>[포토카드]</b> = 변호사 목록 <b>최상단 사진 카드</b>(최대 6명) · <b>[AD리스트]</b> = 목록 중간 <b>AD LAWYERS 배너 카드</b>(인원 제한 없음).
     각 영역은 <b>지정이 없으면 표시되지 않습니다</b>.
   </div>
   <table>
@@ -58,7 +58,7 @@
         </form>
         <form method="post" action="{{ url_for('admin.lawyer_toggle_adlist', user_id=u.id) }}" style="display:inline">
           <input type="hidden" name="back" value="{{ status }}">
-          <button class="btn {% if u.lawyer_profile.show_in_adlist %}pri{% else %}line{% endif %}" type="submit" title="광고 ② 목록 중간 AD LAWYERS 배너 카드(최대 2명)">{{ 'AD리스트 해제' if u.lawyer_profile.show_in_adlist else 'AD리스트 광고' }}</button>
+          <button class="btn {% if u.lawyer_profile.show_in_adlist %}pri{% else %}line{% endif %}" type="submit" title="광고 ② 목록 중간 AD LAWYERS 배너 카드(인원 제한 없음)">{{ 'AD리스트 해제' if u.lawyer_profile.show_in_adlist else 'AD리스트 광고' }}</button>
         </form>
         {% endif %}
       </td>
