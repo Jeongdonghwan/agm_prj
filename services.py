@@ -52,7 +52,7 @@ def _parse_banner(b):
 def get_home_data():
     now = datetime.now()
 
-    # 메인 사이드 롤링 배너 (B안 우측 EVENT 슬롯)
+    # 메인 사이드 배너 (B안 우측 커뮤니티 슬롯) — 고정 1장만 노출
     side_banners = [
         _parse_banner(b)
         for b in Banner.query.filter(
@@ -62,7 +62,7 @@ def get_home_data():
             db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
         )
         .order_by(Banner.sort_order)
-        .limit(4)
+        .limit(1)
         .all()
     ]
 

@@ -5,7 +5,10 @@
 
 {% block content %}
 <div class="panel" style="margin-top:0">
-  <div class="p-head"><h2>메인 히어로 배너 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.banner_form') }}">+ 새 배너</a></div>
+  <div class="p-head"><h2>배너 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.banner_form') }}">+ 새 배너</a></div>
+  <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+    💡 <b>메인 히어로</b>는 등록한 배너가 순서대로 롤링되고, <b>메인 사이드</b>(커뮤니티 칸)는 <b>순서 상위 1장만 고정</b>으로 노출됩니다.
+  </div>
   <table>
     <tr><th>위치</th><th>제목</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
     {% for b in items %}
@@ -14,7 +17,11 @@
       <td><b>{{ b.title }}</b></td>
       <td>{{ b.starts_at.strftime('%m.%d') if b.starts_at else '~' }} ~ {{ b.ends_at.strftime('%m.%d') if b.ends_at else '' }}</td>
       <td>{{ b.sort_order }}</td>
-      <td>{% if b.is_active %}<span class="badge ok">노출중</span>{% else %}<span class="badge wait">대기</span>{% endif %}</td>
+      <td>
+        {% if not b.is_active %}<span class="badge wait">대기</span>
+        {% elif b.position == 'main_side' and b.id != side_live_id %}<span class="badge wait" title="사이드는 순서 상위 1장만 노출됩니다">순번 밀림</span>
+        {% else %}<span class="badge ok">노출중</span>{% endif %}
+      </td>
       <td style="white-space:nowrap">
         <a class="btn line" href="{{ url_for('admin.banner_form', banner_id=b.id) }}">수정</a>
         <form method="post" action="{{ url_for('admin.banner_delete', banner_id=b.id) }}" style="display:inline" onsubmit="return confirm('삭제할까요?')">

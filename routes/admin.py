@@ -434,8 +434,14 @@ def news_delete(news_id):
 @bp.route("/banners")
 @role_required("admin")
 def banners():
-    items = Banner.query.order_by(Banner.sort_order).all()
-    return render_template("admin/banners.html", items=items)
+    items = Banner.query.order_by(Banner.position, Banner.sort_order).all()
+    # 사이드 배너는 순서 상위 1장만 실제 노출 — 목록에서 구분 표시용
+    side_live = next(
+        (b for b in items if b.position == "main_side" and b.is_active), None
+    )
+    return render_template(
+        "admin/banners.html", items=items, side_live_id=side_live.id if side_live else None
+    )
 
 
 @bp.route("/banners/new", methods=["GET", "POST"])
@@ -470,6 +476,8 @@ def banner_form(banner_id=None):
             saved = _save_image(img, "banners")
             if saved:
                 item.image_url = saved
+        elif form.get("remove_image") == "1":
+            item.image_url = None  # 기본 일러스트로 되돌리기
         _log("banner_save", f"banner:{item.id or 'new'}", {"title": item.title})
         db.session.commit()
         flash("배너가 저장되었습니다.", "success")

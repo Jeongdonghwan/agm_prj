@@ -18,7 +18,7 @@ function initRolling(containerSel, slideClass, curId, intervalMs) {
   }, intervalMs);
 }
 initRolling('#hero-banner', '.hero-slide', 'hero-cur', 4000); // 히어로 (B안은 data-static 랜덤 고정)
-initRolling('#side-banner', '.side-slide', 'side-cur', 4500); // 우측 EVENT 롤링 (B안)
+// B안 우측 커뮤니티 배너는 고정 1장 — 롤링 없음
 
 // 가로 슬라이더 — 화살표 스크롤 + 끝단 버튼 비활성
 document.querySelectorAll('.hs-wrap').forEach(wrap => {

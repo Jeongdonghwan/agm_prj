@@ -41,17 +41,17 @@
       <div class="indicator"><span id="hero-cur">1</span> / {{ hero_banners | length if hero_banners else 1 }}</div>
     </div>
 
-    <!-- 우측 커뮤니티 배너 (반반 분할, 롤링 지원) -->
+    <!-- 우측 커뮤니티 배너 (고정 1장 — 롤링·인디케이터 없음) -->
     <div class="side-event" id="side-banner">
       {% for b in side_banners %}
-      <a class="side-slide{% if loop.first %} on{% endif %}" {% if b.link %}href="{{ b.link }}"{% endif %}>
+      <a class="side-slide on" {% if b.link %}href="{{ b.link }}"{% endif %}>
         <div class="tx">
           <span class="ev">Inside. Together. Stronger.</span>
           <h3>{{ b.main }}{% if b.point %}<b>{{ b.point }}</b>{% endif %}</h3>
           {% if b.sub %}<p>{{ b.sub }}</p>{% endif %}
           <span class="go">커뮤니티 바로가기 →</span>
         </div>
-        <span class="art"><img src="{{ b.image or url_for('static', filename='icons/defame.png') }}" alt="" loading="lazy"></span>
+        <span class="art"><img src="{{ b.image or url_for('static', filename='img/community-hands.svg') }}" alt="" loading="lazy"></span>
       </a>
       {% else %}
       <a class="side-slide on" href="{{ url_for('community.list_') }}">
@@ -61,12 +61,9 @@
           <p>혼자가 아닙니다, 함께 이겨내요!</p>
           <span class="go">커뮤니티 바로가기 →</span>
         </div>
-        <span class="art"><img src="{{ url_for('static', filename='icons/defame.png') }}" alt="" loading="lazy"></span>
+        <span class="art"><img src="{{ url_for('static', filename='img/community-hands.svg') }}" alt="" loading="lazy"></span>
       </a>
       {% endfor %}
-      {% if side_banners | length > 1 %}
-      <div class="indicator"><span id="side-cur">1</span> / {{ side_banners | length }}</div>
-      {% endif %}
     </div>
   </div>
 

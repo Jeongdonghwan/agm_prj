@@ -83,6 +83,38 @@ class TestSeoEndpoints:
         assert body.count("<loc>") >= 50  # 시드 규모 기준
 
 
+class TestLayout:
+    """헤더 메뉴 순서 · B안 고정 배너 · 해결사례 포토카드."""
+
+    def test_gnb_order_lawyers_before_community(self, client):
+        html = client.get("/").get_data(as_text=True)
+        nav = html.split('<nav class="gnb', 1)[1].split("</nav>", 1)[0]
+        assert nav.index(">변호사<") < nav.index(">커뮤니티<")
+        assert nav.index(">안기모뉴스<") < nav.index(">커뮤니티<")
+        # 옥바라지 정보 메뉴는 커뮤니티 뒤에 묶여 유지
+        assert nav.index(">커뮤니티<") < nav.index(">교정시설 정보<") < nav.index(">양식 자료실<")
+
+    def test_side_banner_is_fixed_single(self, app, client):
+        """B안 우측 배너는 고정 1장 — 인디케이터·롤링 없음."""
+        html = client.get("/main-b").get_data(as_text=True)
+        assert 'id="side-banner"' in html
+        assert 'id="side-cur"' not in html  # 1/N 인디케이터 제거
+        assert html.count('class="side-slide on"') == 1
+        from services import get_home_data
+        with app.app_context():
+            assert len(get_home_data()["side_banners"]) <= 1
+
+    def test_solve_ad_photocard_shows_profile(self, client):
+        """포토카드 — 사진/이름/소속/소개글(headline)이 함께 노출."""
+        html = client.get("/lawyers/").get_data(as_text=True)
+        card = html.split('class="sa-card"', 1)[1].split("</div>", 1)[0]
+        assert 'class="ph"' in card  # 프로필 사진 영역
+        assert "변호사" in card
+        # 소속·소개글은 카드 전체 영역에서 확인
+        block = html.split('class="sa-grid"', 1)[1].split("</div>\n    </div>", 1)[0]
+        assert 'class="firm"' in block and 'class="intro"' in block
+
+
 class TestNoStoreHeaders:
     """로그인·어드민 응답은 브라우저 캐시 금지 — 낡은 화면으로 인한 혼동 방지."""
 

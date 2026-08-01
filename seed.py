@@ -594,11 +594,9 @@ def run_seed(app):
                     ends_at=now + timedelta(days=365),
                 )
             )
-        # 메인 사이드 배너 (디자인 B 히어로 우측 반쪽) — 커뮤니티 배너 3장 롤링
+        # 메인 사이드 배너 (디자인 B 히어로 우측 반쪽) — 고정 1장만 노출
         side_banners = [
-            ("안쪽이를 위한|수용자 커뮤니티|혼자가 아닙니다, 함께 이겨내요!", "/community/", "/static/icons/defame.png"),
-            ("교정시설 정보를|한눈에 확인하세요|접견·영치금·우편주소 정보 모음", "/community/board/facility", "/static/icons/realestate.png"),
-            ("탄원서·반성문·합의서|양식 자료실|필요한 서류 양식을 무료로 받아가세요", "/community/board/forms", "/static/icons/civil.png"),
+            ("안쪽이를 위한|수용자 커뮤니티|혼자가 아닙니다, 함께 이겨내요!", "/community/", None),
         ]
         for i, (title, link_url, image_url) in enumerate(side_banners):
             db.session.add(
