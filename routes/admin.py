@@ -177,10 +177,15 @@ def lawyers():
     q = User.query.filter_by(role="lawyer").filter(User.deleted_at.is_(None))
     if status == "pending":
         q = q.filter(User.status.in_(["pending", "rejected"]))
-    elif status == "ad":  # 목록 광고 노출중인 변호사만
+    elif status == "ad":  # 광고 상품(포토카드/AD LAWYERS) 중 하나라도 노출중
         q = q.filter(
             User.status == "active",
-            User.lawyer_profile.has(LawyerProfile.show_in_ad.is_(True)),
+            User.lawyer_profile.has(
+                db.or_(
+                    LawyerProfile.show_in_ad.is_(True),
+                    LawyerProfile.show_in_adlist.is_(True),
+                )
+            ),
         )
     q = q.options(joinedload(User.lawyer_profile)).order_by(User.created_at.desc())
     users = q.all()
@@ -192,7 +197,12 @@ def lawyers():
     pending_count = User.query.filter_by(role="lawyer").filter(
         User.deleted_at.is_(None), User.status.in_(["pending", "rejected"])
     ).count()
-    ad_count = LawyerProfile.query.filter(LawyerProfile.show_in_ad.is_(True)).count()
+    ad_count = LawyerProfile.query.filter(
+        db.or_(
+            LawyerProfile.show_in_ad.is_(True),
+            LawyerProfile.show_in_adlist.is_(True),
+        )
+    ).count()
     return render_template(
         "admin/lawyers.html",
         users=users,
@@ -264,15 +274,29 @@ def lawyer_toggle_new(user_id):
 @bp.route("/lawyers/<int:user_id>/toggle-ad", methods=["POST"])
 @role_required("admin")
 def lawyer_toggle_ad(user_id):
-    """변호사 목록 광고(상단 포토카드·AD LAWYERS) 노출 on/off."""
+    """광고 상품 ① 목록 최상단 포토카드 노출 on/off."""
     prof = db.session.get(LawyerProfile, user_id)
     if prof is None:
         abort(404)
     prof.show_in_ad = not prof.show_in_ad
     _log("lawyer_toggle_ad", f"user:{user_id}", {"show_in_ad": prof.show_in_ad})
     db.session.commit()
-    flash("변호사 목록 광고 노출 상태를 변경했습니다.", "success")
-    return redirect(url_for("admin.lawyers", status="all"))
+    flash("최상단 포토카드 광고 노출 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.lawyers", status=request.form.get("back", "all")))
+
+
+@bp.route("/lawyers/<int:user_id>/toggle-adlist", methods=["POST"])
+@role_required("admin")
+def lawyer_toggle_adlist(user_id):
+    """광고 상품 ② 목록 중간 AD LAWYERS 노출 on/off."""
+    prof = db.session.get(LawyerProfile, user_id)
+    if prof is None:
+        abort(404)
+    prof.show_in_adlist = not prof.show_in_adlist
+    _log("lawyer_toggle_adlist", f"user:{user_id}", {"show_in_adlist": prof.show_in_adlist})
+    db.session.commit()
+    flash("AD LAWYERS 광고 노출 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.lawyers", status=request.form.get("back", "all")))
 
 
 @bp.route("/verification-files/<int:file_id>")

@@ -125,11 +125,23 @@ class TestLayout:
     def test_ad_area_hidden_when_none_designated(self, app, client):
         """광고 지정이 0명이면 포토카드·AD LAWYERS 영역 자체가 사라짐."""
         with app.app_context():
-            LawyerProfile.query.update({LawyerProfile.show_in_ad: False})
+            LawyerProfile.query.update({
+                LawyerProfile.show_in_ad: False,
+                LawyerProfile.show_in_adlist: False,
+            })
             db.session.commit()
             invalidate_page_cache()
         html = client.get("/lawyers/").get_data(as_text=True)
         assert 'class="sa-grid"' not in html and "AD LAWYERS" not in html
+
+    def test_kakao_buttons_use_brand_symbol(self, app, client):
+        """카카오톡 버튼은 lucide 말풍선이 아니라 카카오 심볼 사용."""
+        from models import LawyerProfile as LP
+        with app.app_context():
+            uid = LP.query.filter(LP.kakao_url.isnot(None)).first().user_id
+        html = client.get(f"/lawyers/{uid}", follow_redirects=True).get_data(as_text=True)
+        assert "ico-kakao" in html
+        assert 'data-lucide="message-circle"' not in html
 
 
 class TestNoStoreHeaders:

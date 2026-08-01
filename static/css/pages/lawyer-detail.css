@@ -47,8 +47,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .btn-outline{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ink-900);border-radius:var(--radius-sm);padding:12px 22px;font-size:13.5px;font-weight:700}
 .btn-outline:hover{background:var(--ink-900);color:#fff}
 .btn-outline i{width:15px;height:15px}
-.btn-outline.kk{border-color:var(--ink-200)}
-.btn-outline.kk:hover{background:var(--kakao);border-color:var(--kakao);color:#3C1E1E}
+/* 카카오톡 버튼 — 브랜드 컬러 필 (심볼은 currentColor) */
+.btn-outline.kk{background:var(--kakao);border-color:var(--kakao);color:#191600}
+.btn-outline.kk:hover{background:#F5DC00;border-color:#F5DC00;color:#191600}
+.btn-outline .ico-kakao{flex-shrink:0}
 .inquiry-box .note{margin-top:18px;font-size:12px;color:var(--ink-300);display:flex;align-items:center;justify-content:center;gap:5px}
 .inquiry-box .note i{width:13px;height:13px}
 
@@ -108,8 +110,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 .mini-contact{margin-top:12px;display:flex;gap:8px}
 .mini-contact a{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:11px 0;font-size:12.5px;font-weight:700;color:var(--ink-500)}
 .mini-contact a:hover{border-color:var(--blue-600);color:var(--blue-600)}
-.mini-contact a.kk:hover{background:var(--kakao);border-color:var(--kakao);color:#3C1E1E}
+.mini-contact a.kk{background:var(--kakao);border-color:var(--kakao);color:#191600}
+.mini-contact a.kk:hover{background:#F5DC00;border-color:#F5DC00;color:#191600}
 .mini-contact i{width:14px;height:14px}
+.mini-contact .ico-kakao{flex-shrink:0}
 .cc-stat{margin-top:14px;border-top:1px solid var(--ink-200);padding-top:13px;display:flex;justify-content:space-around;font-size:11.5px;color:var(--ink-500);text-align:center}
 .cc-stat b{display:block;font-size:15px;color:var(--ink-900);letter-spacing:-.2px}
 

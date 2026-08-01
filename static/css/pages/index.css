@@ -45,7 +45,11 @@
 .comm-quick b{display:block;font-size:14.5px;font-weight:800;color:#fff}
 .comm-quick small{display:block;font-size:12px;color:rgba(255,255,255,.82);margin-top:2px}
 .comm-quick>svg{width:16px;height:16px;color:#fff;flex-shrink:0}
-.kakao-card{background:var(--kakao);border-radius:var(--radius-md);padding:14px 16px;font-size:13px;font-weight:700;color:#3C1E1E;display:flex;align-items:center;gap:10px}
+/* 카카오톡 채널 카드 — 브랜드 노랑 + 카톡 심볼 배지 */
+.kakao-card{background:var(--kakao);border-radius:var(--radius-md);padding:13px 16px;font-size:13px;font-weight:700;color:#191600;display:flex;align-items:center;gap:10px;transition:.18s}
+.kakao-card:hover{background:#F5DC00;transform:translateY(-2px);box-shadow:0 6px 16px rgba(254,229,0,.45)}
+.kakao-card .kk-mark{width:30px;height:30px;border-radius:50%;background:#191600;color:var(--kakao);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.kakao-card .arw{width:15px;height:15px;margin-left:auto;flex-shrink:0;opacity:.6}
 
 /* ===== Section common — 섹션 간 간격을 넉넉하게 구분 =====
    주의: .wrap(padding:0 20px)이 명시도가 높아 태그 셀렉터를 덮어쓰므로

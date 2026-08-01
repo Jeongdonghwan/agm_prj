@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% import "_icons.html" as ico %}<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
@@ -71,7 +71,7 @@
       <div class="line"><span class="new">new</span>정식 상담이 고민된다면, <b>먼저 가볍게 문의</b>해보세요</div>
       <div class="inquiry-btns">
         {% if profile.office_phone %}<a class="btn-outline contact-click" data-id="{{ profile.user_id }}" data-type="phone" href="tel:{{ profile.office_phone }}"><i data-lucide="phone"></i>사무소 전화</a>{% endif %}
-        {% if profile.kakao_url %}<a class="btn-outline kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>카카오톡 문의</a>{% endif %}
+        {% if profile.kakao_url %}<a class="btn-outline kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener">{{ ico.kakao(16) }}카카오톡 문의</a>{% endif %}
       </div>
       <div class="note"><i data-lucide="info"></i>간편 문의는 사무실 직원이 응대할 수 있습니다.</div>
     </div>
@@ -140,7 +140,7 @@
         {% endif %}
         <div class="mini-contact">
           {% if profile.office_phone %}<a class="contact-click" data-id="{{ profile.user_id }}" data-type="phone" href="tel:{{ profile.office_phone }}"><i data-lucide="phone"></i>사무소 전화</a>{% endif %}
-          {% if profile.kakao_url %}<a class="kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener"><i data-lucide="message-circle"></i>카카오톡</a>{% endif %}
+          {% if profile.kakao_url %}<a class="kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener">{{ ico.kakao(15) }}카카오톡</a>{% endif %}
         </div>
         <div class="cc-stat">
           <div><b>{{ '{:,}'.format(profile.view_count or 0) }}</b>프로필 조회</div>

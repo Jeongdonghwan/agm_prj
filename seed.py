@@ -350,7 +350,8 @@ def run_seed(app):
                 region_id=regions[region_idx].id,
                 view_count=120 + i * 37,
                 contact_click_count=8 + i * 3,
-                show_in_ad=(i <= 3),  # 데모: 앞 3명을 목록 광고로 노출
+                show_in_ad=(i <= 3),  # 데모: 광고① 최상단 포토카드 3명
+                show_in_adlist=(i <= 2),  # 데모: 광고② AD LAWYERS 2명
                 approved_at=now - timedelta(days=80 - i * 7),
             )
             profile.categories = [cat_by_name[c] for c in cats]

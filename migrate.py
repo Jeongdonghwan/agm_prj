@@ -19,6 +19,7 @@ from extensions import db
 MIGRATIONS = [
     ("lawyer_profiles", "show_in_new", "TINYINT(1) DEFAULT 1"),
     ("lawyer_profiles", "show_in_ad", "TINYINT(1) DEFAULT 0"),
+    ("lawyer_profiles", "show_in_adlist", "TINYINT(1) DEFAULT 0"),
     ("community_posts", "attachments", "JSON NULL"),
 ]
 

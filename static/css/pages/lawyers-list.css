@@ -71,7 +71,9 @@
 .ic-btn{width:42px;height:42px;border:1px solid var(--ink-200);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center}
 .ic-btn i{width:17px;height:17px;color:var(--ink-500)}
 .ic-btn:hover{border-color:var(--blue-600)} .ic-btn:hover i{color:var(--blue-600)}
-.ic-btn.kakao{background:var(--kakao);border-color:var(--kakao)} .ic-btn.kakao i{color:#3C1E1E}
+.ic-btn.kakao{background:var(--kakao);border-color:var(--kakao);color:#191600}
+.ic-btn.kakao:hover{background:#F5DC00;border-color:#F5DC00}
+.ic-btn .ico-kakao{flex-shrink:0}
 .btn-profile{margin-left:auto;background:var(--blue-600);color:#fff;font-size:14px;font-weight:800;padding:12px 22px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:5px}
 .btn-profile:hover{background:var(--blue-700)}
 

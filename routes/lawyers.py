@@ -97,17 +97,20 @@ def find():
     )
     plain_profiles = profiles
 
-    # 광고 영역: 관리자가 '광고 노출'로 지정한 변호사만 (지정 없으면 영역 미노출)
-    ad_cards = (
-        _apply_filters(_visible_profiles_query())
-        .filter(LawyerProfile.show_in_ad.is_(True))
-        .order_by(LawyerProfile.view_count.desc())
-        .limit(6)
-        .all()
-        if page == 1
-        else []
-    )
-    ad_profiles = ad_cards[:2]  # AD LAWYERS 카드
+    # 광고 상품 2종 — 각각 별도 지정, 지정이 없으면 해당 영역만 미노출
+    def _ad_query(flag, limit):
+        if page != 1:
+            return []
+        return (
+            _apply_filters(_visible_profiles_query())
+            .filter(flag.is_(True))
+            .order_by(LawyerProfile.view_count.desc())
+            .limit(limit)
+            .all()
+        )
+
+    ad_cards = _ad_query(LawyerProfile.show_in_ad, 6)  # ① 최상단 포토카드
+    ad_profiles = _ad_query(LawyerProfile.show_in_adlist, 2)  # ② AD LAWYERS
 
     answer_counts = dict(
         db.session.query(

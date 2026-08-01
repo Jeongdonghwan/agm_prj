@@ -114,7 +114,10 @@ class TestLawyerAdToggle:
 
     def _clear_all_ads(self, app):
         with app.app_context():
-            LawyerProfile.query.update({LawyerProfile.show_in_ad: False})
+            LawyerProfile.query.update({
+                LawyerProfile.show_in_ad: False,
+                LawyerProfile.show_in_adlist: False,
+            })
             db.session.commit()
 
     def _lawyer(self, app, email="lawyer1@angimo.kr"):
@@ -122,23 +125,39 @@ class TestLawyerAdToggle:
             u = User.query.filter_by(email=email).first()
             return u.id, u.name
 
-    def test_toggle_shows_and_hides_card(self, app, client, login_as):
+    def test_photocard_ad_independent(self, app, client, login_as):
+        """광고① 포토카드만 지정하면 포토카드에만 노출(AD LAWYERS는 안 뜸)."""
         self._clear_all_ads(app)
         uid, name = self._lawyer(app)
         login_as(ADMIN)
         r = client.post(f"/admin/lawyers/{uid}/toggle-ad", follow_redirects=True)
-        assert "광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
+        assert "최상단 포토카드 광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
         with app.app_context():
-            assert db.session.get(LawyerProfile, uid).show_in_ad is True
-        # 목록 상단 포토카드 + AD LAWYERS에 노출
+            prof = db.session.get(LawyerProfile, uid)
+            assert prof.show_in_ad is True and prof.show_in_adlist is False
         c2 = app.test_client()
         html = c2.get("/lawyers/").get_data(as_text=True)
         ad_area = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
-        assert f"{name} 변호사" in ad_area and "ad-tag" in ad_area
-        assert "AD LAWYERS" in html
+        assert f"{name} 변호사" in ad_area
+        assert "AD LAWYERS" not in html  # 별개 상품이므로 함께 켜지지 않음
         # 해제하면 사라짐
         client.post(f"/admin/lawyers/{uid}/toggle-ad")
         assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
+
+    def test_adlist_ad_independent(self, app, client, login_as):
+        """광고② AD LAWYERS만 지정하면 그 영역에만 노출(포토카드는 안 뜸)."""
+        self._clear_all_ads(app)
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        r = client.post(f"/admin/lawyers/{uid}/toggle-adlist", follow_redirects=True)
+        assert "AD LAWYERS 광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            prof = db.session.get(LawyerProfile, uid)
+            assert prof.show_in_adlist is True and prof.show_in_ad is False
+        c2 = app.test_client()
+        html = c2.get("/lawyers/").get_data(as_text=True)
+        assert "AD LAWYERS" in html and f"{name} 변호사" in html
+        assert 'class="sa-grid"' not in html  # 포토카드 영역은 미노출
 
     def test_only_designated_lawyers_shown(self, app, client, login_as):
         self._clear_all_ads(app)
@@ -155,12 +174,14 @@ class TestLawyerAdToggle:
     def test_missing_profile_404(self, client, login_as):
         login_as(ADMIN)
         assert client.post("/admin/lawyers/999999/toggle-ad").status_code == 404
+        assert client.post("/admin/lawyers/999999/toggle-adlist").status_code == 404
 
     def test_admin_page_explains_ad_area(self, client, login_as):
         """광고 등록 위치 안내 — 기본 탭(승인 대기)에서도 방법을 찾을 수 있어야 함."""
         login_as(ADMIN)
         html = client.get("/admin/lawyers").get_data(as_text=True)  # 기본 탭
         assert "포토카드" in html and "[전체] 탭" in html
+        assert "AD LAWYERS" in html  # 광고 상품 2종 안내
         assert "광고 노출중" in html  # 광고 현황 탭 노출
 
     def test_ad_tab_lists_only_designated(self, app, client, login_as):

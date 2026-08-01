@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_icons.html" as ico %}
 
 {% set filter_label = (category.name if category else (region.name ~ ' 지역' if region else '전체')) %}
 
@@ -86,7 +87,7 @@
         <div class="rel">상담 답변 <b>{{ answer_counts.get(p.user_id, 0) }}건</b> · 프로필 조회 <b>{{ '{:,}'.format(p.view_count or 0) }}</b></div>
         <div class="ad-actions">
           {% if p.office_phone %}<a class="ic-btn contact-click" data-id="{{ p.user_id }}" data-type="phone" href="tel:{{ p.office_phone }}" aria-label="사무소 전화"><i data-lucide="phone"></i></a>{% endif %}
-          {% if p.kakao_url %}<a class="ic-btn kakao contact-click" data-id="{{ p.user_id }}" data-type="kakao" href="{{ p.kakao_url }}" target="_blank" rel="noopener" aria-label="카카오톡 문의"><i data-lucide="message-circle"></i></a>{% endif %}
+          {% if p.kakao_url %}<a class="ic-btn kakao contact-click" data-id="{{ p.user_id }}" data-type="kakao" href="{{ p.kakao_url }}" target="_blank" rel="noopener" aria-label="카카오톡 문의">{{ ico.kakao(17) }}</a>{% endif %}
           <a class="btn-profile" href="{{ detail_url }}">프로필 보기 <i data-lucide="chevron-right" style="width:15px;height:15px"></i></a>
         </div>
       </div>
@@ -106,7 +107,7 @@
         <div class="plain-actions">
           <a class="txt" href="{{ detail_url }}">간편 문의</a>
           {% if p.office_phone %}<a class="ic-btn contact-click" data-id="{{ p.user_id }}" data-type="phone" href="tel:{{ p.office_phone }}" aria-label="사무소 전화"><i data-lucide="phone"></i></a>{% endif %}
-          {% if p.kakao_url %}<a class="ic-btn kakao contact-click" data-id="{{ p.user_id }}" data-type="kakao" href="{{ p.kakao_url }}" target="_blank" rel="noopener" aria-label="카카오톡 문의"><i data-lucide="message-circle"></i></a>{% endif %}
+          {% if p.kakao_url %}<a class="ic-btn kakao contact-click" data-id="{{ p.user_id }}" data-type="kakao" href="{{ p.kakao_url }}" target="_blank" rel="noopener" aria-label="카카오톡 문의">{{ ico.kakao(17) }}</a>{% endif %}
         </div>
       </div>
       <a class="cav" href="{{ detail_url }}">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</a>
