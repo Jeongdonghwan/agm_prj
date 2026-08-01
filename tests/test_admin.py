@@ -127,11 +127,14 @@ class TestFeaturedCase:
         assert "광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
         with app.app_context():
             assert db.session.get(LawyerPost, pid).is_featured is True
-        # 변호사 목록 상단 광고 영역 최상단 노출 + AD 뱃지 (관리자 액션이 캐시 무효화)
+        # 변호사 목록 상단 광고 영역 최상단에 해당 변호사 카드 + AD 뱃지
+        # (카드는 사례 제목이 아닌 변호사 프로필을 노출)
+        with app.app_context():
+            name = db.session.get(LawyerPost, pid).lawyer.name
         c2 = app.test_client()
         html = c2.get("/lawyers/").get_data(as_text=True)
         first_card = html.split('class="sa-card"')[1]
-        assert "광고 후보 사례" in first_card and "ad-tag" in first_card
+        assert f"{name} 변호사" in first_card and "ad-tag" in first_card
 
     def test_pending_or_non_case_404(self, app, client, login_as):
         with app.app_context():
@@ -262,8 +265,12 @@ class TestPostReview:
         assert "검수용 포스트" in c2.get("/posts?type=case").get_data(as_text=True)
         assert "검수용 포스트" in c2.get("/posts?type=case&category=1").get_data(as_text=True)
         assert "검수용 포스트" not in c2.get("/posts?type=case&category=7").get_data(as_text=True)
-        # 해당 분야 변호사 목록 상단 해결사례 영역에도 매칭
-        assert "검수용 포스트" in c2.get("/lawyers/?category=1").get_data(as_text=True)
+        # 해당 분야 변호사 목록 상단 광고 영역에 작성 변호사 카드로 매칭
+        with app.app_context():
+            name = db.session.get(LawyerPost, pid).lawyer.name
+        ad_area = c2.get("/lawyers/?category=1").get_data(as_text=True).split(
+            'class="sa-grid"', 1)[1]
+        assert f"{name} 변호사" in ad_area
 
     def test_reject_with_reason(self, app, client, login_as):
         pid = self._pending_post(app, "반려될 포스트")

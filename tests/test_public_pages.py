@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """공개 페이지 — 비회원 열람/슬러그/SEO(JSON-LD·sitemap·robots)/필터/페이지 캐시."""
+import re
+
 import pytest
 
 from extensions import db
@@ -105,14 +107,20 @@ class TestLayout:
             assert len(get_home_data()["side_banners"]) <= 1
 
     def test_solve_ad_photocard_shows_profile(self, client):
-        """포토카드 — 사진/이름/소속/소개글(headline)이 함께 노출."""
+        """포토카드 — 사진/소속/이름/소개글만 노출(사례 제목·안내 문구 없음)."""
         html = client.get("/lawyers/").get_data(as_text=True)
-        card = html.split('class="sa-card"', 1)[1].split("</div>", 1)[0]
-        assert 'class="ph"' in card  # 프로필 사진 영역
-        assert "변호사" in card
-        # 소속·소개글은 카드 전체 영역에서 확인
-        block = html.split('class="sa-grid"', 1)[1].split("</div>\n    </div>", 1)[0]
-        assert 'class="firm"' in block and 'class="intro"' in block
+        block = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
+        for cls in ('class="ph"', 'class="firm"', 'class="nm"', 'class="intro"', 'class="cta"'):
+            assert cls in block, cls
+        assert "이런 고민, 이렇게 해결됩니다" not in html  # 안내 문구 제거
+        assert 'class="case"' not in block  # 사례 제목 블록 제거
+
+    def test_solve_ad_no_duplicate_lawyer(self, client):
+        """광고 영역은 변호사 1인 1카드."""
+        html = client.get("/lawyers/").get_data(as_text=True)
+        block = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
+        names = re.findall(r'class="nm">(.*?) 변호사<', block)
+        assert names and len(names) == len(set(names))
 
 
 class TestNoStoreHeaders:

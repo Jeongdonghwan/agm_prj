@@ -95,7 +95,8 @@ def find():
     ad_profiles = profiles[:2] if page == 1 else []
     plain_profiles = profiles[2:] if page == 1 else profiles
 
-    # 맞춤 법률 정보: 관련 분야 published 해결사례 6개
+    # 상단 광고 영역: 해결사례를 게시한 변호사 프로필 카드 6개
+    # (관리자 지정 광고 우선 → 최신순, 변호사 1인 1카드)
     cases_q = LawyerPost.query.filter_by(type="case", status="published").filter(
         LawyerPost.deleted_at.is_(None)
     )
@@ -105,13 +106,19 @@ def find():
                 [selected.id] + ([selected.parent_id] if selected.parent_id else [])
             )
         )
-    solve_cases = (
+    solve_cases, seen_lawyers = [], set()
+    for post in (
         cases_q.options(joinedload(LawyerPost.lawyer).joinedload(User.lawyer_profile))
-        # 관리자 지정 광고(is_featured) 우선, 부족분은 최신순으로 채움
         .order_by(LawyerPost.is_featured.desc(), LawyerPost.published_at.desc())
-        .limit(6)
+        .limit(30)
         .all()
-    )
+    ):
+        if post.lawyer_id in seen_lawyers:
+            continue
+        seen_lawyers.add(post.lawyer_id)
+        solve_cases.append(post)
+        if len(solve_cases) >= 6:
+            break
 
     answer_counts = dict(
         db.session.query(
