@@ -157,10 +157,21 @@ class TestLawyerAdToggle:
         assert client.post("/admin/lawyers/999999/toggle-ad").status_code == 404
 
     def test_admin_page_explains_ad_area(self, client, login_as):
-        """광고 등록 위치 안내 — 변호사 관리에서 방법을 찾을 수 있어야 함."""
+        """광고 등록 위치 안내 — 기본 탭(승인 대기)에서도 방법을 찾을 수 있어야 함."""
         login_as(ADMIN)
-        html = client.get("/admin/lawyers?status=all").get_data(as_text=True)
-        assert "포토카드" in html and "광고 노출" in html
+        html = client.get("/admin/lawyers").get_data(as_text=True)  # 기본 탭
+        assert "포토카드" in html and "[전체] 탭" in html
+        assert "광고 노출중" in html  # 광고 현황 탭 노출
+
+    def test_ad_tab_lists_only_designated(self, app, client, login_as):
+        """광고 노출중 탭 — 지정한 변호사만."""
+        self._clear_all_ads(app)
+        uid, name = self._lawyer(app)
+        _, other = self._lawyer(app, "lawyer2@angimo.kr")
+        login_as(ADMIN)
+        client.post(f"/admin/lawyers/{uid}/toggle-ad")
+        html = client.get("/admin/lawyers?status=ad").get_data(as_text=True)
+        assert name in html and other not in html
 
     def test_post_review_has_no_ad_controls(self, client, login_as):
         """포스트 검수에서는 광고 기능이 제거됨."""

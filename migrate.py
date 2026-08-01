@@ -22,6 +22,15 @@ MIGRATIONS = [
     ("community_posts", "attachments", "JSON NULL"),
 ]
 
+# 데이터 보정 — 여러 번 실행해도 결과가 같아야 한다. (설명, SQL)
+DATA_FIXES = [
+    (
+        "사이드 배너의 옛 아이콘 참조 제거(기본 일러스트로 복귀)",
+        "UPDATE banners SET image_url = NULL "
+        "WHERE position = 'main_side' AND image_url LIKE '/static/icons/%'",
+    ),
+]
+
 
 def _column_exists(table, column):
     row = db.session.execute(
@@ -61,6 +70,14 @@ def run():
             db.session.commit()
             print(f"  + {table}.{column} 추가")
             applied += 1
+
+        for label, sql in DATA_FIXES:
+            result = db.session.execute(text(sql))
+            db.session.commit()
+            if result.rowcount:
+                print(f"  * {label} — {result.rowcount}건")
+                applied += 1
+
         print(f"[migrate] 적용 {applied}건 / 이미 반영 {skipped}건 — 데이터는 보존됩니다.")
     return 0
 

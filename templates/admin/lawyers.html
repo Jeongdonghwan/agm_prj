@@ -5,14 +5,15 @@
 
 {% block content %}
 <div style="display:flex;gap:8px;margin-bottom:16px">
-  <a class="btn {% if status == 'pending' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='pending') }}">승인 대기</a>
+  <a class="btn {% if status == 'pending' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='pending') }}">승인 대기 {{ pending_count }}</a>
   <a class="btn {% if status == 'all' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='all') }}">전체</a>
+  <a class="btn {% if status == 'ad' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='ad') }}">광고 노출중 {{ ad_count }}</a>
 </div>
 
 <div class="panel" style="margin-top:0">
-  <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% else %}전체 변호사{% endif %} <span class="cnt">{{ users | length }}</span></h2></div>
+  <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% elif status == 'ad' %}광고 노출중{% else %}전체 변호사{% endif %} <span class="cnt">{{ users | length }}</span></h2></div>
   <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
-    💡 <b>[광고 노출]</b>로 지정한 변호사가 <b>변호사 목록 최상단 포토카드</b>와 <b>AD LAWYERS</b> 영역에 표시됩니다(최대 6명, 지정이 없으면 영역이 보이지 않습니다).
+    💡 <b>목록 최상단 포토카드 광고</b>는 <a href="{{ url_for('admin.lawyers', status='all') }}" style="color:var(--blue-600);font-weight:700">[전체] 탭</a>에서 변호사 오른쪽 <b>[광고 노출]</b> 버튼으로 지정합니다. 지정한 변호사가 변호사 목록 최상단 포토카드와 AD LAWYERS에 표시됩니다(최대 6명, <b>지정이 없으면 영역이 보이지 않습니다</b>).
   </div>
   <table>
     <tr><th>신청일</th><th>이름</th><th>이메일</th><th>등록번호</th><th>소속</th><th>서류</th><th>상태</th><th></th></tr>

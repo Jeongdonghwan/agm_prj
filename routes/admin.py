@@ -177,6 +177,11 @@ def lawyers():
     q = User.query.filter_by(role="lawyer").filter(User.deleted_at.is_(None))
     if status == "pending":
         q = q.filter(User.status.in_(["pending", "rejected"]))
+    elif status == "ad":  # 목록 광고 노출중인 변호사만
+        q = q.filter(
+            User.status == "active",
+            User.lawyer_profile.has(LawyerProfile.show_in_ad.is_(True)),
+        )
     q = q.options(joinedload(User.lawyer_profile)).order_by(User.created_at.desc())
     users = q.all()
     files_by_user = {}
@@ -184,8 +189,17 @@ def lawyers():
         LawyerVerificationFile.user_id.in_([u.id for u in users] or [0])
     ):
         files_by_user.setdefault(f.user_id, []).append(f)
+    pending_count = User.query.filter_by(role="lawyer").filter(
+        User.deleted_at.is_(None), User.status.in_(["pending", "rejected"])
+    ).count()
+    ad_count = LawyerProfile.query.filter(LawyerProfile.show_in_ad.is_(True)).count()
     return render_template(
-        "admin/lawyers.html", users=users, status=status, files_by_user=files_by_user
+        "admin/lawyers.html",
+        users=users,
+        status=status,
+        files_by_user=files_by_user,
+        pending_count=pending_count,
+        ad_count=ad_count,
     )
 
 
