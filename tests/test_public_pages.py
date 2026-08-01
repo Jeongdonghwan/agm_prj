@@ -83,6 +83,32 @@ class TestSeoEndpoints:
         assert body.count("<loc>") >= 50  # 시드 규모 기준
 
 
+class TestNoStoreHeaders:
+    """로그인·어드민 응답은 브라우저 캐시 금지 — 낡은 화면으로 인한 혼동 방지."""
+
+    def test_logged_in_response_no_store(self, client, login_as):
+        login_as("user1@example.com")
+        assert client.get("/mypage/").headers.get("Cache-Control") == "no-store"
+
+    def test_admin_paths_no_store(self, client, login_as):
+        # 비로그인 리다이렉트 응답에도 부착
+        assert client.get("/admin/", follow_redirects=False).headers.get(
+            "Cache-Control") == "no-store"
+        login_as("admin@angimo.kr")
+        assert client.get("/admin/posts").headers.get("Cache-Control") == "no-store"
+
+    def test_lawyer_admin_no_store_but_public_list_untouched(self, client, login_as):
+        login_as("lawyer1@angimo.kr")
+        assert client.get("/lawyer/").headers.get("Cache-Control") == "no-store"
+        client.get("/logout")
+        # 공개 변호사 목록(/lawyers)은 사설 경로가 아니므로 미부착
+        assert client.get("/lawyers/").headers.get("Cache-Control") != "no-store"
+
+    def test_public_pages_not_no_store(self, client):
+        for path in ("/", "/counsel/", "/cases"):
+            assert client.get(path).headers.get("Cache-Control") != "no-store", path
+
+
 class TestPageCache:
     def test_anon_cached_until_invalidate(self, app, client):
         """비로그인 GET은 캐시 — ORM 직접 변경은 안 보이다가 invalidate 후 반영."""

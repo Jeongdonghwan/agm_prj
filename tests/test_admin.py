@@ -147,6 +147,22 @@ class TestFeaturedCase:
         assert client.post(f"/admin/posts/{pid1}/toggle-featured").status_code == 404
         assert client.post(f"/admin/posts/{pid2}/toggle-featured").status_code == 404
 
+    def test_featured_tab_lists_only_ads(self, app, client, login_as):
+        """광고 노출중 탭 — 지정한 글만, 미지정 게시중 글은 제외."""
+        ad_id = self._published_case(app, "광고 지정된 사례")
+        self._published_case(app, "광고 아닌 사례")
+        login_as(ADMIN)
+        client.post(f"/admin/posts/{ad_id}/toggle-featured")
+        html = client.get("/admin/posts?status=featured").get_data(as_text=True)
+        assert "광고 지정된 사례" in html
+        assert "광고 아닌 사례" not in html
+
+    def test_admin_posts_page_explains_ad_area(self, client, login_as):
+        """광고 관리 위치 안내 — 어드민에서 광고칸 구동법을 찾을 수 있어야 함."""
+        login_as(ADMIN)
+        html = client.get("/admin/posts").get_data(as_text=True)
+        assert "이런 고민, 이렇게 해결됩니다" in html and "광고 노출중" in html
+
 
 class TestLawyerApproval:
     def test_approve(self, app, client, login_as, sample_file):

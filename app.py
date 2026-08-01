@@ -1,6 +1,6 @@
 import time
 
-from flask import Flask, g, session
+from flask import Flask, g, request, session
 from flask_compress import Compress
 
 from config import Config
@@ -47,6 +47,21 @@ def create_app(config_class=Config):
                 session.clear()
             else:
                 g.user = user
+
+    @app.after_request
+    def no_store_for_private(resp):
+        # 로그인 사용자·어드민/변호사/마이페이지 응답은 브라우저 캐시 금지 —
+        # 뒤로가기/캐시로 이전 상태 화면이 보이는 혼동 방지 (static은 30일 캐시 유지)
+        path = request.path
+        # 주의: /lawyers(공개 목록)는 제외 — 변호사 어드민은 /lawyer prefix
+        is_private_path = (
+            path.startswith(("/admin", "/mypage"))
+            or path == "/lawyer"
+            or path.startswith("/lawyer/")
+        )
+        if not path.startswith("/static") and (g.get("user") is not None or is_private_path):
+            resp.headers["Cache-Control"] = "no-store"
+        return resp
 
     @app.context_processor
     def inject_globals():

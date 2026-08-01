@@ -265,7 +265,9 @@ def verification_file(file_id):
 def posts():
     status = request.args.get("status", "pending")
     q = LawyerPost.query.filter(LawyerPost.deleted_at.is_(None))
-    if status != "all":
+    if status == "featured":  # 변호사 목록 상단 광고 노출중인 해결사례
+        q = q.filter_by(status="published", is_featured=True)
+    elif status != "all":
         q = q.filter_by(status=status)
     items = (
         q.options(joinedload(LawyerPost.lawyer))
