@@ -109,62 +109,64 @@ class TestUserManagement:
             assert log and log.target == f"user:{uid}"
 
 
-class TestFeaturedCase:
-    def _published_case(self, app, title="광고 후보 사례"):
-        with app.app_context():
-            from datetime import datetime
-            lawyer = User.query.filter_by(email="lawyer1@angimo.kr").first()
-            p = LawyerPost(lawyer_id=lawyer.id, type="case", title=title, content="본문",
-                           status="published", published_at=datetime.now())
-            db.session.add(p)
-            db.session.commit()
-            return p.id
+class TestLawyerAdToggle:
+    """변호사 목록 광고 — 어드민 변호사 관리에서 프로필 단위로 지정."""
 
-    def test_toggle_featured(self, app, client, login_as):
-        pid = self._published_case(app)
+    def _clear_all_ads(self, app):
+        with app.app_context():
+            LawyerProfile.query.update({LawyerProfile.show_in_ad: False})
+            db.session.commit()
+
+    def _lawyer(self, app, email="lawyer1@angimo.kr"):
+        with app.app_context():
+            u = User.query.filter_by(email=email).first()
+            return u.id, u.name
+
+    def test_toggle_shows_and_hides_card(self, app, client, login_as):
+        self._clear_all_ads(app)
+        uid, name = self._lawyer(app)
         login_as(ADMIN)
-        r = client.post(f"/admin/posts/{pid}/toggle-featured", follow_redirects=True)
+        r = client.post(f"/admin/lawyers/{uid}/toggle-ad", follow_redirects=True)
         assert "광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
         with app.app_context():
-            assert db.session.get(LawyerPost, pid).is_featured is True
-        # 변호사 목록 상단 광고 영역 최상단에 해당 변호사 카드 + AD 뱃지
-        # (카드는 사례 제목이 아닌 변호사 프로필을 노출)
-        with app.app_context():
-            name = db.session.get(LawyerPost, pid).lawyer.name
+            assert db.session.get(LawyerProfile, uid).show_in_ad is True
+        # 목록 상단 포토카드 + AD LAWYERS에 노출
         c2 = app.test_client()
         html = c2.get("/lawyers/").get_data(as_text=True)
-        first_card = html.split('class="sa-card"')[1]
-        assert f"{name} 변호사" in first_card and "ad-tag" in first_card
+        ad_area = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
+        assert f"{name} 변호사" in ad_area and "ad-tag" in ad_area
+        assert "AD LAWYERS" in html
+        # 해제하면 사라짐
+        client.post(f"/admin/lawyers/{uid}/toggle-ad")
+        assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
 
-    def test_pending_or_non_case_404(self, app, client, login_as):
-        with app.app_context():
-            lawyer = User.query.filter_by(email="lawyer1@angimo.kr").first()
-            pending = LawyerPost(lawyer_id=lawyer.id, type="case", title="대기", content="c",
-                                 status="pending")
-            guide = LawyerPost(lawyer_id=lawyer.id, type="guide", title="가이드", content="c",
-                               status="published")
-            db.session.add_all([pending, guide])
-            db.session.commit()
-            pid1, pid2 = pending.id, guide.id
+    def test_only_designated_lawyers_shown(self, app, client, login_as):
+        self._clear_all_ads(app)
+        uid, name = self._lawyer(app)
+        _, other = self._lawyer(app, "lawyer2@angimo.kr")
         login_as(ADMIN)
-        assert client.post(f"/admin/posts/{pid1}/toggle-featured").status_code == 404
-        assert client.post(f"/admin/posts/{pid2}/toggle-featured").status_code == 404
+        client.post(f"/admin/lawyers/{uid}/toggle-ad")
+        c2 = app.test_client()
+        ad_area = c2.get("/lawyers/").get_data(as_text=True).split('class="sa-grid"', 1)[1] \
+            .split("sec-title", 1)[0]
+        assert f"{name} 변호사" in ad_area
+        assert f"{other} 변호사" not in ad_area  # 지정 안 한 변호사는 광고에 없음
 
-    def test_featured_tab_lists_only_ads(self, app, client, login_as):
-        """광고 노출중 탭 — 지정한 글만, 미지정 게시중 글은 제외."""
-        ad_id = self._published_case(app, "광고 지정된 사례")
-        self._published_case(app, "광고 아닌 사례")
+    def test_missing_profile_404(self, client, login_as):
         login_as(ADMIN)
-        client.post(f"/admin/posts/{ad_id}/toggle-featured")
-        html = client.get("/admin/posts?status=featured").get_data(as_text=True)
-        assert "광고 지정된 사례" in html
-        assert "광고 아닌 사례" not in html
+        assert client.post("/admin/lawyers/999999/toggle-ad").status_code == 404
 
-    def test_admin_posts_page_explains_ad_area(self, client, login_as):
-        """광고 관리 위치 안내 — 어드민에서 광고칸 구동법을 찾을 수 있어야 함."""
+    def test_admin_page_explains_ad_area(self, client, login_as):
+        """광고 등록 위치 안내 — 변호사 관리에서 방법을 찾을 수 있어야 함."""
+        login_as(ADMIN)
+        html = client.get("/admin/lawyers?status=all").get_data(as_text=True)
+        assert "포토카드" in html and "광고 노출" in html
+
+    def test_post_review_has_no_ad_controls(self, client, login_as):
+        """포스트 검수에서는 광고 기능이 제거됨."""
         login_as(ADMIN)
         html = client.get("/admin/posts").get_data(as_text=True)
-        assert "이런 고민, 이렇게 해결됩니다" in html and "광고 노출중" in html
+        assert "광고 노출중" not in html and "toggle-featured" not in html
 
 
 class TestLawyerApproval:
@@ -265,12 +267,6 @@ class TestPostReview:
         assert "검수용 포스트" in c2.get("/posts?type=case").get_data(as_text=True)
         assert "검수용 포스트" in c2.get("/posts?type=case&category=1").get_data(as_text=True)
         assert "검수용 포스트" not in c2.get("/posts?type=case&category=7").get_data(as_text=True)
-        # 해당 분야 변호사 목록 상단 광고 영역에 작성 변호사 카드로 매칭
-        with app.app_context():
-            name = db.session.get(LawyerPost, pid).lawyer.name
-        ad_area = c2.get("/lawyers/?category=1").get_data(as_text=True).split(
-            'class="sa-grid"', 1)[1]
-        assert f"{name} 변호사" in ad_area
 
     def test_reject_with_reason(self, app, client, login_as):
         pid = self._pending_post(app, "반려될 포스트")

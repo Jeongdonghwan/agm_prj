@@ -11,6 +11,9 @@
 
 <div class="panel" style="margin-top:0">
   <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% else %}전체 변호사{% endif %} <span class="cnt">{{ users | length }}</span></h2></div>
+  <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+    💡 <b>[광고 노출]</b>로 지정한 변호사가 <b>변호사 목록 최상단 포토카드</b>와 <b>AD LAWYERS</b> 영역에 표시됩니다(최대 6명, 지정이 없으면 영역이 보이지 않습니다).
+  </div>
   <table>
     <tr><th>신청일</th><th>이름</th><th>이메일</th><th>등록번호</th><th>소속</th><th>서류</th><th>상태</th><th></th></tr>
     {% for u in users %}
@@ -27,7 +30,7 @@
       </td>
       <td>
         {% if u.status == 'pending' %}<span class="badge wait">대기</span>
-        {% elif u.status == 'active' %}<span class="badge ok">활동중</span>{% if u.lawyer_profile and not u.lawyer_profile.is_visible %} <span class="badge red">노출정지</span>{% endif %}
+        {% elif u.status == 'active' %}<span class="badge ok">활동중</span>{% if u.lawyer_profile and not u.lawyer_profile.is_visible %} <span class="badge red">노출정지</span>{% endif %}{% if u.lawyer_profile and u.lawyer_profile.show_in_ad %} <span class="badge blue">광고중</span>{% endif %}
         {% elif u.status == 'rejected' %}<span class="badge red">반려</span>
         {% else %}<span class="badge red">{{ u.status }}</span>{% endif %}
       </td>
@@ -45,6 +48,9 @@
         </form>
         <form method="post" action="{{ url_for('admin.lawyer_toggle_new', user_id=u.id) }}" style="display:inline">
           <button class="btn line" type="submit" title="메인 '새로 함께하는 변호사' 섹션 노출">{{ '신규 숨김' if u.lawyer_profile.show_in_new else '신규 노출' }}</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.lawyer_toggle_ad', user_id=u.id) }}" style="display:inline">
+          <button class="btn {% if u.lawyer_profile.show_in_ad %}pri{% else %}line{% endif %}" type="submit" title="변호사 목록 최상단 포토카드·AD LAWYERS 광고 노출">{{ '광고 해제' if u.lawyer_profile.show_in_ad else '광고 노출' }}</button>
         </form>
         {% endif %}
       </td>

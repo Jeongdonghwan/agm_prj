@@ -42,21 +42,20 @@
       </div>
       <button class="hs-btn hs-next" type="button" aria-label="다음"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
     </div>
-    {% if solve_cases %}
-    <!-- 광고: 관련 분야 해결사례 -->
+    {% if ad_cards %}
+    <!-- 광고: 관리자 지정 변호사 포토카드 -->
     <div class="solve-ad">
       <div class="sa-grid">
-        {% for post in solve_cases %}
-        {% set prof = post.lawyer.lawyer_profile %}
-        <a class="sa-card" href="{{ url_for('lawyers.detail', user_id=post.lawyer_id) }}">
-          {% if post.is_featured %}<span class="ad-tag">AD</span>{% endif %}
+        {% for p in ad_cards %}
+        <a class="sa-card" href="{{ url_for('lawyers.detail', user_id=p.user_id) }}">
+          <span class="ad-tag">AD</span>
           <span class="ph">
-            {% if prof and prof.photo_url %}<img src="{{ prof.photo_url }}" alt="{{ post.lawyer.name }} 변호사" loading="lazy">{% else %}<span class="ini">{{ post.lawyer.name[0] }}</span>{% endif %}
+            {% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}<span class="ini">{{ p.user.name[0] }}</span>{% endif %}
           </span>
           <span class="who">
-            {% if prof and prof.firm_name %}<small class="firm">{{ prof.firm_name }}</small>{% endif %}
-            <b class="nm">{{ post.lawyer.name }} 변호사</b>
-            {% if prof and prof.headline %}<span class="intro">{{ prof.headline }}</span>{% endif %}
+            {% if p.firm_name %}<small class="firm">{{ p.firm_name }}</small>{% endif %}
+            <b class="nm">{{ p.user.name }} 변호사</b>
+            {% if p.headline %}<span class="intro">{{ p.headline }}</span>{% endif %}
           </span>
           <span class="cta">프로필 보기</span>
         </a>

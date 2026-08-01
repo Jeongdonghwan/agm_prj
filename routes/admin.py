@@ -247,6 +247,20 @@ def lawyer_toggle_new(user_id):
     return redirect(url_for("admin.lawyers", status="all"))
 
 
+@bp.route("/lawyers/<int:user_id>/toggle-ad", methods=["POST"])
+@role_required("admin")
+def lawyer_toggle_ad(user_id):
+    """변호사 목록 광고(상단 포토카드·AD LAWYERS) 노출 on/off."""
+    prof = db.session.get(LawyerProfile, user_id)
+    if prof is None:
+        abort(404)
+    prof.show_in_ad = not prof.show_in_ad
+    _log("lawyer_toggle_ad", f"user:{user_id}", {"show_in_ad": prof.show_in_ad})
+    db.session.commit()
+    flash("변호사 목록 광고 노출 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.lawyers", status="all"))
+
+
 @bp.route("/verification-files/<int:file_id>")
 @role_required("admin")
 def verification_file(file_id):
@@ -265,9 +279,7 @@ def verification_file(file_id):
 def posts():
     status = request.args.get("status", "pending")
     q = LawyerPost.query.filter(LawyerPost.deleted_at.is_(None))
-    if status == "featured":  # 변호사 목록 상단 광고 노출중인 해결사례
-        q = q.filter_by(status="published", is_featured=True)
-    elif status != "all":
+    if status != "all":
         q = q.filter_by(status=status)
     items = (
         q.options(joinedload(LawyerPost.lawyer))
@@ -293,20 +305,6 @@ def post_approve(post_id):
     db.session.commit()
     flash("포스트를 승인·게시했습니다.", "success")
     return redirect(url_for("admin.posts"))
-
-
-@bp.route("/posts/<int:post_id>/toggle-featured", methods=["POST"])
-@role_required("admin")
-def post_toggle_featured(post_id):
-    """변호사 목록 상단 '해결사례 광고' 노출 on/off — 게시중 해결사례만."""
-    post = db.session.get(LawyerPost, post_id)
-    if post is None or post.status != "published" or post.type != "case":
-        abort(404)
-    post.is_featured = not post.is_featured
-    _log("post_toggle_featured", f"post:{post_id}", {"is_featured": post.is_featured})
-    db.session.commit()
-    flash("해결사례 광고 노출 상태를 변경했습니다.", "success")
-    return redirect(url_for("admin.posts", status="published"))
 
 
 @bp.route("/posts/<int:post_id>/reject", methods=["POST"])

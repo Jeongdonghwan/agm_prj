@@ -30,6 +30,7 @@ class LawyerProfile(db.Model):
     contact_click_count = db.Column(db.Integer, default=0)  # 전화/카톡 클릭 합산
     is_visible = db.Column(db.Boolean, default=True)
     show_in_new = db.Column(db.Boolean, default=True)  # 메인 '새로 함께하는 변호사' 노출
+    show_in_ad = db.Column(db.Boolean, default=False)  # 변호사 목록 광고(상단 포토카드·AD LAWYERS)
     approved_at = db.Column(db.DateTime)
 
     user = db.relationship("User", back_populates="lawyer_profile")

@@ -350,6 +350,7 @@ def run_seed(app):
                 region_id=regions[region_idx].id,
                 view_count=120 + i * 37,
                 contact_click_count=8 + i * 3,
+                show_in_ad=(i <= 3),  # 데모: 앞 3명을 목록 광고로 노출
                 approved_at=now - timedelta(days=80 - i * 7),
             )
             profile.categories = [cat_by_name[c] for c in cats]
@@ -547,8 +548,6 @@ def run_seed(app):
                     category_id=cat_by_name[cat_name].id,
                     views=80 + i * 33,
                     status=status,
-                    # 앞쪽 해결사례 2건은 변호사 목록 상단 광고 노출 데모
-                    is_featured=(ptype == "case" and status == "published" and i < 4),
                     published_at=published_at,
                     reject_reason=reject_reason,
                     created_at=now - timedelta(days=15 - i),

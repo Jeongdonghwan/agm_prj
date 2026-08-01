@@ -106,7 +106,7 @@ class TestLayout:
         with app.app_context():
             assert len(get_home_data()["side_banners"]) <= 1
 
-    def test_solve_ad_photocard_shows_profile(self, client):
+    def test_ad_photocard_shows_profile(self, client):
         """포토카드 — 사진/소속/이름/소개글만 노출(사례 제목·안내 문구 없음)."""
         html = client.get("/lawyers/").get_data(as_text=True)
         block = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
@@ -115,12 +115,21 @@ class TestLayout:
         assert "이런 고민, 이렇게 해결됩니다" not in html  # 안내 문구 제거
         assert 'class="case"' not in block  # 사례 제목 블록 제거
 
-    def test_solve_ad_no_duplicate_lawyer(self, client):
+    def test_ad_photocard_no_duplicate_lawyer(self, client):
         """광고 영역은 변호사 1인 1카드."""
         html = client.get("/lawyers/").get_data(as_text=True)
         block = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
         names = re.findall(r'class="nm">(.*?) 변호사<', block)
         assert names and len(names) == len(set(names))
+
+    def test_ad_area_hidden_when_none_designated(self, app, client):
+        """광고 지정이 0명이면 포토카드·AD LAWYERS 영역 자체가 사라짐."""
+        with app.app_context():
+            LawyerProfile.query.update({LawyerProfile.show_in_ad: False})
+            db.session.commit()
+            invalidate_page_cache()
+        html = client.get("/lawyers/").get_data(as_text=True)
+        assert 'class="sa-grid"' not in html and "AD LAWYERS" not in html
 
 
 class TestNoStoreHeaders:

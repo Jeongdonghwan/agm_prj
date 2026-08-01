@@ -19,7 +19,6 @@ class LawyerPost(db.Model):
     status = db.Column(
         ENUM("pending", "published", "rejected", "hidden"), default="pending"
     )
-    is_featured = db.Column(db.Boolean, default=False)  # 변호사 목록 상단 해결사례 광고 노출
     reject_reason = db.Column(db.String(300))
     created_at = db.Column(db.DateTime, server_default=func.now())
     published_at = db.Column(db.DateTime)

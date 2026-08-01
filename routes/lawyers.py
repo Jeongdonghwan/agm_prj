@@ -68,22 +68,26 @@ def find():
         else []
     )
 
-    q = _visible_profiles_query()
-    if selected:
-        cat_ids = [selected.id]
-        if selected.parent_id:
-            cat_ids.append(selected.parent_id)  # 세부 선택 시 대분류 보유 변호사도 매칭
-        else:
-            cat_ids += [c.id for c in children]
-        q = q.filter(LawyerProfile.categories.any(Category.id.in_(cat_ids)))
+    def _apply_filters(query):
+        """분야·지역 필터 — 목록과 광고 영역에 동일 적용."""
+        if selected:
+            cat_ids = [selected.id]
+            if selected.parent_id:
+                cat_ids.append(selected.parent_id)  # 세부 선택 시 대분류 보유 변호사도 매칭
+            else:
+                cat_ids += [c.id for c in children]
+            query = query.filter(LawyerProfile.categories.any(Category.id.in_(cat_ids)))
+        if region_id:
+            query = query.filter(LawyerProfile.region_id == region_id)
+        return query
 
     region = None
     if region_id:
         region = db.session.get(Region, region_id)
         if region is None:
             abort(404)
-        q = q.filter(LawyerProfile.region_id == region_id)
 
+    q = _apply_filters(_visible_profiles_query())
     total = q.count()
     profiles = (
         q.order_by(LawyerProfile.view_count.desc())
@@ -91,34 +95,19 @@ def find():
         .limit(PER_PAGE)
         .all()
     )
-    # 상위 2명은 AD LAWYERS 카드 (데모: 조회수 상위)
-    ad_profiles = profiles[:2] if page == 1 else []
-    plain_profiles = profiles[2:] if page == 1 else profiles
+    plain_profiles = profiles
 
-    # 상단 광고 영역: 해결사례를 게시한 변호사 프로필 카드 6개
-    # (관리자 지정 광고 우선 → 최신순, 변호사 1인 1카드)
-    cases_q = LawyerPost.query.filter_by(type="case", status="published").filter(
-        LawyerPost.deleted_at.is_(None)
-    )
-    if selected:
-        cases_q = cases_q.filter(
-            LawyerPost.category_id.in_(
-                [selected.id] + ([selected.parent_id] if selected.parent_id else [])
-            )
-        )
-    solve_cases, seen_lawyers = [], set()
-    for post in (
-        cases_q.options(joinedload(LawyerPost.lawyer).joinedload(User.lawyer_profile))
-        .order_by(LawyerPost.is_featured.desc(), LawyerPost.published_at.desc())
-        .limit(30)
+    # 광고 영역: 관리자가 '광고 노출'로 지정한 변호사만 (지정 없으면 영역 미노출)
+    ad_cards = (
+        _apply_filters(_visible_profiles_query())
+        .filter(LawyerProfile.show_in_ad.is_(True))
+        .order_by(LawyerProfile.view_count.desc())
+        .limit(6)
         .all()
-    ):
-        if post.lawyer_id in seen_lawyers:
-            continue
-        seen_lawyers.add(post.lawyer_id)
-        solve_cases.append(post)
-        if len(solve_cases) >= 6:
-            break
+        if page == 1
+        else []
+    )
+    ad_profiles = ad_cards[:2]  # AD LAWYERS 카드
 
     answer_counts = dict(
         db.session.query(
@@ -150,7 +139,7 @@ def find():
         remaining=max(total - page * PER_PAGE, 0),
         category=selected,
         region=region,
-        solve_cases=solve_cases,
+        ad_cards=ad_cards,
         answer_counts=answer_counts,
         slugify=_slugify,
     )
