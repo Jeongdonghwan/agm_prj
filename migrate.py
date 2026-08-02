@@ -19,33 +19,26 @@ from extensions import db
 # (테이블, 컬럼, 정의) — 추가만 한다. 삭제/변경은 수동 검토 후 별도 처리.
 MIGRATIONS = [
     ("lawyer_profiles", "show_in_new", "TINYINT(1) DEFAULT 1"),
-    ("lawyer_profiles", "show_in_ad", "TINYINT(1) DEFAULT 0"),
-    ("lawyer_profiles", "show_in_adlist", "TINYINT(1) DEFAULT 0"),
     ("community_posts", "attachments", "JSON NULL"),
 ]
 
-# 데이터 보정 — 여러 번 실행해도 결과가 같아야 한다. (설명, SQL)
+# 데이터 보정 — (설명, SQL, 필요 컬럼(table, column) 또는 None).
+# ⚠️ 반드시 "여러 번 실행해도 같은 결과"여야 한다. 특히 레코드를 새로 만드는 보정은
+#    사용자가 지운 데이터를 되살릴 수 있으므로, 원본 조건을 함께 소거해 1회만 동작하게 한다.
 DATA_FIXES = [
     (
         "사이드 배너의 옛 아이콘 참조 제거(기본 일러스트로 복귀)",
         "UPDATE banners SET image_url = NULL "
         "WHERE position = 'main_side' AND image_url LIKE '/static/icons/%'",
+        None,
     ),
     (
-        "구 전역 광고 플래그(show_in_ad) → 전체 노출 포토카드 광고로 이전",
-        "INSERT INTO lawyer_ads (lawyer_id, category_id, slot, sort_order, is_active) "
-        "SELECT p.user_id, NULL, 'photocard', 0, 1 FROM lawyer_profiles p "
-        "WHERE p.show_in_ad = 1 AND NOT EXISTS ("
-        "  SELECT 1 FROM lawyer_ads a WHERE a.lawyer_id = p.user_id"
-        "  AND a.slot = 'photocard' AND a.category_id IS NULL)",
-    ),
-    (
-        "구 전역 광고 플래그(show_in_adlist) → 전체 노출 AD LAWYERS 광고로 이전",
-        "INSERT INTO lawyer_ads (lawyer_id, category_id, slot, sort_order, is_active) "
-        "SELECT p.user_id, NULL, 'adlist', 0, 1 FROM lawyer_profiles p "
-        "WHERE p.show_in_adlist = 1 AND NOT EXISTS ("
-        "  SELECT 1 FROM lawyer_ads a WHERE a.lawyer_id = p.user_id"
-        "  AND a.slot = 'adlist' AND a.category_id IS NULL)",
+        # 구 전역 플래그(show_in_ad/show_in_adlist) → lawyer_ads 이전은 완료됨.
+        # 플래그를 해제해 두지 않으면 관리자가 지운 광고가 migrate 때마다 되살아난다.
+        "구 광고 플래그 해제(삭제한 광고가 되살아나지 않도록)",
+        "UPDATE lawyer_profiles SET show_in_ad = 0, show_in_adlist = 0 "
+        "WHERE show_in_ad = 1 OR show_in_adlist = 1",
+        ("lawyer_profiles", "show_in_ad"),
     ),
 ]
 
@@ -98,7 +91,9 @@ def run():
             print(f"  + {table}.{column} 추가")
             applied += 1
 
-        for label, sql in DATA_FIXES:
+        for label, sql, requires in DATA_FIXES:
+            if requires and not _column_exists(*requires):
+                continue  # 해당 컬럼이 없는 DB(신규 설치)에는 적용할 것이 없음
             result = db.session.execute(text(sql))
             db.session.commit()
             if result.rowcount:
