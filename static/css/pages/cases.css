@@ -30,4 +30,15 @@
 .article .summary{margin-top:24px;background:var(--blue-050);border-radius:var(--radius-md);padding:18px 20px;font-size:14px;line-height:1.7}
 .article .body{margin-top:28px;font-size:15px;line-height:1.9;white-space:pre-line;border-top:1px solid var(--ink-200);padding-top:28px}
 
-@media (max-width:960px){.case-layout{grid-template-columns:1fr;gap:20px}.side-filters{position:static;display:flex;gap:28px;flex-wrap:wrap}.side-filters .grp{margin-bottom:0}}
+/* 모바일: 좌측 세로 필터가 화면을 다 차지하던 문제 —
+   .grp 안의 링크가 block이라 flex가 먹지 않았다. 가로 칩으로 전환 */
+@media (max-width:960px){
+  .case-layout{grid-template-columns:1fr;gap:18px;margin-top:24px}
+  .side-filters{position:static}
+  .side-filters .grp{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:0}
+  .side-filters a{display:inline-block;padding:7px 13px;border-radius:999px;background:#F4F6FA;font-size:13px;font-weight:700;color:var(--ink-500)}
+  .side-filters a.on{background:var(--blue-600);color:#fff}
+  .case-head h1{font-size:22px}
+  .case-item{padding:20px 0}
+  .case-item h3{font-size:17px}
+}
