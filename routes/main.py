@@ -6,6 +6,7 @@ from flask import (
     Response,
     abort,
     current_app,
+    redirect,
     render_template,
     send_from_directory,
     url_for,
@@ -25,17 +26,24 @@ def _slug(text: str) -> str:
 @bp.route("/")
 @cached_page(60)  # 비로그인 응답만 60초 캐시 (§2-2 — 로그인 헤더 분기 보존)
 def index():
+    """메인 — 네이비 히어로 + 커뮤니티 사이드 배너 + 서비스 카드(구 디자인 B안)."""
     return render_template(
-        "main/index.html", active_menu="home", design="a", **get_home_data()
+        "main/index_b.html", active_menu="home", design="b", **get_home_data()
     )
 
 
 @bp.route("/main-b")
-@cached_page(60)
 def index_b():
-    """메인 디자인 B안 (비교용) — 네이비 히어로 + EVENT 사이드 배너 + 퀵메뉴."""
+    """구 B안 주소 — 이제 메인이므로 / 로 보낸다."""
+    return redirect(url_for("main.index"), 301)
+
+
+@bp.route("/main-a")
+@cached_page(60)
+def index_a():
+    """구 디자인 A안 — 공개 메뉴에서 숨김(검색 제외). 비교·복구용으로만 유지."""
     return render_template(
-        "main/index_b.html", active_menu="home", design="b", **get_home_data()
+        "main/index.html", active_menu="home", design="a", **get_home_data()
     )
 
 

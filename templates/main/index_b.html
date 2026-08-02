@@ -1,10 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}{{ site_name }} - 법률 문제, 변호사와 바로 연결 (디자인 B){% endblock %}
-
 {% block meta %}
-<meta name="robots" content="noindex">
 <meta name="description" content="분야별 전문 변호사 찾기, 온라인 상담사례, 판례돋보기까지 — 법률 문제의 시작부터 끝까지 {{ site_name }}가 함께합니다.">
+<link rel="canonical" href="{{ url_for('main.index', _external=True) }}">
 {% endblock %}
 
 {% block styles %}
@@ -101,8 +99,6 @@
 </div>
 
 {% include "main/_sections.html" %}
-
-{% include "main/_design_toggle.html" %}
 
 {% include "main/_popup.html" %}
 {% endblock %}

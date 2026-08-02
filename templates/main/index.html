@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 {% import "_icons.html" as ico %}
 
+{% block title %}{{ site_name }} - 구 디자인 A안 (숨김){% endblock %}
+
 {% block meta %}
-<meta name="description" content="분야별 전문 변호사 찾기, 온라인 상담사례, 판례돋보기까지 — 법률 문제의 시작부터 끝까지 {{ site_name }}가 함께합니다.">
-<link rel="canonical" href="{{ url_for('main.index', _external=True) }}">
+<meta name="robots" content="noindex">
+<meta name="description" content="구 디자인 A안 — 공개 메뉴에서 숨김 처리된 비교용 페이지입니다.">
 {% endblock %}
 
 {% block styles %}

@@ -9,7 +9,7 @@ from models import LawyerProfile, LegalCase, News, User
 from utils import invalidate_page_cache
 
 PUBLIC_PATHS = [
-    "/", "/main-b", "/lawyers/", "/counsel/", "/posts", "/cases", "/news", "/firms",
+    "/", "/main-a", "/lawyers/", "/counsel/", "/posts", "/cases", "/news", "/firms",
     "/community/", "/community/board/facility", "/community/board/life",
     "/community/board/forms", "/login", "/signup", "/signup/lawyer", "/admin/login",
 ]
@@ -86,7 +86,22 @@ class TestSeoEndpoints:
 
 
 class TestLayout:
-    """헤더 메뉴 순서 · B안 고정 배너 · 해결사례 포토카드."""
+    """헤더 메뉴 순서 · 메인 고정 배너 · 광고 포토카드 · 구 A안 숨김."""
+
+    def test_design_a_is_hidden(self, client):
+        """구 디자인 A안은 검색 제외 + 메인은 B안 마크업."""
+        home = client.get("/").get_data(as_text=True)
+        assert "svc-cards" in home and "hero-b" in home  # B안 히어로·서비스 카드
+        assert 'name="robots" content="noindex"' not in home  # 메인은 색인 허용
+        old = client.get("/main-a").get_data(as_text=True)
+        assert 'name="robots" content="noindex"' in old  # 숨김 페이지
+        # 옛 B안 주소는 메인으로 영구 이동
+        r = client.get("/main-b", follow_redirects=False)
+        assert r.status_code == 301 and r.headers["Location"].endswith("/")
+
+    def test_no_design_toggle_on_main(self, client):
+        """메인에는 A/B 전환 토글이 없다."""
+        assert "디자인 A 보기" not in client.get("/").get_data(as_text=True)
 
     def test_gnb_order_lawyers_before_community(self, client):
         html = client.get("/").get_data(as_text=True)
@@ -97,8 +112,8 @@ class TestLayout:
         assert nav.index(">커뮤니티<") < nav.index(">교정시설 정보<") < nav.index(">양식 자료실<")
 
     def test_side_banner_is_fixed_single(self, app, client):
-        """B안 우측 배너는 고정 1장 — 인디케이터·롤링 없음."""
-        html = client.get("/main-b").get_data(as_text=True)
+        """메인 우측 커뮤니티 배너는 고정 1장 — 인디케이터·롤링 없음."""
+        html = client.get("/").get_data(as_text=True)
         assert 'id="side-banner"' in html
         assert 'id="side-cur"' not in html  # 1/N 인디케이터 제거
         assert html.count('class="side-slide on"') == 1
