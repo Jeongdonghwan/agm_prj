@@ -99,6 +99,20 @@ class TestProfile:
             assert os.path.exists(os.path.join(
                 app.config["UPLOAD_FOLDER"], "profiles", str(uid), fname))
 
+    def test_photo_remove(self, app, client, login_as, sample_file):
+        """사진 제거 — 잘못 올린 사진을 기본 이미지로 되돌린다."""
+        uid = login_as("lawyer1@angimo.kr")
+        client.post("/lawyer/profile",
+                    data={"office_phone": "02-555-0000", "photo": sample_file("x.png")},
+                    content_type="multipart/form-data")
+        with app.app_context():
+            assert db.session.get(LawyerProfile, uid).photo_url is not None
+        client.post("/lawyer/profile",
+                    data={"office_phone": "02-555-0000", "remove_photo": "1"},
+                    content_type="multipart/form-data")
+        with app.app_context():
+            assert db.session.get(LawyerProfile, uid).photo_url is None
+
     def test_photo_bad_ext(self, client, login_as, sample_file):
         login_as("lawyer1@angimo.kr")
         r = client.post("/lawyer/profile",

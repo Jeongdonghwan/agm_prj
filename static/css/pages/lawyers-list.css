@@ -93,4 +93,14 @@
 .empty-note{padding:40px 0;text-align:center;color:var(--ink-500);font-size:14px}
 
 @media (max-width:960px){.find-layout{grid-template-columns:1fr;gap:20px}.side-cats{position:static;flex-direction:row;flex-wrap:wrap;gap:2px 14px}.sub-cats{flex-direction:row;flex-wrap:wrap;gap:2px 12px;border-left:none;padding-left:0}.sa-grid{grid-template-columns:1fr 1fr}.ad-card .photo{width:96px;height:120px}}
-@media (max-width:560px){.sa-grid{grid-template-columns:1fr}}
+/* 모바일도 2열 유지 — 사진은 aspect-ratio 3/4 + cover라 폭만 줄고 비율은 그대로 */
+@media (max-width:560px){
+  .solve-ad{padding:14px}
+  .sa-grid{grid-template-columns:1fr 1fr;gap:10px}
+  .sa-card .who{padding:11px 10px 0}
+  .sa-card .who .nm{font-size:14.5px}
+  .sa-card .who .firm{font-size:10.5px}
+  .sa-card .who .intro{font-size:11.5px;margin-top:5px;min-height:34px}
+  .sa-card .cta{margin:10px 10px 11px;padding:8px 0;font-size:11.5px}
+  .sa-card .ph .ini{font-size:40px}
+}

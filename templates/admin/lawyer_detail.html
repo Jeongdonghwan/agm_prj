@@ -65,7 +65,10 @@
           <input type="text" name="bar_association" maxlength="50" value="{{ profile.bar_association or '' }}"></div>
       </div>
       <div class="pf-field"><label>프로필 사진</label>
-        {% if profile.photo_url %}<div class="pf-photo-cur"><img src="{{ profile.photo_url }}" alt=""> 현재 사진 (새 파일 업로드 시 교체)</div>{% endif %}
+        {% if profile.photo_url %}
+        <div class="pf-photo-cur"><img src="{{ profile.photo_url }}" alt=""> 현재 사진 (새 파일 업로드 시 교체)</div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--ink-500);margin-bottom:8px"><input type="checkbox" name="remove_photo" value="1"> 사진 제거 (기본 이미지로)</label>
+        {% endif %}
         <div class="filebox" data-label="사진 선택 (jpg / png)">
           <input type="file" name="photo" accept=".jpg,.jpeg,.png">
         </div>

@@ -60,6 +60,8 @@ def apply_profile_form(prof, form, files, owner_id):
             errors.append(err)
         else:
             photo_url = saved
+    elif form.get("remove_photo") == "1":
+        photo_url = None  # 잘못 올린 사진 제거
 
     if errors:
         return errors
