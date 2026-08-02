@@ -18,6 +18,7 @@
 <div class="grp">광고/운영</div>
 <a href="{{ url_for('admin.banners') }}" class="{% if admin_active == 'banners' %}on{% endif %}"><i data-lucide="image"></i>배너 관리</a>
 <a href="{{ url_for('admin.firms') }}" class="{% if admin_active == 'firms' %}on{% endif %}"><i data-lucide="building-2"></i>로펌 광고 관리</a>
+<a href="{{ url_for('admin.lawyer_ads') }}" class="{% if admin_active == 'lawyer_ads' %}on{% endif %}"><i data-lucide="megaphone"></i>변호사 광고 관리</a>
 <a href="{{ url_for('admin.reports') }}" class="{% if admin_active == 'reports' %}on{% endif %}"><i data-lucide="flag"></i>신고 처리</a>
 <a href="{{ url_for('admin.firm_inquiries') }}" class="{% if admin_active == 'inquiries' %}on{% endif %}"><i data-lucide="inbox"></i>문의 접수함</a>
 <a href="{{ url_for('admin.logs') }}" class="{% if admin_active == 'logs' %}on{% endif %}"><i data-lucide="scroll-text"></i>운영 로그</a>

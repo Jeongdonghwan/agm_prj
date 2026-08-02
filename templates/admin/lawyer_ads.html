@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'lawyer_ads' %}
+{% block title %}변호사 광고 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}변호사 광고 관리{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+  <a class="btn {% if not slot %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyer_ads', category=category_id) }}">전체 슬롯</a>
+  {% for value, label in slots %}
+  <a class="btn {% if slot == value %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyer_ads', slot=value, category=category_id) }}">{{ label }}</a>
+  {% endfor %}
+  <form method="get" action="{{ url_for('admin.lawyer_ads') }}" style="display:flex;gap:6px;margin-left:auto">
+    <input type="hidden" name="slot" value="{{ slot or '' }}">
+    <select name="category" onchange="this.form.submit()" style="border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px">
+      <option value="">모든 분야</option>
+      {% for p in parents %}
+      <option value="{{ p.id }}" {% if category_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>변호사 광고 <span class="cnt">{{ total }}</span></h2><a class="btn pri" href="{{ url_for('admin.lawyer_ad_form') }}">+ 새 광고</a></div>
+  <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+    💡 <b>분야별로</b> 어떤 변호사를 어느 자리에 노출할지 지정합니다.
+    <b>최상단 포토카드</b>는 변호사 목록 맨 위 사진 카드(분야당 최대 6명), <b>AD LAWYERS</b>는 목록 중간 배너 카드(인원 제한 없음).
+    분야를 <b>전체 노출</b>로 두면 모든 분야 화면에 함께 표시됩니다.
+  </div>
+
+  {% for group_name, ads in groups %}
+  <div style="padding:14px 20px 4px;font-size:13px;font-weight:800;color:var(--blue-700);border-top:1px solid var(--ink-200)">
+    {{ group_name }} <span style="color:var(--ink-500);font-weight:600">({{ ads | length }})</span>
+  </div>
+  <table>
+    <tr><th>슬롯</th><th>변호사</th><th>소속</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
+    {% for a in ads %}
+    <tr>
+      <td>{% if a.slot == 'photocard' %}<span class="badge blue">최상단 포토카드</span>{% else %}<span class="badge blue">AD LAWYERS</span>{% endif %}</td>
+      <td><a href="{{ url_for('admin.lawyer_detail', user_id=a.lawyer_id) }}" style="color:var(--blue-600);font-weight:800">{{ a.lawyer.name }}</a></td>
+      <td>{{ a.lawyer.lawyer_profile.firm_name if a.lawyer.lawyer_profile else '-' }}</td>
+      <td>{{ a.starts_at.strftime('%y.%m.%d') if a.starts_at else '~' }} ~ {{ a.ends_at.strftime('%y.%m.%d') if a.ends_at else '무기한' }}</td>
+      <td>{{ a.sort_order }}</td>
+      <td>
+        {% if not a.is_active %}<span class="badge wait">중지</span>
+        {% elif a.ends_at and a.ends_at < now %}<span class="badge wait">기간 만료</span>
+        {% elif a.starts_at and a.starts_at > now %}<span class="badge wait">대기</span>
+        {% else %}<span class="badge ok">노출중</span>{% endif %}
+      </td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.lawyer_ad_form', ad_id=a.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.lawyer_ad_delete', ad_id=a.id) }}" style="display:inline" onsubmit="return confirm('광고를 삭제할까요?')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div style="padding:40px 20px;text-align:center;color:var(--ink-500);font-size:13.5px">
+    등록된 변호사 광고가 없습니다. <a href="{{ url_for('admin.lawyer_ad_form') }}" style="color:var(--blue-600);font-weight:700">+ 새 광고 등록</a><br>
+    <small>광고가 없으면 변호사 목록의 포토카드·AD LAWYERS 영역이 표시되지 않습니다.</small>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

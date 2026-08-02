@@ -8,6 +8,7 @@ from models import (
     Consultation,
     FirmAd,
     FirmInquiry,
+    LawyerAd,
     LawyerPost,
     LawyerProfile,
     LawyerVerificationFile,
@@ -110,105 +111,185 @@ class TestUserManagement:
             assert log and log.target == f"user:{uid}"
 
 
-class TestLawyerAdToggle:
-    """변호사 목록 광고 — 어드민 변호사 관리에서 프로필 단위로 지정."""
+class TestLawyerSearchAndDetail:
+    """변호사 검색 + 상세/강제 수정 (§4-4)."""
 
-    def _clear_all_ads(self, app):
+    def test_search_by_name_email_firm(self, app, client, login_as):
+        login_as(ADMIN)
         with app.app_context():
-            LawyerProfile.query.update({
-                LawyerProfile.show_in_ad: False,
-                LawyerProfile.show_in_adlist: False,
-            })
+            u = User.query.filter_by(email="lawyer1@angimo.kr").first()
+            name, firm = u.name, u.lawyer_profile.firm_name
+            other = User.query.filter_by(email="lawyer5@angimo.kr").first().name
+        for kw in (name, "lawyer1@angimo.kr", firm):
+            html = client.get(f"/admin/lawyers?status=all&q={kw}").get_data(as_text=True)
+            assert name in html, kw
+        html = client.get(f"/admin/lawyers?status=all&q={name}").get_data(as_text=True)
+        assert other not in html  # 검색어와 무관한 변호사는 제외
+
+    def test_detail_shows_profile_info(self, app, client, login_as):
+        login_as(ADMIN)
+        with app.app_context():
+            p = LawyerProfile.query.filter(LawyerProfile.intro_full.isnot(None)).first()
+            uid, headline, intro = p.user_id, p.headline, p.intro_full[:20]
+            firm, cat = p.firm_name, p.categories[0].name
+        html = client.get(f"/admin/lawyers/{uid}").get_data(as_text=True)
+        for frag in (headline, intro, firm, cat, "프로필 강제 수정", "공개 프로필 보기"):
+            assert frag in html, frag
+
+    def test_detail_force_edit_reflects_public(self, app, client, login_as):
+        login_as(ADMIN)
+        with app.app_context():
+            uid = LawyerProfile.query.first().user_id
+        r = client.post(f"/admin/lawyers/{uid}", data={
+            "headline": "관리자가 수정한 헤드라인", "office_phone": "02-1234-5678",
+            "firm_name": "수정된 법무법인", "categories": "1",
+        }, follow_redirects=True)
+        assert "프로필을 수정했습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            assert db.session.get(LawyerProfile, uid).headline == "관리자가 수정한 헤드라인"
+            log = AdminLog.query.filter_by(action="lawyer_profile_edit").first()
+            assert log is not None
+        html = app.test_client().get(f"/lawyers/{uid}", follow_redirects=True).get_data(as_text=True)
+        assert "관리자가 수정한 헤드라인" in html
+
+    def test_detail_validation(self, app, client, login_as):
+        login_as(ADMIN)
+        with app.app_context():
+            uid = LawyerProfile.query.first().user_id
+        r = client.post(f"/admin/lawyers/{uid}",
+                        data={"headline": "h", "office_phone": "", "kakao_url": ""})
+        assert "하나는 반드시 입력" in r.get_data(as_text=True)
+
+    def test_detail_guards(self, app, client, login_as):
+        login_as(ADMIN)
+        assert client.get("/admin/lawyers/999999").status_code == 404
+        with app.app_context():
+            uid = User.query.filter_by(email="user1@example.com").first().id
+        assert client.get(f"/admin/lawyers/{uid}").status_code == 404  # 변호사 아님
+        login_as("user1@example.com")
+        assert client.get("/admin/lawyers/2").status_code == 403
+
+
+class TestLawyerAds:
+    """변호사 광고 — 광고/운영 메뉴에서 분야별로 지정."""
+
+    def _clear(self, app):
+        with app.app_context():
+            LawyerAd.query.delete()
             db.session.commit()
+            invalidate_page_cache()
 
     def _lawyer(self, app, email="lawyer1@angimo.kr"):
         with app.app_context():
             u = User.query.filter_by(email=email).first()
             return u.id, u.name
 
-    def test_photocard_ad_independent(self, app, client, login_as):
-        """광고① 포토카드만 지정하면 포토카드에만 노출(AD LAWYERS는 안 뜸)."""
-        self._clear_all_ads(app)
+    def _add_ad(self, app, client, lawyer_id, slot="photocard", category_id="", **kw):
+        data = {"lawyer_id": lawyer_id, "slot": slot, "category_id": category_id,
+                "is_active": "1", "sort_order": "0", **kw}
+        return client.post("/admin/lawyer-ads/new", data=data, follow_redirects=True)
+
+    def test_category_specific_ad(self, app, client, login_as):
+        """분야 지정 광고는 그 분야에서만 노출."""
+        self._clear(app)
         uid, name = self._lawyer(app)
         login_as(ADMIN)
-        r = client.post(f"/admin/lawyers/{uid}/toggle-ad", follow_redirects=True)
-        assert "최상단 포토카드 광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
-        with app.app_context():
-            prof = db.session.get(LawyerProfile, uid)
-            assert prof.show_in_ad is True and prof.show_in_adlist is False
+        r = self._add_ad(app, client, uid, category_id="1")
+        assert "변호사 광고가 저장되었습니다" in r.get_data(as_text=True)
+        c2 = app.test_client()
+        # 지정 분야에는 노출
+        html = c2.get("/lawyers/?category=1").get_data(as_text=True)
+        assert 'class="sa-grid"' in html and f"{name} 변호사" in html
+        # 다른 분야에는 미노출
+        assert 'class="sa-grid"' not in c2.get("/lawyers/?category=7").get_data(as_text=True)
+
+    def test_global_ad_shows_everywhere(self, app, client, login_as):
+        """전체 노출(카테고리 미지정) 광고는 모든 분야 화면에 노출."""
+        self._clear(app)
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        self._add_ad(app, client, uid, category_id="")
+        c2 = app.test_client()
+        for path in ("/lawyers/", "/lawyers/?category=1", "/lawyers/?category=7"):
+            assert f"{name} 변호사" in c2.get(path).get_data(as_text=True), path
+
+    def test_slots_are_independent(self, app, client, login_as):
+        """포토카드와 AD LAWYERS는 별개 상품 — 한쪽만 지정하면 한쪽만 노출."""
+        self._clear(app)
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        self._add_ad(app, client, uid, slot="photocard")
         c2 = app.test_client()
         html = c2.get("/lawyers/").get_data(as_text=True)
-        ad_area = html.split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
-        assert f"{name} 변호사" in ad_area
-        assert "AD LAWYERS" not in html  # 별개 상품이므로 함께 켜지지 않음
-        # 해제하면 사라짐
-        client.post(f"/admin/lawyers/{uid}/toggle-ad")
+        assert 'class="sa-grid"' in html and "AD LAWYERS" not in html
+        # AD리스트도 추가하면 둘 다
+        self._add_ad(app, client, uid, slot="adlist")
+        html = c2.get("/lawyers/").get_data(as_text=True)
+        assert 'class="sa-grid"' in html and "AD LAWYERS" in html
+
+    def test_inactive_and_expired_not_shown(self, app, client, login_as):
+        self._clear(app)
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        self._add_ad(app, client, uid, is_active="0")  # 중지
+        c2 = app.test_client()
+        assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
+        self._clear(app)
+        self._add_ad(app, client, uid, ends_at="2020-01-01T00:00")  # 기간 만료
         assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
 
-    def test_adlist_ad_independent(self, app, client, login_as):
-        """광고② AD LAWYERS만 지정하면 그 영역에만 노출(포토카드는 안 뜸)."""
-        self._clear_all_ads(app)
-        uid, name = self._lawyer(app)
-        login_as(ADMIN)
-        r = client.post(f"/admin/lawyers/{uid}/toggle-adlist", follow_redirects=True)
-        assert "AD LAWYERS 광고 노출 상태를 변경했습니다" in r.get_data(as_text=True)
-        with app.app_context():
-            prof = db.session.get(LawyerProfile, uid)
-            assert prof.show_in_adlist is True and prof.show_in_ad is False
-        c2 = app.test_client()
-        html = c2.get("/lawyers/").get_data(as_text=True)
-        assert "AD LAWYERS" in html and f"{name} 변호사" in html
-        assert 'class="sa-grid"' not in html  # 포토카드 영역은 미노출
-
-    def test_adlist_has_no_headcount_limit(self, app, client):
+    def test_adlist_has_no_headcount_limit(self, app, client, login_as):
         """AD LAWYERS는 인원 제한 없이 지정한 만큼 전부 노출."""
-        self._clear_all_ads(app)
+        self._clear(app)
+        login_as(ADMIN)
+        names = []
         with app.app_context():
             profs = LawyerProfile.query.limit(5).all()
-            names = [p.user.name for p in profs]
-            for p in profs:
-                p.show_in_adlist = True
-            db.session.commit()
-            invalidate_page_cache()
+            ids = [(p.user_id, p.user.name) for p in profs]
+        for uid, name in ids:
+            names.append(name)
+            self._add_ad(app, client, uid, slot="adlist")
         html = app.test_client().get("/lawyers/").get_data(as_text=True)
         ad_area = html.split("AD LAWYERS", 1)[1].split("plain-label", 1)[0]
         for name in names:
             assert f"{name} 변호사" in ad_area, name
 
     def test_only_designated_lawyers_shown(self, app, client, login_as):
-        self._clear_all_ads(app)
+        self._clear(app)
         uid, name = self._lawyer(app)
         _, other = self._lawyer(app, "lawyer2@angimo.kr")
         login_as(ADMIN)
-        client.post(f"/admin/lawyers/{uid}/toggle-ad")
-        c2 = app.test_client()
-        ad_area = c2.get("/lawyers/").get_data(as_text=True).split('class="sa-grid"', 1)[1] \
-            .split("sec-title", 1)[0]
-        assert f"{name} 변호사" in ad_area
-        assert f"{other} 변호사" not in ad_area  # 지정 안 한 변호사는 광고에 없음
+        self._add_ad(app, client, uid)
+        ad_area = app.test_client().get("/lawyers/").get_data(as_text=True) \
+            .split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
+        assert f"{name} 변호사" in ad_area and f"{other} 변호사" not in ad_area
 
-    def test_missing_profile_404(self, client, login_as):
-        login_as(ADMIN)
-        assert client.post("/admin/lawyers/999999/toggle-ad").status_code == 404
-        assert client.post("/admin/lawyers/999999/toggle-adlist").status_code == 404
-
-    def test_admin_page_explains_ad_area(self, client, login_as):
-        """광고 등록 위치 안내 — 기본 탭(승인 대기)에서도 방법을 찾을 수 있어야 함."""
-        login_as(ADMIN)
-        html = client.get("/admin/lawyers").get_data(as_text=True)  # 기본 탭
-        assert "포토카드" in html and "[전체] 탭" in html
-        assert "AD LAWYERS" in html  # 광고 상품 2종 안내
-        assert "광고 노출중" in html  # 광고 현황 탭 노출
-
-    def test_ad_tab_lists_only_designated(self, app, client, login_as):
-        """광고 노출중 탭 — 지정한 변호사만."""
-        self._clear_all_ads(app)
+    def test_admin_list_groups_by_category(self, app, client, login_as):
+        self._clear(app)
         uid, name = self._lawyer(app)
-        _, other = self._lawyer(app, "lawyer2@angimo.kr")
         login_as(ADMIN)
-        client.post(f"/admin/lawyers/{uid}/toggle-ad")
-        html = client.get("/admin/lawyers?status=ad").get_data(as_text=True)
-        assert name in html and other not in html
+        self._add_ad(app, client, uid, category_id="1")
+        self._add_ad(app, client, uid, slot="adlist", category_id="")
+        html = client.get("/admin/lawyer-ads").get_data(as_text=True)
+        assert "전체 노출" in html and name in html
+        assert "최상단 포토카드" in html and "AD LAWYERS" in html
+
+    def test_delete_ad(self, app, client, login_as):
+        self._clear(app)
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        self._add_ad(app, client, uid)
+        with app.app_context():
+            ad_id = LawyerAd.query.first().id
+        client.post(f"/admin/lawyer-ads/{ad_id}/delete")
+        with app.app_context():
+            assert LawyerAd.query.count() == 0
+        assert 'class="sa-grid"' not in app.test_client().get("/lawyers/").get_data(as_text=True)
+
+    def test_menu_is_under_ad_group(self, client, login_as):
+        login_as(ADMIN)
+        html = client.get("/admin/lawyer-ads").get_data(as_text=True)
+        assert "변호사 광고 관리" in html  # 사이드바 메뉴 노출
 
     def test_post_review_has_no_ad_controls(self, client, login_as):
         """포스트 검수에서는 광고 기능이 제거됨."""

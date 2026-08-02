@@ -7,24 +7,41 @@
 <div class="stat-grid">
   <div class="stat-card"><div class="lb"><i data-lucide="eye"></i>프로필 조회수</div><div class="num">{{ '{:,}'.format(stats.view_count) }}<small>회</small></div><div class="diff">누적</div></div>
   <div class="stat-card"><div class="lb"><i data-lucide="phone"></i>연락 클릭수</div><div class="num">{{ '{:,}'.format(stats.contact_click_count) }}<small>회</small></div><div class="diff">전화 + 카톡</div></div>
-  <div class="stat-card"><div class="lb"><i data-lucide="message-square-text"></i>작성 답변</div><div class="num">{{ stats.answer_count }}<small>건</small></div><div class="diff">누적</div></div>
+  <div class="stat-card"><div class="lb"><i data-lucide="message-square-text"></i>이번 달 답변</div><div class="num">{{ stats.answer_count }}<small>건</small></div><div class="diff">이번 달</div></div>
   <div class="stat-card"><div class="lb"><i data-lucide="file-check"></i>게시중 포스트</div><div class="num">{{ stats.published_posts }}<small>건</small></div><div class="diff">published</div></div>
 </div>
 
-{% if profile %}
-<div class="notice-strip"><i data-lucide="info"></i><span>프로필 완성도 <b>{{ completion }}%</b>
-  {% if not profile.is_complete %} — 필수 항목(사진·헤드라인·분야·연락처)을 채우면 목록에 노출됩니다.{% else %} — 상세 소개와 경력을 보강하면 노출 품질이 올라가요.{% endif %}
+{% if profile and not profile.is_complete %}
+<div class="notice-strip"><i data-lucide="info"></i><span>필수 항목(사진·헤드라인·분야·연락처)을 채우면 변호사 목록에 노출됩니다.
   <a href="{{ url_for('lawyer_admin.profile') }}"><b>프로필 완성하기 →</b></a></span></div>
 {% endif %}
 
 <div class="two-col">
   <div class="panel">
-    <div class="p-head"><h2>답변 대기 상담글</h2><a href="#">전체 피드 →</a></div>
-    <div class="list-item"><div class="m">분야 매칭 답변 피드는 Phase 4에서 구현됩니다.</div></div>
+    <div class="p-head"><h2>답변 대기 상담글 <span class="cnt">{{ feed | length }}</span></h2><a href="{{ url_for('lawyer_admin.answers') }}">전체 피드 →</a></div>
+    {% for c in feed %}
+    <div class="list-item">
+      <div class="t"><a href="{{ url_for('counsel.detail', consult_id=c.id) }}" target="_blank" rel="noopener">{{ c.title }}</a></div>
+      <div class="m" style="margin-top:5px">{{ c.category.name if c.category }} · {{ c.created_at.strftime('%m.%d') }} · 조회 {{ c.views }}</div>
+    </div>
+    {% else %}
+    <div class="list-item"><div class="m">{% if profile and profile.categories %}지금은 답변 대기 중인 상담글이 없습니다.{% else %}프로필에서 분야를 선택하면 매칭된 상담글이 표시됩니다.{% endif %}</div></div>
+    {% endfor %}
   </div>
   <div class="panel">
-    <div class="p-head"><h2>내 포스트 현황</h2><a href="#">포스트 작성 →</a></div>
-    <div class="list-item"><div class="m">포스트 작성·검수 현황은 Phase 3에서 구현됩니다.</div></div>
+    <div class="p-head"><h2>내 포스트 현황</h2><a href="{{ url_for('lawyer_admin.posts') }}">포스트 관리 →</a></div>
+    {% for p in my_posts %}
+    <div class="list-item">
+      <div class="t">[{{ type_labels.get(p.type, '') }}] {{ p.title }}
+        {% if p.status == 'published' %}<span class="badge ok">게시중</span>
+        {% elif p.status == 'pending' %}<span class="badge wait">검수 대기</span>
+        {% elif p.status == 'rejected' %}<span class="badge red">반려</span>{% endif %}
+      </div>
+      <div class="m" style="margin-top:5px">{{ p.created_at.strftime('%Y.%m.%d') }} 작성{% if p.reject_reason %} · 반려 사유: {{ p.reject_reason }}{% endif %}</div>
+    </div>
+    {% else %}
+    <div class="list-item"><div class="m">작성한 포스트가 없습니다. <a href="{{ url_for('lawyer_admin.post_new') }}" style="color:var(--blue-600);font-weight:700">첫 포스트 쓰기 →</a></div></div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

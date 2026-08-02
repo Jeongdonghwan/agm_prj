@@ -1,10 +1,19 @@
 import re
+from datetime import datetime
 
 from flask import Blueprint, abort, redirect, render_template, request, url_for
 from sqlalchemy.orm import joinedload, selectinload
 
 from extensions import db
-from models import Category, ConsultationAnswer, LawyerPost, LawyerProfile, Region, User
+from models import (
+    Category,
+    ConsultationAnswer,
+    LawyerAd,
+    LawyerPost,
+    LawyerProfile,
+    Region,
+    User,
+)
 from utils import cached_page
 
 bp = Blueprint("lawyers", __name__, url_prefix="/lawyers")
@@ -97,19 +106,55 @@ def find():
     )
     plain_profiles = profiles
 
-    # 광고 상품 2종 — 각각 별도 지정, 지정이 없으면 해당 영역만 미노출
-    def _ad_query(flag, limit=None):
+    # 광고: 관리자가 분야별로 지정한 변호사 (lawyer_ads)
+    def _ad_profiles(slot, limit=None):
+        """현재 분야에 지정된 광고 + 전체 노출 광고를 순서대로."""
         if page != 1:
             return []
-        query = (
-            _apply_filters(_visible_profiles_query())
-            .filter(flag.is_(True))
-            .order_by(LawyerProfile.view_count.desc())
+        now = datetime.now()
+        ad_q = LawyerAd.query.filter(
+            LawyerAd.slot == slot,
+            LawyerAd.is_active.is_(True),
+            db.or_(LawyerAd.starts_at.is_(None), LawyerAd.starts_at <= now),
+            db.or_(LawyerAd.ends_at.is_(None), LawyerAd.ends_at >= now),
         )
-        return (query.limit(limit) if limit else query).all()
+        if selected:
+            # 세부분야 선택 시 대분류 광고도, 대분류 선택 시 그 자식 광고도 매칭
+            cat_ids = [selected.id]
+            if selected.parent_id:
+                cat_ids.append(selected.parent_id)
+            else:
+                cat_ids += [c.id for c in children]
+            ad_q = ad_q.filter(
+                db.or_(
+                    LawyerAd.category_id.is_(None),  # 전체 노출 광고
+                    LawyerAd.category_id.in_(cat_ids),
+                )
+            )
+        ads = ad_q.order_by(LawyerAd.sort_order, LawyerAd.id).all()
+        if not ads:
+            return []
+        # 노출 조건(활성·프로필 완성)을 만족하는 프로필만, 광고 순서대로
+        lawyer_ids = [a.lawyer_id for a in ads]
+        profs = {
+            p.user_id: p
+            for p in _visible_profiles_query()
+            .filter(LawyerProfile.user_id.in_(lawyer_ids))
+            .all()
+        }
+        result, seen = [], set()
+        for a in ads:
+            p = profs.get(a.lawyer_id)
+            if p is None or a.lawyer_id in seen:
+                continue
+            seen.add(a.lawyer_id)
+            result.append(p)
+            if limit and len(result) >= limit:
+                break
+        return result
 
-    ad_cards = _ad_query(LawyerProfile.show_in_ad, 6)  # ① 최상단 포토카드(그리드 6장)
-    ad_profiles = _ad_query(LawyerProfile.show_in_adlist)  # ② AD LAWYERS(인원 제한 없음)
+    ad_cards = _ad_profiles("photocard", 6)  # ① 최상단 포토카드(그리드 6장)
+    ad_profiles = _ad_profiles("adlist")  # ② AD LAWYERS(인원 제한 없음)
 
     answer_counts = dict(
         db.session.query(

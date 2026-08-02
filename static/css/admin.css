@@ -100,10 +100,6 @@ td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
 .pv-firm{margin-top:6px;font-size:12.5px;font-weight:700}
 .pv-addr{margin-top:2px;font-size:12px;color:var(--ink-500)}
 .pv-tel{margin-top:8px;font-size:12.5px;font-weight:700;color:var(--blue-700)}
-.pv-gauge{margin-top:16px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink-500)}
-.pv-gauge .bar{flex:1;height:6px;background:var(--blue-050);border-radius:99px;overflow:hidden}
-.pv-gauge .bar i{display:block;height:100%;background:var(--blue-600);border-radius:99px}
-.pv-gauge b{color:var(--blue-700)}
 
 @media (max-width:1100px){.stat-grid{grid-template-columns:1fr 1fr}.two-col{grid-template-columns:1fr}.pf-layout{grid-template-columns:1fr}.pf-preview{position:static}}
 @media (max-width:800px){.sidebar{display:none}}

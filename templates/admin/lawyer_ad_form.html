@@ -1,0 +1,63 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'lawyer_ads' %}
+{% block title %}변호사 광고 {{ '수정' if item else '등록' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}변호사 광고 {{ '수정' if item else '등록' }}{% endblock %}
+
+{% block content %}
+<form method="post" class="panel" style="margin-top:0;max-width:760px">
+  <div class="pf-body">
+    <div class="pf-field"><label>변호사 *</label>
+      <select name="lawyer_id" required>
+        <option value="">선택</option>
+        {% for u in lawyers %}
+        <option value="{{ u.id }}" {% if item and item.lawyer_id == u.id %}selected{% endif %}>
+          {{ u.name }}{% if u.lawyer_profile and u.lawyer_profile.firm_name %} · {{ u.lawyer_profile.firm_name }}{% endif %}{% if u.lawyer_profile and not u.lawyer_profile.is_complete %} (프로필 미완성){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+      <small>프로필이 미완성이거나 노출 정지된 변호사는 광고를 지정해도 화면에 표시되지 않습니다.</small>
+    </div>
+
+    <div class="pf-row">
+      <div class="pf-field"><label>노출 분야</label>
+        <select name="category_id">
+          <option value="">전체 노출 (모든 분야)</option>
+          {% for p in parents %}
+          <option value="{{ p.id }}" {% if item and item.category_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+          {% endfor %}
+        </select>
+        <small>선택한 분야로 필터한 화면에 노출됩니다.</small>
+      </div>
+      <div class="pf-field"><label>광고 자리 *</label>
+        <select name="slot" required>
+          {% for value, label in slots %}
+          <option value="{{ value }}" {% if item and item.slot == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+        <small>포토카드는 분야당 최대 6명까지 표시됩니다.</small>
+      </div>
+    </div>
+
+    <div class="pf-row">
+      <div class="pf-field"><label>시작일</label><input type="datetime-local" name="starts_at" value="{{ item.starts_at.strftime('%Y-%m-%dT%H:%M') if item and item.starts_at else '' }}"></div>
+      <div class="pf-field"><label>종료일</label><input type="datetime-local" name="ends_at" value="{{ item.ends_at.strftime('%Y-%m-%dT%H:%M') if item and item.ends_at else '' }}"></div>
+    </div>
+
+    <div class="pf-row">
+      <div class="pf-field"><label>순서</label><input type="text" name="sort_order" value="{{ item.sort_order if item else 0 }}">
+        <small>숫자가 작을수록 앞에 노출됩니다.</small></div>
+      <div class="pf-field"><label>노출</label>
+        <select name="is_active">
+          <option value="1" {% if not item or item.is_active %}selected{% endif %}>노출</option>
+          <option value="0" {% if item and not item.is_active %}selected{% endif %}>중지</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn pri" type="submit" style="padding:12px 24px">저장</button>
+      <a class="btn line" href="{{ url_for('admin.lawyer_ads') }}">취소</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

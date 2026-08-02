@@ -1,0 +1,139 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'lawyers' %}
+{% block title %}{{ user.name }} 변호사 - {{ site_name }}{% endblock %}
+{% block topbar_title %}변호사 상세 · 프로필 관리{% endblock %}
+
+{% block content %}
+<div style="display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+  <a class="btn line" href="{{ url_for('admin.lawyers', status='all') }}">← 목록</a>
+  <a class="btn line" href="{{ url_for('lawyers.detail', user_id=user.id) }}" target="_blank" rel="noopener">공개 프로필 보기 ↗</a>
+  <a class="btn line" href="{{ url_for('admin.lawyer_ads') }}">광고 관리 →</a>
+</div>
+
+<!-- 계정 정보 -->
+<div class="panel" style="margin-top:0">
+  <div class="p-head"><h2>{{ user.name }} 변호사
+    {% if user.status == 'active' %}<span class="badge ok">활동중</span>
+    {% elif user.status == 'pending' %}<span class="badge wait">승인 대기</span>
+    {% elif user.status == 'rejected' %}<span class="badge red">반려</span>
+    {% else %}<span class="badge red">{{ user.status }}</span>{% endif %}
+    {% if not profile.is_visible %}<span class="badge red">노출정지</span>{% endif %}
+    {% if not profile.is_complete %}<span class="badge wait">프로필 미완성</span>{% endif %}
+  </h2></div>
+  <table>
+    <tr><th>이메일</th><td>{{ user.email }}</td><th>휴대폰</th><td>{{ user.phone or '-' }}</td></tr>
+    <tr><th>가입일</th><td>{{ user.created_at.strftime('%Y.%m.%d %H:%M') }}</td>
+        <th>최종 로그인</th><td>{{ user.last_login_at.strftime('%Y.%m.%d %H:%M') if user.last_login_at else '-' }}</td></tr>
+    <tr><th>등록번호</th><td>{{ profile.license_no or '-' }}</td>
+        <th>승인일</th><td>{{ profile.approved_at.strftime('%Y.%m.%d') if profile.approved_at else '-' }}</td></tr>
+    {% if user.status_reason %}<tr><th>상태 사유</th><td colspan="3">{{ user.status_reason }}</td></tr>{% endif %}
+    <tr><th>인증 서류</th><td colspan="3">
+      {% for f in files %}<a class="btn line" href="{{ url_for('admin.verification_file', file_id=f.id) }}" target="_blank">서류{{ loop.index }} ({{ f.file_type }})</a> {% else %}<span style="color:var(--ink-500)">없음</span>{% endfor %}
+    </td></tr>
+    <tr><th>노출 광고</th><td colspan="3">
+      {% for a in ads %}
+      <span class="badge blue">{{ a.category.name if a.category else '전체' }} · {{ '포토카드' if a.slot == 'photocard' else 'AD리스트' }}{% if not a.is_active %} (중지){% endif %}</span>
+      {% else %}<span style="color:var(--ink-500)">지정된 광고 없음</span>{% endfor %}
+    </td></tr>
+  </table>
+</div>
+
+<!-- 활동 통계 -->
+<div class="stat-grid" style="margin-top:20px">
+  <div class="stat-card"><div class="lb"><i data-lucide="eye"></i>프로필 조회수</div><div class="num">{{ '{:,}'.format(stats.view_count) }}<small>회</small></div></div>
+  <div class="stat-card"><div class="lb"><i data-lucide="phone"></i>연락 클릭수</div><div class="num">{{ '{:,}'.format(stats.contact_click_count) }}<small>회</small></div></div>
+  <div class="stat-card"><div class="lb"><i data-lucide="message-square-text"></i>상담 답변</div><div class="num">{{ stats.answers }}<small>건</small></div></div>
+  <div class="stat-card"><div class="lb"><i data-lucide="file-check"></i>게시중 포스트</div><div class="num">{{ stats.posts }}<small>건</small></div></div>
+</div>
+
+<!-- 프로필 강제 수정 -->
+<form method="post" enctype="multipart/form-data">
+  <div class="panel">
+    <div class="p-head"><h2>프로필 강제 수정</h2></div>
+    <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+      ⚠️ 관리자가 직접 수정합니다. 저장 즉시 공개 프로필에 반영되며 운영 로그에 기록됩니다.
+    </div>
+    <div class="pf-body">
+      <div class="pf-field">
+        <label>헤드라인</label>
+        <input type="text" name="headline" maxlength="100" value="{{ profile.headline or '' }}" placeholder="프로필 페이지 대제목">
+      </div>
+      <div class="pf-row">
+        <div class="pf-field"><label>소속 (로펌·사무소명)</label>
+          <input type="text" name="firm_name" maxlength="100" value="{{ profile.firm_name or '' }}"></div>
+        <div class="pf-field"><label>소속 변호사회</label>
+          <input type="text" name="bar_association" maxlength="50" value="{{ profile.bar_association or '' }}"></div>
+      </div>
+      <div class="pf-field"><label>프로필 사진</label>
+        {% if profile.photo_url %}<div class="pf-photo-cur"><img src="{{ profile.photo_url }}" alt=""> 현재 사진 (새 파일 업로드 시 교체)</div>{% endif %}
+        <div class="filebox" data-label="사진 선택 (jpg / png)">
+          <input type="file" name="photo" accept=".jpg,.jpeg,.png">
+        </div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field"><label>사무실 전화</label>
+          <input type="tel" name="office_phone" maxlength="30" value="{{ profile.office_phone or '' }}"></div>
+        <div class="pf-field"><label>카카오톡 채널 URL</label>
+          <input type="text" name="kakao_url" maxlength="300" value="{{ profile.kakao_url or '' }}" placeholder="https://pf.kakao.com/..."></div>
+      </div>
+      <small style="color:var(--ink-500);margin-top:-8px">전화·카카오톡 중 하나는 반드시 입력해야 합니다.</small>
+      <div class="pf-field"><label>사무소 주소</label>
+        <input type="text" name="address" maxlength="200" value="{{ profile.address or '' }}"></div>
+      <div class="pf-field"><label>활동 지역</label>
+        <select name="region_id">
+          <option value="">선택 안 함</option>
+          {% for r in regions %}
+          <option value="{{ r.id }}" {% if profile.region_id == r.id %}selected{% endif %}>{{ r.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="pf-field"><label>분야 <small style="font-weight:500">(최대 {{ max_categories }}개)</small></label>
+        <div class="pf-cats">
+          {% for p in parents %}
+          <div class="pf-cat-group">
+            <label class="pf-cat-parent"><input type="checkbox" name="categories" value="{{ p.id }}" {% if p.id in selected_ids %}checked{% endif %}> {{ p.name }}</label>
+            <div class="pf-cat-children">
+              {% for c in children_by_parent.get(p.id, []) %}
+              <label><input type="checkbox" name="categories" value="{{ c.id }}" {% if c.id in selected_ids %}checked{% endif %}> {{ c.name }}</label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="pf-field"><label>상세 소개</label>
+        <textarea name="intro_full" rows="6">{{ profile.intro_full or '' }}</textarea></div>
+      <div class="pf-field"><label>경력 (연도 + 내용)</label>
+        <div id="career-rows">
+          {% for item in (profile.career or []) %}
+          <div class="career-row">
+            <input type="text" name="career_year" value="{{ item.year }}" placeholder="연도" maxlength="10">
+            <input type="text" name="career_text" value="{{ item.text }}" placeholder="내용">
+            <button type="button" class="btn danger rm-career">삭제</button>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn line" id="add-career">+ 경력 추가</button>
+      </div>
+      <button class="btn pri" type="submit" style="padding:12px 0">프로필 저장</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 경력 행 추가·삭제 (변호사 어드민 프로필과 동일 동작)
+document.getElementById('add-career').addEventListener('click', () => {
+  const row = document.createElement('div');
+  row.className = 'career-row';
+  row.innerHTML = '<input type="text" name="career_year" placeholder="연도" maxlength="10">'
+    + '<input type="text" name="career_text" placeholder="내용">'
+    + '<button type="button" class="btn danger rm-career">삭제</button>';
+  document.getElementById('career-rows').appendChild(row);
+});
+document.addEventListener('click', e => {
+  if (e.target.classList.contains('rm-career')) e.target.closest('.career-row').remove();
+});
+</script>
+{% endblock %}

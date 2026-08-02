@@ -39,6 +39,25 @@ class Banner(db.Model):
     ends_at = db.Column(db.DateTime)
 
 
+class LawyerAd(db.Model):
+    """변호사 목록 광고 — 어느 분야(카테고리)에 누구를 어느 슬롯으로 노출할지."""
+
+    __tablename__ = "lawyer_ads"
+
+    id = db.Column(db.Integer, primary_key=True)
+    lawyer_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # NULL = 전체 노출(분야 필터와 무관하게 항상)
+    category_id = db.Column(db.Integer, db.ForeignKey("categories.id"))
+    slot = db.Column(ENUM("photocard", "adlist"), default="photocard")
+    sort_order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    starts_at = db.Column(db.DateTime)
+    ends_at = db.Column(db.DateTime)
+
+    lawyer = db.relationship("User")
+    category = db.relationship("Category")
+
+
 class FirmAd(db.Model):
     __tablename__ = "firm_ads"
 

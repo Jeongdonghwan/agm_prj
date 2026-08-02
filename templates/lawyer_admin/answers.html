@@ -33,6 +33,16 @@
   <div class="list-item">
     <div class="t">{% if c %}<a href="{{ url_for('counsel.detail', consult_id=c.id) }}" target="_blank">{{ c.title }}</a>{% else %}삭제된 상담글{% endif %}</div>
     <div class="m">{{ a.created_at.strftime('%Y.%m.%d %H:%M') }} 답변 · {{ a.content[:100] }}{% if a.content | length > 100 %}…{% endif %}</div>
+    <div style="margin-top:8px">
+      <button class="btn line" type="button" onclick="document.getElementById('ans-edit-{{ a.id }}').style.display = document.getElementById('ans-edit-{{ a.id }}').style.display === 'none' ? 'block' : 'none'">수정</button>
+      <form method="post" action="{{ url_for('lawyer_admin.answer_delete', answer_id=a.id) }}" onsubmit="return confirm('답변을 삭제할까요? 해당 상담글이 다시 답변 대기 목록에 표시됩니다.')" style="display:inline">
+        <button class="btn danger" type="submit">삭제</button>
+      </form>
+    </div>
+    <form id="ans-edit-{{ a.id }}" method="post" action="{{ url_for('lawyer_admin.answer_edit', answer_id=a.id) }}" style="display:none;margin-top:10px">
+      <textarea name="content" rows="5" required style="width:100%;border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:11px 13px;font-size:13.5px;font-family:inherit">{{ a.content }}</textarea>
+      <button class="btn pri" type="submit" style="margin-top:8px">답변 수정</button>
+    </form>
   </div>
   {% else %}
   <div class="list-item"><div class="m">작성한 답변이 없습니다.</div></div>

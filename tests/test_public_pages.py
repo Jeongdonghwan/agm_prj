@@ -123,16 +123,20 @@ class TestLayout:
         assert names and len(names) == len(set(names))
 
     def test_ad_area_hidden_when_none_designated(self, app, client):
-        """광고 지정이 0명이면 포토카드·AD LAWYERS 영역 자체가 사라짐."""
+        """광고 지정이 0건이면 포토카드·AD LAWYERS 영역 자체가 사라짐."""
+        from models import LawyerAd
+
         with app.app_context():
-            LawyerProfile.query.update({
-                LawyerProfile.show_in_ad: False,
-                LawyerProfile.show_in_adlist: False,
-            })
+            LawyerAd.query.delete()
             db.session.commit()
             invalidate_page_cache()
         html = client.get("/lawyers/").get_data(as_text=True)
         assert 'class="sa-grid"' not in html and "AD LAWYERS" not in html
+
+    def test_ad_lawyers_has_no_hardcoded_merit(self, client):
+        """AD LAWYERS의 '명쾌한 변호사/해결사' 하드코딩 뱃지 제거 확인."""
+        html = client.get("/lawyers/").get_data(as_text=True)
+        assert "명쾌한 변호사" not in html and ">해결사<" not in html
 
     def test_kakao_buttons_use_brand_symbol(self, app, client):
         """카카오톡 버튼은 lucide 말풍선이 아니라 카카오 심볼 사용."""

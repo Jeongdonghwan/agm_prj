@@ -79,7 +79,6 @@
     <div class="ad-card">
       <a class="photo" href="{{ detail_url }}">{% if p.photo_url %}<img src="{{ p.photo_url }}" alt="{{ p.user.name }} 변호사" loading="lazy">{% else %}{{ p.user.name[0] }}{% endif %}</a>
       <div class="bd">
-        <div class="merit"><span><i data-lucide="smile"></i>명쾌한 변호사</span><span><i data-lucide="award"></i>해결사</span></div>
         <a href="{{ detail_url }}"><h3>{{ p.user.name }} 변호사</h3></a>
         <div class="firm">{{ p.firm_name }}{% if p.region %} ({{ p.region.name }}){% endif %}</div>
         <div class="hash">{% for c in p.categories[:3] %}<span>#{{ c.name }}</span>{% endfor %}</div>

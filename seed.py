@@ -268,6 +268,7 @@ def run_seed(app):
         Consultation,
         ConsultationAnswer,
         FirmAd,
+        LawyerAd,
         LawyerPost,
         LawyerProfile,
         LegalCase,
@@ -350,8 +351,6 @@ def run_seed(app):
                 region_id=regions[region_idx].id,
                 view_count=120 + i * 37,
                 contact_click_count=8 + i * 3,
-                show_in_ad=(i <= 3),  # 데모: 광고① 최상단 포토카드 3명
-                show_in_adlist=(i <= 2),  # 데모: 광고② AD LAWYERS 2명
                 approved_at=now - timedelta(days=80 - i * 7),
             )
             profile.categories = [cat_by_name[c] for c in cats]
@@ -606,6 +605,28 @@ def run_seed(app):
                     link_url=link_url,
                     image_url=image_url,
                     sort_order=i,
+                    is_active=True,
+                    starts_at=now - timedelta(days=1),
+                    ends_at=now + timedelta(days=365),
+                )
+            )
+
+        # 변호사 광고 데모 — 분야별로 누구를 어느 자리에 (전체 노출 + 분야 지정)
+        lawyer_ad_demo = [
+            (0, None, "photocard", 0),  # 전체 노출 포토카드
+            (1, None, "photocard", 1),
+            (0, "형사일반", "photocard", 0),  # 분야 지정 포토카드
+            (4, "부동산/임대차", "photocard", 0),
+            (2, None, "adlist", 0),  # 전체 노출 AD LAWYERS
+            (3, "이혼/가족", "adlist", 0),
+        ]
+        for lidx, cat_name, slot, order in lawyer_ad_demo:
+            db.session.add(
+                LawyerAd(
+                    lawyer_id=lawyer_users[lidx].id,
+                    category_id=cat_by_name[cat_name].id if cat_name else None,
+                    slot=slot,
+                    sort_order=order,
                     is_active=True,
                     starts_at=now - timedelta(days=1),
                     ends_at=now + timedelta(days=365),

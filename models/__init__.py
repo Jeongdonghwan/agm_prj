@@ -8,6 +8,7 @@ from models.ops import (
     Category,
     FirmAd,
     FirmInquiry,
+    LawyerAd,
     Region,
     Report,
 )
@@ -29,6 +30,7 @@ __all__ = [
     "Category",
     "Region",
     "Banner",
+    "LawyerAd",
     "FirmAd",
     "FirmInquiry",
     "Report",

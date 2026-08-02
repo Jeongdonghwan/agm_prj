@@ -5,7 +5,7 @@
 {% block topbar_title %}프로필 관리{% endblock %}
 
 {% block content %}
-<div class="notice-strip"><i data-lucide="info"></i><span>프로필 완성도 <b>{{ completion }}%</b> — 저장 즉시 공개 페이지(<a href="{{ url_for('lawyers.detail', user_id=profile.user_id) }}" target="_blank"><b>/lawyers/{{ profile.user_id }} ↗</b></a>)에 반영됩니다. 필수 항목: 사진 · 헤드라인 · 분야 · 연락처</span></div>
+<div class="notice-strip"><i data-lucide="info"></i><span>저장 즉시 공개 페이지(<a href="{{ url_for('lawyers.detail', user_id=profile.user_id) }}" target="_blank"><b>/lawyers/{{ profile.user_id }} ↗</b></a>)에 반영됩니다. 필수 항목: 사진 · 헤드라인 · 분야 · 연락처</span></div>
 
 <form method="post" enctype="multipart/form-data" class="pf-layout">
   <div>
@@ -123,9 +123,6 @@
         <div class="pv-firm" id="pv-firm">{{ profile.firm_name or '소속' }}</div>
         <div class="pv-addr" id="pv-addr">{{ profile.address or '사무소 주소' }}</div>
         <div class="pv-tel" id="pv-tel">{{ profile.office_phone or '사무실 전화' }}</div>
-        <div class="pv-gauge"><span>완성도</span>
-          <div class="bar"><i style="width:{{ completion }}%"></i></div><b>{{ completion }}%</b>
-        </div>
       </div>
     </div>
   </aside>

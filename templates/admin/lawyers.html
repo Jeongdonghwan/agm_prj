@@ -4,25 +4,28 @@
 {% block topbar_title %}변호사 관리{% endblock %}
 
 {% block content %}
-<div style="display:flex;gap:8px;margin-bottom:16px">
-  <a class="btn {% if status == 'pending' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='pending') }}">승인 대기 {{ pending_count }}</a>
-  <a class="btn {% if status == 'all' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='all') }}">전체</a>
-  <a class="btn {% if status == 'ad' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='ad') }}">광고 노출중 {{ ad_count }}</a>
+<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+  <a class="btn {% if status == 'pending' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='pending', q=keyword) }}">승인 대기 {{ pending_count }}</a>
+  <a class="btn {% if status == 'all' %}pri{% else %}line{% endif %}" href="{{ url_for('admin.lawyers', status='all', q=keyword) }}">전체</a>
+  <form method="get" action="{{ url_for('admin.lawyers') }}" style="display:flex;gap:6px;margin-left:auto">
+    <input type="hidden" name="status" value="{{ status }}">
+    <input type="text" name="q" value="{{ keyword }}" placeholder="이름/이메일/등록번호/소속 검색" style="border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;width:240px">
+    <button class="btn line" type="submit">검색</button>
+  </form>
 </div>
 
 <div class="panel" style="margin-top:0">
-  <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% elif status == 'ad' %}광고 노출중{% else %}전체 변호사{% endif %} <span class="cnt">{{ users | length }}</span></h2></div>
+  <div class="p-head"><h2>{% if status == 'pending' %}승인 대기·반려{% else %}전체 변호사{% endif %} <span class="cnt">{{ total }}</span>{% if total > 50 %} <small style="font-weight:500;color:var(--ink-500)">(최근 50명 표시 — 검색으로 좁혀주세요)</small>{% endif %}</h2></div>
   <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
-    💡 <b>광고 상품 2종은 각각 따로 지정</b>합니다 — <a href="{{ url_for('admin.lawyers', status='all') }}" style="color:var(--blue-600);font-weight:700">[전체] 탭</a>에서 변호사 오른쪽 버튼으로:
-    <b>[포토카드]</b> = 변호사 목록 <b>최상단 사진 카드</b>(최대 6명) · <b>[AD리스트]</b> = 목록 중간 <b>AD LAWYERS 배너 카드</b>(인원 제한 없음).
-    각 영역은 <b>지정이 없으면 표시되지 않습니다</b>.
+    💡 이름을 클릭하면 <b>상세 정보 확인·프로필 강제 수정</b>이 가능합니다. 목록 광고 지정은
+    <a href="{{ url_for('admin.lawyer_ads') }}" style="color:var(--blue-600);font-weight:700">광고/운영 → 변호사 광고 관리</a>에서 분야별로 설정합니다.
   </div>
   <table>
     <tr><th>신청일</th><th>이름</th><th>이메일</th><th>등록번호</th><th>소속</th><th>서류</th><th>상태</th><th></th></tr>
     {% for u in users %}
     <tr>
       <td>{{ u.created_at.strftime('%m.%d') }}</td>
-      <td><b>{{ u.name }}</b></td>
+      <td><a href="{{ url_for('admin.lawyer_detail', user_id=u.id) }}" style="color:var(--blue-600);font-weight:800">{{ u.name }}</a></td>
       <td>{{ u.email }}</td>
       <td>{{ u.lawyer_profile.license_no if u.lawyer_profile }}</td>
       <td>{{ u.lawyer_profile.firm_name if u.lawyer_profile }}</td>
@@ -33,11 +36,12 @@
       </td>
       <td>
         {% if u.status == 'pending' %}<span class="badge wait">대기</span>
-        {% elif u.status == 'active' %}<span class="badge ok">활동중</span>{% if u.lawyer_profile and not u.lawyer_profile.is_visible %} <span class="badge red">노출정지</span>{% endif %}{% if u.lawyer_profile and u.lawyer_profile.show_in_ad %} <span class="badge blue">포토카드</span>{% endif %}{% if u.lawyer_profile and u.lawyer_profile.show_in_adlist %} <span class="badge blue">AD리스트</span>{% endif %}
+        {% elif u.status == 'active' %}<span class="badge ok">활동중</span>{% if u.lawyer_profile and not u.lawyer_profile.is_visible %} <span class="badge red">노출정지</span>{% endif %}
         {% elif u.status == 'rejected' %}<span class="badge red">반려</span>
         {% else %}<span class="badge red">{{ u.status }}</span>{% endif %}
       </td>
       <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.lawyer_detail', user_id=u.id) }}">상세</a>
         {% if u.status in ('pending', 'rejected') %}
         <form method="post" action="{{ url_for('admin.lawyer_approve', user_id=u.id) }}" style="display:inline">
           <button class="btn pri" type="submit">승인</button>
@@ -52,19 +56,11 @@
         <form method="post" action="{{ url_for('admin.lawyer_toggle_new', user_id=u.id) }}" style="display:inline">
           <button class="btn line" type="submit" title="메인 '새로 함께하는 변호사' 섹션 노출">{{ '신규 숨김' if u.lawyer_profile.show_in_new else '신규 노출' }}</button>
         </form>
-        <form method="post" action="{{ url_for('admin.lawyer_toggle_ad', user_id=u.id) }}" style="display:inline">
-          <input type="hidden" name="back" value="{{ status }}">
-          <button class="btn {% if u.lawyer_profile.show_in_ad %}pri{% else %}line{% endif %}" type="submit" title="광고 ① 변호사 목록 최상단 사진 카드(최대 6명)">{{ '포토카드 해제' if u.lawyer_profile.show_in_ad else '포토카드 광고' }}</button>
-        </form>
-        <form method="post" action="{{ url_for('admin.lawyer_toggle_adlist', user_id=u.id) }}" style="display:inline">
-          <input type="hidden" name="back" value="{{ status }}">
-          <button class="btn {% if u.lawyer_profile.show_in_adlist %}pri{% else %}line{% endif %}" type="submit" title="광고 ② 목록 중간 AD LAWYERS 배너 카드(인원 제한 없음)">{{ 'AD리스트 해제' if u.lawyer_profile.show_in_adlist else 'AD리스트 광고' }}</button>
-        </form>
         {% endif %}
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="8" style="color:var(--ink-500)">해당 상태의 변호사가 없습니다.</td></tr>
+    <tr><td colspan="8" style="color:var(--ink-500)">해당 조건의 변호사가 없습니다.</td></tr>
     {% endfor %}
   </table>
 </div>

@@ -174,21 +174,27 @@ def user_withdraw(user_id):
 @role_required("admin")
 def lawyers():
     status = request.args.get("status", "pending")
+    keyword = request.args.get("q", "").strip()
     q = User.query.filter_by(role="lawyer").filter(User.deleted_at.is_(None))
     if status == "pending":
         q = q.filter(User.status.in_(["pending", "rejected"]))
-    elif status == "ad":  # 광고 상품(포토카드/AD LAWYERS) 중 하나라도 노출중
+    if keyword:
+        like = f"%{keyword}%"
         q = q.filter(
-            User.status == "active",
-            User.lawyer_profile.has(
-                db.or_(
-                    LawyerProfile.show_in_ad.is_(True),
-                    LawyerProfile.show_in_adlist.is_(True),
-                )
-            ),
+            db.or_(
+                User.name.like(like),
+                User.email.like(like),
+                User.lawyer_profile.has(
+                    db.or_(
+                        LawyerProfile.license_no.like(like),
+                        LawyerProfile.firm_name.like(like),
+                    )
+                ),
+            )
         )
     q = q.options(joinedload(User.lawyer_profile)).order_by(User.created_at.desc())
-    users = q.all()
+    total = q.count()
+    users = q.limit(50).all()
     files_by_user = {}
     for f in LawyerVerificationFile.query.filter(
         LawyerVerificationFile.user_id.in_([u.id for u in users] or [0])
@@ -197,19 +203,70 @@ def lawyers():
     pending_count = User.query.filter_by(role="lawyer").filter(
         User.deleted_at.is_(None), User.status.in_(["pending", "rejected"])
     ).count()
-    ad_count = LawyerProfile.query.filter(
-        db.or_(
-            LawyerProfile.show_in_ad.is_(True),
-            LawyerProfile.show_in_adlist.is_(True),
-        )
-    ).count()
     return render_template(
         "admin/lawyers.html",
         users=users,
         status=status,
+        keyword=keyword,
+        total=total,
         files_by_user=files_by_user,
         pending_count=pending_count,
-        ad_count=ad_count,
+    )
+
+
+@bp.route("/lawyers/<int:user_id>", methods=["GET", "POST"])
+@role_required("admin")
+def lawyer_detail(user_id):
+    """변호사 상세 + 프로필 강제 수정 (§4-4)."""
+    from models import ConsultationAnswer, LawyerAd
+    from routes.profile_form import apply_profile_form, profile_form_context
+
+    user = db.session.get(User, user_id)
+    if user is None or user.role != "lawyer":
+        abort(404)
+    prof = user.lawyer_profile
+    if prof is None:
+        prof = LawyerProfile(user_id=user.id, license_no="")
+        db.session.add(prof)
+        db.session.commit()
+
+    if request.method == "POST":
+        errors = apply_profile_form(prof, request.form, request.files, user.id)
+        if errors:
+            db.session.rollback()
+            for e in errors:
+                flash(e, "error")
+        else:
+            _log("lawyer_profile_edit", f"user:{user_id}", {"name": user.name})
+            db.session.commit()
+            flash(f"{user.name} 변호사 프로필을 수정했습니다.", "success")
+            return redirect(url_for("admin.lawyer_detail", user_id=user_id))
+
+    stats = {
+        "view_count": prof.view_count or 0,
+        "contact_click_count": prof.contact_click_count or 0,
+        "answers": ConsultationAnswer.query.filter_by(lawyer_id=user.id).filter(
+            ConsultationAnswer.deleted_at.is_(None)
+        ).count(),
+        "posts": LawyerPost.query.filter_by(lawyer_id=user.id, status="published").filter(
+            LawyerPost.deleted_at.is_(None)
+        ).count(),
+    }
+    files = LawyerVerificationFile.query.filter_by(user_id=user.id).all()
+    ads = (
+        LawyerAd.query.filter_by(lawyer_id=user.id)
+        .options(joinedload(LawyerAd.category))
+        .order_by(LawyerAd.sort_order)
+        .all()
+    )
+    return render_template(
+        "admin/lawyer_detail.html",
+        user=user,
+        profile=prof,
+        stats=stats,
+        files=files,
+        ads=ads,
+        **profile_form_context(prof),
     )
 
 
@@ -271,32 +328,112 @@ def lawyer_toggle_new(user_id):
     return redirect(url_for("admin.lawyers", status="all"))
 
 
-@bp.route("/lawyers/<int:user_id>/toggle-ad", methods=["POST"])
-@role_required("admin")
-def lawyer_toggle_ad(user_id):
-    """광고 상품 ① 목록 최상단 포토카드 노출 on/off."""
-    prof = db.session.get(LawyerProfile, user_id)
-    if prof is None:
-        abort(404)
-    prof.show_in_ad = not prof.show_in_ad
-    _log("lawyer_toggle_ad", f"user:{user_id}", {"show_in_ad": prof.show_in_ad})
-    db.session.commit()
-    flash("최상단 포토카드 광고 노출 상태를 변경했습니다.", "success")
-    return redirect(url_for("admin.lawyers", status=request.form.get("back", "all")))
+# ─────────────────── 변호사 광고 관리 (카테고리별) ───────────────────
+AD_SLOTS = [("photocard", "최상단 포토카드"), ("adlist", "AD LAWYERS")]
+AD_SLOT_LABELS = dict(AD_SLOTS)
 
 
-@bp.route("/lawyers/<int:user_id>/toggle-adlist", methods=["POST"])
+@bp.route("/lawyer-ads")
 @role_required("admin")
-def lawyer_toggle_adlist(user_id):
-    """광고 상품 ② 목록 중간 AD LAWYERS 노출 on/off."""
-    prof = db.session.get(LawyerProfile, user_id)
-    if prof is None:
+def lawyer_ads():
+    """분야별 변호사 광고 목록 — 어느 카테고리에 누구를 어느 슬롯으로."""
+    from models import LawyerAd
+
+    slot = request.args.get("slot")
+    category_id = request.args.get("category", type=int)
+    q = LawyerAd.query.options(
+        joinedload(LawyerAd.lawyer), joinedload(LawyerAd.category)
+    )
+    if slot in AD_SLOT_LABELS:
+        q = q.filter_by(slot=slot)
+    if category_id:
+        q = q.filter_by(category_id=category_id)
+    items = q.order_by(LawyerAd.category_id, LawyerAd.slot, LawyerAd.sort_order).all()
+
+    # 카테고리별 그룹 (전체 노출이 맨 앞)
+    groups = {}
+    for ad in items:
+        groups.setdefault(ad.category.name if ad.category else "전체 노출", []).append(ad)
+    ordered = sorted(groups.items(), key=lambda kv: (kv[0] != "전체 노출", kv[0]))
+
+    parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
+    return render_template(
+        "admin/lawyer_ads.html",
+        groups=ordered,
+        total=len(items),
+        slot=slot,
+        slots=AD_SLOTS,
+        slot_labels=AD_SLOT_LABELS,
+        parents=parents,
+        category_id=category_id,
+        now=datetime.now(),
+    )
+
+
+@bp.route("/lawyer-ads/new", methods=["GET", "POST"])
+@bp.route("/lawyer-ads/<int:ad_id>/edit", methods=["GET", "POST"])
+@role_required("admin")
+def lawyer_ad_form(ad_id=None):
+    from models import LawyerAd
+
+    item = db.session.get(LawyerAd, ad_id) if ad_id else None
+    if ad_id and item is None:
         abort(404)
-    prof.show_in_adlist = not prof.show_in_adlist
-    _log("lawyer_toggle_adlist", f"user:{user_id}", {"show_in_adlist": prof.show_in_adlist})
-    db.session.commit()
-    flash("AD LAWYERS 광고 노출 상태를 변경했습니다.", "success")
-    return redirect(url_for("admin.lawyers", status=request.form.get("back", "all")))
+    if request.method == "POST":
+        form = request.form
+        lawyer_id = form.get("lawyer_id", type=int)
+        lawyer = db.session.get(User, lawyer_id) if lawyer_id else None
+        if lawyer is None or lawyer.role != "lawyer":
+            flash("변호사를 선택해주세요.", "error")
+        else:
+            if item is None:
+                item = LawyerAd()
+                db.session.add(item)
+            item.lawyer_id = lawyer_id
+            item.category_id = form.get("category_id", type=int) or None  # 없으면 전체
+            item.slot = form.get("slot") if form.get("slot") in AD_SLOT_LABELS else "photocard"
+            item.sort_order = form.get("sort_order", type=int) or 0
+            item.is_active = form.get("is_active") == "1"
+            item.starts_at = (
+                datetime.fromisoformat(form["starts_at"]) if form.get("starts_at") else None
+            )
+            item.ends_at = (
+                datetime.fromisoformat(form["ends_at"]) if form.get("ends_at") else None
+            )
+            _log("lawyer_ad_save", f"lawyer_ad:{item.id or 'new'}", {"lawyer": lawyer.name})
+            db.session.commit()
+            flash("변호사 광고가 저장되었습니다.", "success")
+            return redirect(url_for("admin.lawyer_ads"))
+
+    lawyers_opts = (
+        User.query.filter_by(role="lawyer", status="active")
+        .filter(User.deleted_at.is_(None))
+        .options(joinedload(User.lawyer_profile))
+        .order_by(User.name)
+        .all()
+    )
+    parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
+    return render_template(
+        "admin/lawyer_ad_form.html",
+        item=item,
+        lawyers=lawyers_opts,
+        parents=parents,
+        slots=AD_SLOTS,
+    )
+
+
+@bp.route("/lawyer-ads/<int:ad_id>/delete", methods=["POST"])
+@role_required("admin")
+def lawyer_ad_delete(ad_id):
+    from models import LawyerAd
+
+    item = db.session.get(LawyerAd, ad_id)
+    if item:
+        db.session.delete(item)
+        _log("lawyer_ad_delete", f"lawyer_ad:{ad_id}")
+        db.session.commit()
+        flash("변호사 광고를 삭제했습니다.", "success")
+    return redirect(url_for("admin.lawyer_ads"))
 
 
 @bp.route("/verification-files/<int:file_id>")
