@@ -51,7 +51,7 @@
           {% if b.sub %}<p>{{ b.sub }}</p>{% endif %}
           <span class="go">커뮤니티 바로가기 →</span>
         </div>
-        <span class="art"><img src="{{ b.image or url_for('static', filename='img/community-hands.svg') }}" alt="" loading="lazy"></span>
+        <span class="art"><img src="{{ b.image or url_for('static', filename='img/community-hands.png') }}" alt="" loading="lazy"></span>
       </a>
       {% else %}
       <a class="side-slide on" href="{{ url_for('community.list_') }}">
@@ -61,7 +61,7 @@
           <p>혼자가 아닙니다, 함께 이겨내요!</p>
           <span class="go">커뮤니티 바로가기 →</span>
         </div>
-        <span class="art"><img src="{{ url_for('static', filename='img/community-hands.svg') }}" alt="" loading="lazy"></span>
+        <span class="art"><img src="{{ url_for('static', filename='img/community-hands.png') }}" alt="" loading="lazy"></span>
       </a>
       {% endfor %}
     </div>
