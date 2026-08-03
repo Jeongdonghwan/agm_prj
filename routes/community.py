@@ -1,7 +1,7 @@
 import os
 import re
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from flask import (
     Blueprint,
@@ -156,7 +156,6 @@ def list_():
     )
     return render_template(
         "community/list.html",
-        new_threshold=datetime.now() - timedelta(hours=24),
         active_menu="community",
         items=items,
         notices=notices,
@@ -200,7 +199,6 @@ def board(key):
     items = q.offset((page - 1) * PER_PAGE).limit(PER_PAGE).all()
     return render_template(
         "community/board.html",
-        new_threshold=datetime.now() - timedelta(hours=24),
         active_menu="community",  # 정보 게시판도 커뮤니티 메뉴 안에 속한다
         board_key=key,
         board=b,
