@@ -42,8 +42,8 @@ INFO_BOARDS = {
     },
 }
 
-# 커뮤니티 카테고리 (전체 = 두 카테고리 합침)
-COMMUNITY_CATS = ["자유게시판", "옥바라지 이야기"]
+# 커뮤니티 카테고리 (전체 = 아래 카테고리 합침)
+COMMUNITY_CATS = ["자유게시판", "옥바라지 이야기", "사연신청"]
 
 # 첨부파일 허용 확장자 (양식/이미지 위주)
 ATTACH_EXTENSIONS = {"pdf", "hwp", "hwpx", "doc", "docx", "xls", "xlsx", "txt", "jpg", "jpeg", "png", "zip"}
@@ -92,6 +92,7 @@ def _save_attachments(files, limit=None):
 BOARDS = {
     "free": {"label": "자유게시판", "topics": []},
     "care": {"label": "옥바라지 이야기", "topics": []},
+    "story": {"label": "사연신청", "topics": []},
     **INFO_BOARDS,
 }
 
@@ -164,6 +165,8 @@ def list_():
         has_next=total > page * PER_PAGE,
         categories=COMMUNITY_CATS,
         category=category,
+        info_boards=INFO_BOARDS,
+        topic=None,
         sort=sort,
         author_name=author_name,
         first_image=first_image,
@@ -198,9 +201,12 @@ def board(key):
     return render_template(
         "community/board.html",
         new_threshold=datetime.now() - timedelta(hours=24),
-        active_menu=key,
+        active_menu="community",  # 정보 게시판도 커뮤니티 메뉴 안에 속한다
         board_key=key,
         board=b,
+        categories=COMMUNITY_CATS,
+        category=None,
+        info_boards=INFO_BOARDS,
         topic=topic,
         sort=sort,
         items=items,

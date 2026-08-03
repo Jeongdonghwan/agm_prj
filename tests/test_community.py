@@ -25,7 +25,17 @@ class TestList:
     def test_200_chips_notice(self, client):
         html = client.get("/community/").get_data(as_text=True)
         assert "자유게시판" in html and "옥바라지 이야기" in html
+        assert "사연신청" in html  # 신규 카테고리
         assert "공지" in html
+
+    def test_story_category_write_and_filter(self, app, client, login_as):
+        """사연신청 카테고리 — 글 작성 후 해당 칩으로 필터."""
+        _set_nickname(app, "user1@example.com", "테스트닉넴")
+        login_as("user1@example.com")
+        r = _write(client, category="사연신청", title="사연 신청합니다")
+        assert r.status_code == 302
+        html = client.get("/community/?category=사연신청").get_data(as_text=True)
+        assert "사연 신청합니다" in html
 
     def test_category_filter(self, client):
         assert client.get("/community/?category=옥바라지 이야기").status_code == 200

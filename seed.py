@@ -577,7 +577,7 @@ def run_seed(app):
              "/static/icons/etc-civil.png", "/lawyers/"),
             ("법률 고민, 혼자 끙끙 앓지 마세요|커뮤니티에서 나눠보세요|비슷한 경험을 한 사람들의 이야기를 들어보세요",
              "/static/icons/defame.png", "/community/"),
-            ("변호사 답변을 무료로 받는|온라인 상담사례|질문을 남기면 분야 전문 변호사가 답변해드려요",
+            ("변호사 답변을 무료로 받는|온라인 상담신청|질문을 남기면 분야 전문 변호사가 답변해드려요",
              "/static/icons/civil.png", "/counsel/"),
         ]
         for i, (title, image_url, link_url) in enumerate(hero_banners):

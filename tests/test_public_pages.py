@@ -103,13 +103,37 @@ class TestLayout:
         """메인에는 A/B 전환 토글이 없다."""
         assert "디자인 A 보기" not in client.get("/").get_data(as_text=True)
 
-    def test_gnb_order_lawyers_before_community(self, client):
+    def test_gnb_order_and_menu_set(self, client):
         html = client.get("/").get_data(as_text=True)
         nav = html.split('<nav class="gnb', 1)[1].split("</nav>", 1)[0]
         assert nav.index(">변호사<") < nav.index(">커뮤니티<")
         assert nav.index(">안기모뉴스<") < nav.index(">커뮤니티<")
-        # 옥바라지 정보 메뉴는 커뮤니티 뒤에 묶여 유지
-        assert nav.index(">커뮤니티<") < nav.index(">교정시설 정보<") < nav.index(">양식 자료실<")
+        # 상담사례 → 상담신청으로 명칭 변경
+        assert ">상담신청<" in nav and ">상담사례<" not in nav
+        # 정보 게시판 3종은 커뮤니티 안 칩으로 통합 — GNB에서 제거
+        for gone in ("교정시설 정보", "수용생활 정보", "양식 자료실"):
+            assert f">{gone}<" not in nav, gone
+
+    def test_cafe_floating_button(self, client):
+        """네이버 카페 바로가기 플로팅 버튼 — 전 페이지 공통, 새 탭."""
+        for path in ("/", "/community/", "/lawyers/"):
+            html = client.get(path).get_data(as_text=True)
+            assert "https://cafe.naver.com/32genius" in html, path
+            assert "카페 바로가기" in html, path
+        block = html.split('class="fab-cafe"', 1)[1][:200]
+        assert 'target="_blank"' in block and "noopener" in block
+
+    def test_community_chips_include_info_boards(self, client):
+        """커뮤니티 칩에 정보 게시판 3종이 함께 노출되고 서로 이동 가능."""
+        html = client.get("/community/").get_data(as_text=True)
+        chips = html.split('class="cat-chips"', 1)[1].split("</div>", 1)[0]
+        for label in ("자유게시판", "옥바라지 이야기", "사연신청",
+                      "교정시설 정보", "수용생활 정보", "양식 자료실"):
+            assert label in chips, label
+        # 정보 게시판 화면에도 같은 칩 + 세부 주제 칩
+        board = client.get("/community/board/facility").get_data(as_text=True)
+        assert 'class="cat-chips"' in board and 'class="topic-chips"' in board
+        assert "자유게시판" in board and "영치금 계좌" in board
 
     def test_side_banner_is_fixed_single(self, app, client):
         """메인 우측 커뮤니티 배너는 고정 1장 — 인디케이터·롤링 없음."""

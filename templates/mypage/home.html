@@ -32,7 +32,7 @@
     {% for c in my_consults %}
     <div class="my-item"><a href="{{ url_for('counsel.detail', consult_id=c.id) }}">{{ c.title }}</a><small>{{ c.created_at.strftime('%Y.%m.%d') }}{% if not c.is_public %} · 비공개{% endif %}{% if c.status == 'hidden' %} · 숨김{% endif %}</small></div>
     {% else %}
-    <div class="my-item"><span class="empty">작성한 상담글이 없습니다. <a href="{{ url_for('counsel.write') }}" style="color:var(--blue-600);font-weight:700">상담글 쓰기 →</a></span></div>
+    <div class="my-item"><span class="empty">작성한 상담글이 없습니다. <a href="{{ url_for('counsel.write') }}" style="color:var(--blue-600);font-weight:700">상담 신청하기 →</a></span></div>
     {% endfor %}
   </div>
 

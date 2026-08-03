@@ -1,0 +1,24 @@
+{# 커뮤니티 통합 칩 — 정렬 + 게시판(자유·옥바라지 / 정보 3종).
+   active_board: None이면 커뮤니티 목록, 아니면 정보 게시판 key #}
+<div class="cat-chips">
+  {% if active_board %}
+  <a href="{{ url_for('community.board', key=active_board, topic=topic, sort='popular') }}" class="srt {% if sort == 'popular' %}on{% endif %}">인기</a>
+  <a href="{{ url_for('community.board', key=active_board, topic=topic, sort='recent') }}" class="srt {% if sort != 'popular' %}on{% endif %}">최신</a>
+  {% else %}
+  <a href="{{ url_for('community.list_', category=category, sort='popular') }}" class="srt {% if sort == 'popular' %}on{% endif %}">인기</a>
+  <a href="{{ url_for('community.list_', category=category, sort='recent') }}" class="srt {% if sort != 'popular' %}on{% endif %}">최신</a>
+  {% endif %}
+  <span class="chip-div"></span>
+
+  {# 커뮤니티 #}
+  <a href="{{ url_for('community.list_') }}" class="{% if not active_board and not category %}on{% endif %}">전체</a>
+  {% for c in categories %}
+  <a href="{{ url_for('community.list_', category=c) }}" class="{% if not active_board and category == c %}on{% endif %}">{{ c }}</a>
+  {% endfor %}
+
+  {# 정보 게시판 #}
+  <span class="chip-div"></span>
+  {% for key, b in info_boards.items() %}
+  <a href="{{ url_for('community.board', key=key) }}" class="info {% if active_board == key %}on{% endif %}">{{ b.label }}</a>
+  {% endfor %}
+</div>

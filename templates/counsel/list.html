@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
-{% block title %}상담사례 - {{ site_name }}{% endblock %}
+{% block title %}상담신청 - {{ site_name }}{% endblock %}
 {% block meta %}
-<meta name="description" content="나와 비슷한 법률 고민에 대한 변호사 답변을 찾아보세요 — {{ site_name }} 상담사례 {{ total }}건.">
+<meta name="description" content="법률 고민을 남기면 분야 전문 변호사가 답변해드립니다 — {{ site_name }} 상담신청, 답변 사례 {{ total }}건.">
 {% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/counsel.css') }}">
@@ -51,5 +51,5 @@
 
 </div>
 
-<a class="fab" href="{{ url_for('counsel.write') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:20px;height:20px"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>상담글 쓰기</a>
+<a class="fab" href="{{ url_for('counsel.write') }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:20px;height:20px"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>상담 신청</a>
 {% endblock %}

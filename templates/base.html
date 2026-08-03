@@ -38,7 +38,7 @@
         <button type="button" class="btn-write" id="btn-write-toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>글쓰기 <span class="caret">▾</span></button>
         <div class="write-menu">
           <a href="{{ url_for('community.write') }}"><b>커뮤니티 글쓰기</b><small>자유게시판·옥바라지 이야기·정보 나눔</small></a>
-          <a href="{{ url_for('counsel.write') }}"><b>상담글 쓰기</b><small>변호사에게 답변 받는 법률 질문</small></a>
+          <a href="{{ url_for('counsel.write') }}"><b>상담신청</b><small>변호사에게 답변 받는 법률 질문</small></a>
         </div>
       </div>
     </div>
@@ -48,14 +48,12 @@
       <li><a href="{{ url_for('main.index') }}" class="{% if active_menu == 'home' %}active{% endif %}">홈</a></li>
       <li><a href="{{ url_for('lawyers.find') }}" class="{% if active_menu == 'lawyers' %}active{% endif %}">변호사</a></li>
       <li><a href="{{ url_for('contents.firms') }}" class="{% if active_menu == 'firms' %}active{% endif %}">로펌</a></li>
-      <li><a href="{{ url_for('counsel.list_') }}" class="{% if active_menu == 'counsel' %}active{% endif %}">상담사례</a></li>
+      <li><a href="{{ url_for('counsel.list_') }}" class="{% if active_menu == 'counsel' %}active{% endif %}">상담신청</a></li>
       <li><a href="{{ url_for('contents.posts') }}" class="{% if active_menu == 'posts' %}active{% endif %}">변호사포스트</a></li>
       <li><a href="{{ url_for('contents.cases') }}" class="{% if active_menu == 'cases' %}active{% endif %}">판례돋보기</a></li>
       <li><a href="{{ url_for('contents.news') }}" class="{% if active_menu == 'news' %}active{% endif %}">안기모뉴스</a></li>
+      {# 교정시설 정보·수용생활 정보·양식 자료실은 커뮤니티 안의 칩으로 통합 #}
       <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
-      <li><a href="{{ url_for('community.board', key='facility') }}" class="{% if active_menu == 'facility' %}active{% endif %}">교정시설 정보</a></li>
-      <li><a href="{{ url_for('community.board', key='life') }}" class="{% if active_menu == 'life' %}active{% endif %}">수용생활 정보</a></li>
-      <li><a href="{{ url_for('community.board', key='forms') }}" class="{% if active_menu == 'forms' %}active{% endif %}">양식 자료실</a></li>
     </ul>
   </nav>
 </header>
@@ -71,6 +69,12 @@
 {% endwith %}
 
 {% block content %}{% endblock %}
+
+<!-- 플로팅: 네이버 카페 바로가기 -->
+<a class="fab-cafe" href="https://cafe.naver.com/32genius" target="_blank" rel="noopener noreferrer">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><path d="M6 2v2"/><path d="M10 2v2"/><path d="M14 2v2"/></svg>
+  카페 바로가기
+</a>
 
 <footer class="site">
   <div class="wrap">

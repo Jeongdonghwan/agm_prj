@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ consult.title }} - 상담사례 | {{ site_name }}{% endblock %}
+{% block title %}{{ consult.title }} - 상담신청 | {{ site_name }}{% endblock %}
 {% block meta %}
 <meta name="description" content="{{ consult.content[:150] }}">
 <link rel="canonical" href="{{ url_for('counsel.detail', consult_id=consult.id, slug=canonical_slug, _external=True) }}">

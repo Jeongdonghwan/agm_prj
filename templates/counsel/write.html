@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ '상담글 수정' if consult else '상담글 쓰기' }} - {{ site_name }}{% endblock %}
+{% block title %}{{ '상담글 수정' if consult else '상담신청' }} - {{ site_name }}{% endblock %}
 {% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/counsel.css') }}">
 {% endblock %}
@@ -33,7 +33,7 @@
         <label><input type="radio" name="is_public" value="0" {% if consult and not consult.is_public %}checked{% endif %}> 비공개 (나와 변호사만)</label>
       </div>
     </div>
-    <button class="submit" type="submit">{{ '수정하기' if consult else '상담글 등록' }}</button>
+    <button class="submit" type="submit">{{ '수정하기' if consult else '상담 신청하기' }}</button>
   </form>
 </div>
 {% endblock %}

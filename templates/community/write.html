@@ -15,7 +15,7 @@
         {% for key, b in boards.items() %}
         <option value="{{ key }}" {% if key == default_board %}selected{% endif %}>{{ b.label }}</option>
         {% endfor %}
-        {% if not post %}<option value="__counsel">상담사례 질문 (변호사 답변)</option>{% endif %}
+        {% if not post %}<option value="__counsel">상담신청 (변호사 답변 받기)</option>{% endif %}
       </select>
     </div>
     <div class="field" id="topic-field">
@@ -66,7 +66,7 @@
 <script src="{{ url_for('static', filename='js/nickname-modal.js') }}"></script>
 <script src="{{ url_for('static', filename='js/comm-editor.js') }}"></script>
 <script>
-// 게시판 → 세부 주제 종속 선택 (+ 상담사례 선택 시 상담글 작성으로 이동)
+// 게시판 → 세부 주제 종속 선택 (+ 상담신청 선택 시 상담글 작성으로 이동)
 const BOARDS = {{ boards | tojson }};
 const boardSel = document.getElementById('board-select');
 const topicSel = document.getElementById('topic-select');
