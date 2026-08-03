@@ -2,10 +2,23 @@
 {% set thumb_url = first_image(p) %}
 <div class="post">
   <div class="bd">
-    <div class="pcat">{{ p.category }}</div>
-    <a href="{{ url_for('community.detail', post_id=p.id) }}"><h4>{{ p.title }}{% if p.attachments %} <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>{% endif %}{% if p.created_at > new_threshold %} <span class="badge-new">NEW</span>{% endif %}{% if live_comments %} <span class="cmt">[{{ live_comments | length }}]</span>{% endif %}</h4></a>
-    <p>{{ (p.content | body_text)[:80] }}</p>
-    <div class="meta"><span>{{ author_name(p) }}</span><span>{{ p.created_at.strftime('%m.%d') }}</span><span>조회 <b>{{ '{:,}'.format(p.views) }}</b></span><span>추천 <b>{{ p.likes }}</b></span></div>
+    <div class="tags">
+      {% if p.created_at > new_threshold %}<span class="tag-hot">🔥 지금 주목받는</span>{% endif %}
+      <span class="pcat">{{ p.category }}</span>
+    </div>
+    <a class="tt" href="{{ url_for('community.detail', post_id=p.id) }}">
+      <h4>{{ p.title }}{% if p.attachments %} <svg class="clip" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>{% endif %}</h4>
+    </a>
+    <p class="excerpt">{{ (p.content | body_text)[:120] }}</p>
+    <div class="meta">
+      <span>{{ author_name(p) }}</span>
+      <span>{{ p.created_at.strftime('%m.%d') }}</span>
+      <span>조회 {{ '{:,}'.format(p.views) }}</span>
+      <span class="cmt-count">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        {{ live_comments | length }}
+      </span>
+    </div>
   </div>
   {% if thumb_url %}
   <a class="pthumb" href="{{ url_for('community.detail', post_id=p.id) }}"><img src="{{ thumb_url }}" alt="" loading="lazy"></a>
