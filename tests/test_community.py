@@ -1,9 +1,25 @@
 # -*- coding: utf-8 -*-
 """커뮤니티 — 목록/보드/글·댓글/익명/닉네임 규칙/첨부파일."""
 import os
+import re
 
 from extensions import db
 from models import CommunityPost, User
+
+
+def _active_chips(html):
+    """칩 줄에서 선택(class="on")된 칩의 라벨 목록."""
+    row = html.split('class="cat-chips"', 1)[1].split("</div>", 1)[0]
+    return re.findall(r'<a [^>]*class="on"[^>]*>([^<]+)</a>', row)
+
+
+def _chip_labels(html):
+    row = html.split('class="cat-chips"', 1)[1].split("</div>", 1)[0]
+    return [m.strip() for m in re.findall(r"<a [^>]*>([^<]+)</a>", row)]
+
+
+def _list_head(html):
+    return html.split('class="list-head"', 1)[1].split("</div>", 1)[0]
 
 
 def _set_nickname(app, email, nickname):
@@ -42,6 +58,43 @@ class TestList:
 
     def test_popular_sort(self, client):
         assert client.get("/community/?sort=popular").status_code == 200
+
+
+class TestChips:
+    """칩은 한 축 — 전체/인기/카테고리/정보 게시판 중 항상 하나만 선택된다."""
+
+    def test_chip_order_without_latest(self, client):
+        labels = _chip_labels(client.get("/community/").get_data(as_text=True))
+        assert labels[:2] == ["전체", "인기"]
+        assert "최신" not in labels
+        assert labels[2:5] == ["자유게시판", "옥바라지 이야기", "사연신청"]
+        assert labels[5:] == ["교정시설 정보", "수용생활 정보", "양식 자료실"]
+
+    def test_exactly_one_active(self, client):
+        cases = {
+            "/community/": "전체",
+            "/community/?sort=popular": "인기",
+            "/community/?category=자유게시판": "자유게시판",
+            "/community/?category=사연신청": "사연신청",
+            "/community/board/facility": "교정시설 정보",
+            "/community/board/forms": "양식 자료실",
+        }
+        for path, expected in cases.items():
+            active = _active_chips(client.get(path).get_data(as_text=True))
+            assert active == [expected], (path, active)
+
+    def test_category_wins_over_popular(self, client):
+        """카테고리 + 인기를 같이 넘겨도 활성 칩은 카테고리 하나뿐."""
+        html = client.get("/community/?category=자유게시판&sort=popular").get_data(as_text=True)
+        assert _active_chips(html) == ["자유게시판"]
+
+    def test_list_head_shows_selection(self, client):
+        for path, expected in (("/community/", "전체"),
+                               ("/community/?sort=popular", "인기 글"),
+                               ("/community/?category=옥바라지 이야기", "옥바라지 이야기"),
+                               ("/community/board/life", "수용생활 정보")):
+            head = _list_head(client.get(path).get_data(as_text=True))
+            assert expected in head and "개의 글" in head, path
 
 
 class TestBoard:

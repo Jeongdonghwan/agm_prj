@@ -1,18 +1,13 @@
-{# 커뮤니티 통합 칩 — 정렬 + 게시판(자유·옥바라지·사연 / 정보 3종)을 한 줄에 같은 모양으로.
+{# 커뮤니티 칩 — 전체/인기/카테고리/정보 게시판이 하나의 축. 항상 정확히 하나만 활성.
    active_board: None이면 커뮤니티 목록, 아니면 정보 게시판 key #}
+{% set in_list = not active_board %}
 <div class="cat-chips">
-  {% if active_board %}
-  <a href="{{ url_for('community.board', key=active_board, topic=topic, sort='popular') }}" class="{% if sort == 'popular' %}on{% endif %}">인기</a>
-  <a href="{{ url_for('community.board', key=active_board, topic=topic, sort='recent') }}" class="{% if sort != 'popular' %}on{% endif %}">최신</a>
-  {% else %}
-  <a href="{{ url_for('community.list_', category=category, sort='popular') }}" class="{% if sort == 'popular' %}on{% endif %}">인기</a>
-  <a href="{{ url_for('community.list_', category=category, sort='recent') }}" class="{% if sort != 'popular' %}on{% endif %}">최신</a>
-  {% endif %}
+  <a href="{{ url_for('community.list_') }}" class="{% if in_list and not category and sort != 'popular' %}on{% endif %}">전체</a>
+  <a href="{{ url_for('community.list_', sort='popular') }}" class="{% if in_list and not category and sort == 'popular' %}on{% endif %}">인기</a>
 
-  {# 커뮤니티 #}
-  <a href="{{ url_for('community.list_') }}" class="{% if not active_board and not category %}on{% endif %}">전체</a>
+  {# 커뮤니티 카테고리 #}
   {% for c in categories %}
-  <a href="{{ url_for('community.list_', category=c) }}" class="{% if not active_board and category == c %}on{% endif %}">{{ c }}</a>
+  <a href="{{ url_for('community.list_', category=c) }}" class="{% if in_list and category == c %}on{% endif %}">{{ c }}</a>
   {% endfor %}
 
   {# 정보 게시판 #}

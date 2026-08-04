@@ -29,6 +29,15 @@
   .cat-chips a,.topic-chips a{flex-shrink:0}
   .cat-chips a{padding:8px 15px;font-size:13px}
 }
+/* 지금 보고 있는 목록 — 선택한 칩이 무엇인지 목록 위에 다시 표기 */
+.list-head{display:flex;align-items:baseline;gap:8px;padding-bottom:10px;border-bottom:2px solid var(--ink-900)}
+.list-head h2{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.list-head span{font-size:13px;color:var(--ink-500)}
+@media (max-width:560px){
+  .list-head{padding-bottom:8px}
+  .list-head h2{font-size:15px}
+  .list-head span{font-size:12px}
+}
 .sort-tabs{display:flex;gap:16px;border-bottom:2px solid var(--ink-200);margin-bottom:4px}
 .sort-tabs a{font-size:14px;font-weight:700;color:var(--ink-500);padding:10px 4px;border-bottom:3px solid transparent;margin-bottom:-2px}
 .sort-tabs a.on{color:var(--blue-600);border-bottom-color:var(--blue-600)}

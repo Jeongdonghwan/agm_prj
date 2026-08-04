@@ -128,7 +128,8 @@ def list_():
     category = request.args.get("category")
     if category not in COMMUNITY_CATS:
         category = None
-    sort = request.args.get("sort", "recent")
+    # 칩은 한 축 — 카테고리를 고르면 정렬은 최신으로 되돌려 '인기'와 동시 선택되지 않게 한다
+    sort = "recent" if category else request.args.get("sort", "recent")
     page = max(request.args.get("page", 1, type=int), 1)
 
     q = CommunityPost.query.filter_by(status="open", is_notice=False).filter(
@@ -167,6 +168,7 @@ def list_():
         info_boards=INFO_BOARDS,
         topic=None,
         sort=sort,
+        view_label=category or ("인기 글" if sort == "popular" else "전체"),
         author_name=author_name,
         first_image=first_image,
     )
@@ -207,6 +209,7 @@ def board(key):
         info_boards=INFO_BOARDS,
         topic=topic,
         sort=sort,
+        view_label=topic or b["label"],
         items=items,
         total=total,
         page=page,

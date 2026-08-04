@@ -28,6 +28,12 @@
     {% endfor %}
   </div>
 
+  {# 지금 보고 있는 목록 #}
+  <div class="list-head">
+    <h2>{{ view_label }}</h2>
+    <span>{{ '{:,}'.format(total) }}개의 글</span>
+  </div>
+
   {% for p in items %}
   {% include "community/_post_item.html" %}
   {% else %}
@@ -44,4 +50,8 @@
     실제 규정은 교정시설마다 다를 수 있어요. 방문 전 해당 기관에 꼭 확인해주세요.
   </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chip-scroll.js') }}"></script>
 {% endblock %}
