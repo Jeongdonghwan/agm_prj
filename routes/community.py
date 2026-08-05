@@ -194,6 +194,33 @@ def writable_boards(user):
     return {k: b for k, b in BOARDS.items() if not b.get("admin_only")}
 
 
+def writable_board_groups(user):
+    """글쓰기 폼 게시판 선택용 — [(그룹 라벨, [(key, board), …])] (optgroup 렌더)."""
+    allowed = writable_boards(user)
+    groups = [["커뮤니티", [(k, BOARDS[k]) for k in ("free", "care", "story") if k in allowed]]]
+    used = {"free", "care", "story"}
+    for grp in COMMUNITY_MENU:
+        items = []
+        for it in grp["items"]:
+            if "board" in it and it["board"] in allowed:
+                items.append((it["board"], PAGE_BOARDS[it["board"]]))
+                used.add(it["board"])
+        if items:
+            groups.append([grp["label"], items])
+    # 메뉴에 board 항목으로 없는 게시판(예: 양식 자료실은 토픽 링크만) — 같은 라벨 그룹에 붙인다
+    for key in allowed:
+        if key in used:
+            continue
+        b = BOARDS[key]
+        for grp in groups:
+            if grp[0] == b["label"]:
+                grp[1].insert(0, (key, b))
+                break
+        else:
+            groups.append([b["label"], [(key, b)]])
+    return groups
+
+
 def _admin_only_category(category):
     """해당 카테고리가 관리자 전용 게시판에 속하는지."""
     b = BOARDS.get(CATEGORY_TO_BOARD.get(category, ""))
@@ -335,6 +362,7 @@ def write():
                 "community/write.html",
                 active_menu="community",
                 boards=boards,
+                board_groups=writable_board_groups(g.user),
                 default_board=default_board,
                 nickname_required=True,
                 form=request.form,
@@ -369,6 +397,7 @@ def write():
         "community/write.html",
         active_menu="community",
         boards=boards,
+        board_groups=writable_board_groups(g.user),
         default_board=default_board,
         nickname_required=nickname_required,
         form=request.form,
@@ -414,6 +443,7 @@ def edit(post_id):
         "community/write.html",
         active_menu="community",
         boards=writable_boards(g.user),
+        board_groups=writable_board_groups(g.user),
         default_board=CATEGORY_TO_BOARD.get(p.category, "free"),
         nickname_required=False,
         form=request.form,

@@ -205,6 +205,25 @@ class TestAdminOnlyBoards:
         with app.app_context():
             assert CommunityPost.query.filter_by(title="사칭 공지").count() == 0
 
+    def test_board_page_has_no_duplicate_write_button(self, app, client, login_as):
+        """글쓰기 진입은 헤더 [글쓰기 ▾] 하나 — 게시판 헤드 버튼 제거."""
+        _set_nickname(app, "user1@example.com", "버튼체커")
+        login_as("user1@example.com")
+        html = client.get("/community/board/market").get_data(as_text=True)
+        head = html.split('class="page-head"', 1)[1].split("</div></div>", 1)[0]
+        assert "btn-write" not in head
+
+    def test_write_form_groups_boards(self, app, client, login_as):
+        """게시판 선택은 그룹(optgroup) 구조 — 커뮤니티/메뉴 그룹별."""
+        _set_nickname(app, "user1@example.com", "폼체커")
+        login_as("user1@example.com")
+        html = client.get("/community/write").get_data(as_text=True)
+        sel = html.split('id="board-select"', 1)[1].split("</select>", 1)[0]
+        for grp in ('optgroup label="커뮤니티"', 'optgroup label="양식 자료실"',
+                    'optgroup label="교정시설 정보"', 'optgroup label="변호사 상담"'):
+            assert grp in sel, grp
+        assert "자유게시판" in sel and "안기모 중고세상" in sel
+
     def test_board_select_hides_admin_boards_from_user(self, app, client, login_as):
         _set_nickname(app, "user1@example.com", "일반유저2")
         login_as("user1@example.com")

@@ -9,11 +9,9 @@
 {% endblock %}
 
 {% block content %}
+{# 글쓰기 진입은 헤더의 [글쓰기 ▾] 하나로 통일 — 중복 버튼 없음 #}
 <div class="page-head"><div class="wrap">
   <h1>{{ board.label }}{% if board.topics %}<small>{{ board.topics | join(' · ') }}</small>{% endif %}</h1>
-  {% if current_user and (current_user.role == 'admin' or (current_user.role == 'user' and not board.admin_only)) %}
-  <a class="btn-write" href="{{ url_for('community.write', board=board_key) }}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px;flex-shrink:0"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>글쓰기</a>
-  {% endif %}
 </div></div>
 
 <div class="wrap comm-single">

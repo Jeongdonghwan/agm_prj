@@ -12,10 +12,14 @@
     <div class="field">
       <label>게시판</label>
       <select id="board-select">
-        {% for key, b in boards.items() %}
-        <option value="{{ key }}" {% if key == default_board %}selected{% endif %}>{{ b.label }}</option>
+        {% for group_label, items in board_groups %}
+        <optgroup label="{{ group_label }}">
+          {% for key, b in items %}
+          <option value="{{ key }}" {% if key == default_board %}selected{% endif %}>{{ b.label }}</option>
+          {% endfor %}
+        </optgroup>
         {% endfor %}
-        {% if not post %}<option value="__counsel">상담신청 (변호사 답변 받기)</option>{% endif %}
+        {% if not post %}<optgroup label="변호사 상담"><option value="__counsel">상담신청 (변호사 답변 받기)</option></optgroup>{% endif %}
       </select>
     </div>
     <div class="field" id="topic-field">
