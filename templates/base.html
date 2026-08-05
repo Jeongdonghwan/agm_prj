@@ -58,8 +58,9 @@
         <button type="button" class="mega-toggle" id="mega-toggle" aria-expanded="false" aria-controls="mega-community" aria-label="커뮤니티 전체 게시판 열기">▾</button>
       </li>
     </ul>
-    {% include "_mega_menu.html" %}
   </nav>
+  {# 메가메뉴는 nav 밖에 — nav.gnb의 ul/li/a 규칙이 패널 안으로 새지 않게 #}
+  {% include "_mega_menu.html" %}
 </header>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -111,19 +112,19 @@
   const li = document.getElementById('mega-li');
   const btn = document.getElementById('mega-toggle');
   const panel = document.getElementById('mega-community');
-  const nav = li && li.closest('nav.gnb');
-  if (!li || !btn || !panel || !nav) return;
+  const header = li && li.closest('header.site');
+  if (!li || !btn || !panel || !header) return;
   const setOpen = on => {
-    nav.classList.toggle('mega-open', on);
+    header.classList.toggle('mega-open', on);
     btn.setAttribute('aria-expanded', on ? 'true' : 'false');
   };
-  btn.addEventListener('click', e => { e.stopPropagation(); setOpen(!nav.classList.contains('mega-open')); });
+  btn.addEventListener('click', e => { e.stopPropagation(); setOpen(!header.classList.contains('mega-open')); });
   panel.addEventListener('click', e => e.stopPropagation());
   document.addEventListener('click', () => setOpen(false));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
   const wide = window.matchMedia('(min-width:961px)');
   li.addEventListener('mouseenter', () => { if (wide.matches) setOpen(true); });
-  nav.addEventListener('mouseleave', () => { if (wide.matches) setOpen(false); });
+  header.addEventListener('mouseleave', () => { if (wide.matches) setOpen(false); });
 })();
 </script>
 {% block scripts %}{% endblock %}

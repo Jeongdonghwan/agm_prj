@@ -34,22 +34,32 @@ nav.gnb a.has-badge{padding:0 14px}
 /* ── 커뮤니티 메가메뉴 ── */
 nav.gnb li.has-mega{position:static}
 .mega-toggle{display:flex;align-items:center;padding:0 8px 0 0;font-size:11px;color:var(--ink-500);background:none;border:none;cursor:pointer;font-family:inherit}
-nav.gnb.mega-open .mega-toggle{color:var(--blue-600);transform:rotate(180deg)}
+header.site.mega-open .mega-toggle{color:var(--blue-600);transform:rotate(180deg)}
+/* 패널은 nav 밖에 있으므로 GNB의 ul/li/a 규칙이 닿지 않는다 */
 .mega{display:none;position:absolute;left:0;right:0;top:100%;background:#fff;border-top:1px solid var(--ink-200);box-shadow:0 12px 24px rgba(10,42,94,.10);z-index:120}
-nav.gnb.mega-open .mega{display:block}
-.mega-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 24px;padding:26px 0 30px;align-items:start}
+header.site.mega-open .mega{display:block}
+/* 그룹 높이가 제각각이라 grid보다 다단 흘리기가 빈 공간이 적다 */
+.mega-grid{columns:4;column-gap:24px;padding:26px 0 30px}
+.mega-col{break-inside:avoid;-webkit-column-break-inside:avoid;margin-bottom:26px}
 .mega-h{display:block;font-size:14px;font-weight:800;color:var(--ink-900);margin-bottom:12px}
-.mega-col ul{display:flex;flex-direction:column;gap:9px}
+.mega-col ul{display:block;list-style:none;margin:0;padding:0}
+.mega-col li{display:block}
+.mega-col li + li{margin-top:9px}
 .mega-col a{display:inline-flex;align-items:center;gap:4px;font-size:13.5px;font-weight:500;color:var(--ink-500);line-height:1.4}
 .mega-col a:hover{color:var(--blue-600)}
 .mega-col .ext{width:11px;height:11px;flex-shrink:0;opacity:.6}
 .mega-tag{font-size:10px;font-weight:700;color:var(--blue-700);background:var(--blue-050);border-radius:4px;padding:1px 5px}
-.mega-sub{margin:8px 0 4px 10px;padding-left:9px;border-left:2px solid var(--ink-200);gap:7px!important}
+.mega-sub{margin:8px 0 4px 10px;padding-left:9px!important;border-left:2px solid var(--ink-200)}
+.mega-sub li + li{margin-top:7px}
 .mega-sub a{font-size:12.5px;color:var(--ink-500)}
 @media (max-width:960px){
   .mega{max-height:70vh;overflow-y:auto}
-  .mega-grid{grid-template-columns:repeat(2,1fr);gap:6px 16px;padding:18px 0 22px}
+  .mega-grid{columns:2;column-gap:16px;padding:18px 0 22px}
+  .mega-col{margin-bottom:20px}
   .mega-col a{font-size:13px}
+}
+@media (max-width:560px){
+  .mega-grid{columns:1}
 }
 .h-utils{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--ink-500);flex-shrink:0;font-weight:600;margin-left:auto}
 .h-utils .lnk{position:relative}

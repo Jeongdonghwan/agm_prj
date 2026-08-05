@@ -155,12 +155,12 @@ class TestMegaMenu:
     def test_groups_on_every_page(self, client):
         for path in ("/", "/community/", "/lawyers/"):
             html = client.get(path).get_data(as_text=True)
-            mega = html.split('id="mega-community"', 1)[1].split("</nav>", 1)[0]
+            mega = html.split('id="mega-community"', 1)[1].split("</header>", 1)[0]
             for g in self.GROUPS:
                 assert g in mega, (path, g)
 
     def test_board_links_present(self, client):
-        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1]
+        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1].split("</header>", 1)[0]
         for key, label in (("parole", "가석방관련 상담신청"), ("letter", "편지발송 인터넷 서신"),
                            ("market", "안기모 중고세상"), ("prison", "교정기관별 게시판"),
                            ("petition", "징계청원 게시판")):
@@ -169,7 +169,7 @@ class TestMegaMenu:
         assert "topic=%EA%B3%A0%EC%86%8C%EC%B7%A8%ED%95%98%EC%84%9C" in mega  # 고소취하서
 
     def test_external_links_open_safely(self, client):
-        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1].split("</nav>", 1)[0]
+        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1].split("</header>", 1)[0]
         import re
         for url in ("https://www.moj.go.kr/corrections/1125/subview.do",
                     "https://www.scourt.go.kr/portal/information/events/search/search.jsp",
@@ -183,6 +183,15 @@ class TestMegaMenu:
     def test_logo_has_plus(self, client):
         html = client.get("/").get_data(as_text=True)
         assert '<span class="plus">+</span>' in html
+
+    def test_panel_outside_gnb_nav(self, client):
+        """패널이 nav 안에 있으면 nav.gnb의 ul{height:48px}·li{display:flex}가 새어
+        각 열이 잘린다 — 반드시 nav 밖(header 안)에 있어야 한다."""
+        html = client.get("/").get_data(as_text=True)
+        nav = html.split('<nav class="gnb', 1)[1].split("</nav>", 1)[0]
+        assert 'id="mega-community"' not in nav
+        header = html.split("<header", 1)[1].split("</header>", 1)[0]
+        assert 'id="mega-community"' in header
 
 
 class TestAdminOnlyBoards:
