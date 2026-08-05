@@ -1,6 +1,6 @@
 /* ===== 변호사 찾기 (좌측 카테고리 메뉴 + 리스트) ===== */
 .find-layout{display:grid;grid-template-columns:190px 1fr;gap:44px;margin-top:32px;align-items:start}
-.side-cats{position:sticky;top:130px;display:flex;flex-direction:column}
+.side-cats{position:sticky;top:140px;display:flex;flex-direction:column}
 .side-cats a.top{display:block;font-size:15px;font-weight:700;padding:7px 0;color:#C4CAD2}
 .side-cats a.top.on{color:var(--ink-900)}
 .side-cats a.top:hover{color:var(--blue-600)}

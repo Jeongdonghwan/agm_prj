@@ -14,4 +14,9 @@
   {% for key, b in info_boards.items() %}
   <a href="{{ url_for('community.board', key=key) }}" class="{% if active_board == key %}on{% endif %}">{{ b.label }}</a>
   {% endfor %}
+
+  {# 메가메뉴로 들어온 게시판은 칩 줄에 없으므로 현재 위치를 끝에 덧붙인다 #}
+  {% if active_board and active_board not in info_boards %}
+  <a href="{{ url_for('community.board', key=active_board) }}" class="on">{{ board.label }}</a>
+  {% endif %}
 </div>

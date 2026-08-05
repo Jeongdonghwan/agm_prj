@@ -106,13 +106,14 @@ class TestLayout:
     def test_gnb_order_and_menu_set(self, client):
         html = client.get("/").get_data(as_text=True)
         nav = html.split('<nav class="gnb', 1)[1].split("</nav>", 1)[0]
-        assert nav.index(">변호사<") < nav.index(">커뮤니티<")
-        assert nav.index(">안기모뉴스<") < nav.index(">커뮤니티<")
+        menu = nav.split("</ul>", 1)[0]  # 상단 메뉴 줄 (메가메뉴 패널 제외)
+        assert menu.index(">변호사<") < menu.index("커뮤니티<")
+        assert menu.index(">안기모뉴스<") < menu.index("커뮤니티<")
         # 상담사례 → 상담신청으로 명칭 변경
-        assert ">상담신청<" in nav and ">상담사례<" not in nav
-        # 정보 게시판 3종은 커뮤니티 안 칩으로 통합 — GNB에서 제거
+        assert ">상담신청<" in menu and ">상담사례<" not in menu
+        # 정보 게시판 3종은 상단 메뉴에서 빠지고 커뮤니티 칩·메가메뉴로 이동
         for gone in ("교정시설 정보", "수용생활 정보", "양식 자료실"):
-            assert f">{gone}<" not in nav, gone
+            assert f">{gone}<" not in menu, gone
 
     def test_cafe_floating_button(self, client):
         """네이버 카페 바로가기 플로팅 버튼 — 전 페이지 공통, 새 탭."""

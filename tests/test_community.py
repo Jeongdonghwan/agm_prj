@@ -88,6 +88,13 @@ class TestChips:
         html = client.get("/community/?category=자유게시판&sort=popular").get_data(as_text=True)
         assert _active_chips(html) == ["자유게시판"]
 
+    def test_new_board_page_keeps_one_active_chip(self, client):
+        """메가메뉴로 추가된 게시판도 칩 줄 끝에 자기 자신이 활성으로 붙는다."""
+        for key, label in (("market", "안기모 중고세상"), ("stage", "단계별 소통게시판"),
+                           ("petition", "징계청원 게시판")):
+            html = client.get(f"/community/board/{key}").get_data(as_text=True)
+            assert _active_chips(html) == [label], key
+
     def test_list_head_shows_selection(self, client):
         for path, expected in (("/community/", "전체"),
                                ("/community/?sort=popular", "인기 글"),
@@ -99,8 +106,12 @@ class TestChips:
 
 class TestBoard:
     def test_boards_200(self, client):
-        for key in ("facility", "life", "forms"):
-            assert client.get(f"/community/board/{key}").status_code == 200
+        from routes.community import PAGE_BOARDS
+
+        assert len(PAGE_BOARDS) >= 19  # 기존 정보 3종 + 메가메뉴 신규 16종
+        for key in PAGE_BOARDS:
+            r = client.get(f"/community/board/{key}")
+            assert r.status_code == 200, key
 
     def test_bad_key_404(self, client):
         assert client.get("/community/board/unknown").status_code == 404
@@ -109,12 +120,95 @@ class TestBoard:
         html = client.get("/community/board/facility?topic=영치금 계좌").get_data(as_text=True)
         assert "영치금" in html and "서울구치소 접견" not in html
 
+    def test_topicless_board_lists_own_posts(self, app, client, login_as):
+        """세부 주제가 없는 게시판은 글의 category에 보드 라벨이 저장되고 그 보드에 뜬다."""
+        _set_nickname(app, "user1@example.com", "중고왕")
+        login_as("user1@example.com")
+        assert _write(client, category="안기모 중고세상", title="영치금 카드 나눔").status_code == 302
+        html = client.get("/community/board/market").get_data(as_text=True)
+        assert "영치금 카드 나눔" in html
+        # 다른 게시판에는 안 뜬다
+        assert "영치금 카드 나눔" not in client.get("/community/board/ask").get_data(as_text=True)
+
+    def test_new_forms_topic_post(self, app, client, login_as):
+        """양식 자료실에 추가된 세부 주제로 작성 → 해당 주제 필터에 노출."""
+        _set_nickname(app, "user1@example.com", "양식러")
+        login_as("user1@example.com")
+        assert _write(client, category="고소취하서", title="고소취하서 양식 공유").status_code == 302
+        html = client.get("/community/board/forms?topic=고소취하서").get_data(as_text=True)
+        assert "고소취하서 양식 공유" in html
+
     def test_forms_post_detail_renders_attachments(self, app, client):
         # 시드: 양식자료실 4건에 데모 첨부 — 목록은 이미지 썸네일만, 첨부는 상세에서 렌더
         with app.app_context():
             pid = CommunityPost.query.filter_by(category="탄원서").first().id
         html = client.get(f"/community/{pid}").get_data(as_text=True)
         assert "/uploads/community/samples/" in html and "탄원서_양식.txt" in html
+
+
+class TestMegaMenu:
+    """GNB 커뮤니티 메가메뉴 — 전 페이지 공통."""
+
+    GROUPS = ["안내", "상담소", "커뮤니티", "양식 자료실", "교정시설 정보",
+              "단계별 소통게시판", "공지사항", "도움되는 사이트"]
+
+    def test_groups_on_every_page(self, client):
+        for path in ("/", "/community/", "/lawyers/"):
+            html = client.get(path).get_data(as_text=True)
+            mega = html.split('id="mega-community"', 1)[1].split("</nav>", 1)[0]
+            for g in self.GROUPS:
+                assert g in mega, (path, g)
+
+    def test_board_links_present(self, client):
+        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1]
+        for key, label in (("parole", "가석방관련 상담신청"), ("letter", "편지발송 인터넷 서신"),
+                           ("market", "안기모 중고세상"), ("prison", "교정기관별 게시판"),
+                           ("petition", "징계청원 게시판")):
+            assert f"/community/board/{key}" in mega and label in mega, key
+        # 기존 게시판의 세부 주제로 링크되는 항목
+        assert "topic=%EA%B3%A0%EC%86%8C%EC%B7%A8%ED%95%98%EC%84%9C" in mega  # 고소취하서
+
+    def test_external_links_open_safely(self, client):
+        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1].split("</nav>", 1)[0]
+        import re
+        for url in ("https://www.moj.go.kr/corrections/1125/subview.do",
+                    "https://www.scourt.go.kr/portal/information/events/search/search.jsp",
+                    "https://www.kics.go.kr/",
+                    "https://sc.scourt.go.kr/sc/krsc/criterion/down/standard_down.jsp",
+                    "https://koreha.or.kr/"):
+            m = re.search(r'<a href="%s"[^>]*>' % re.escape(url), mega)
+            assert m, url
+            assert 'target="_blank"' in m.group(0) and "noopener" in m.group(0), url
+
+    def test_logo_has_plus(self, client):
+        html = client.get("/").get_data(as_text=True)
+        assert '<span class="plus">+</span>' in html
+
+
+class TestAdminOnlyBoards:
+    """공지·FAQ 게시판은 관리자만 작성."""
+
+    def test_user_cannot_write(self, app, client, login_as):
+        _set_nickname(app, "user1@example.com", "일반유저")
+        login_as("user1@example.com")
+        r = _write(client, category="안기모 공지사항", title="사칭 공지")
+        assert "관리자만 작성" in r.get_data(as_text=True)
+        with app.app_context():
+            assert CommunityPost.query.filter_by(title="사칭 공지").count() == 0
+
+    def test_board_select_hides_admin_boards_from_user(self, app, client, login_as):
+        _set_nickname(app, "user1@example.com", "일반유저2")
+        login_as("user1@example.com")
+        html = client.get("/community/write").get_data(as_text=True)
+        sel = html.split('id="board-select"', 1)[1].split("</select>", 1)[0]
+        assert "안기모 공지사항" not in sel and "자주 묻는 질문 FAQ" not in sel
+        assert "안기모 중고세상" in sel
+
+    def test_admin_can_write(self, app, client, login_as):
+        login_as("admin@angimo.kr")
+        assert _write(client, category="안기모 공지사항", title="정식 공지").status_code == 302
+        html = client.get("/community/board/notice-angimo").get_data(as_text=True)
+        assert "정식 공지" in html
 
 
 class TestNicknameRule:

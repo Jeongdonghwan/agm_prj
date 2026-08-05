@@ -1,6 +1,6 @@
 /* ===== 판례돋보기 — 좌측 필터 메뉴 + 리스트 ===== */
 .case-layout{display:grid;grid-template-columns:190px 1fr;gap:44px;margin-top:36px;align-items:start}
-.side-filters{position:sticky;top:130px}
+.side-filters{position:sticky;top:140px}
 .side-filters .grp{margin-bottom:26px}
 .side-filters .grp-title{font-size:13px;font-weight:800;color:var(--ink-900);margin-bottom:8px}
 .side-filters a{display:block;font-size:14.5px;font-weight:700;padding:6px 0;color:#C4CAD2}

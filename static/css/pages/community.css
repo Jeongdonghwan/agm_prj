@@ -73,7 +73,7 @@
   .post .meta>span::after{margin:0 5px}
 }
 
-.comm-layout aside{position:sticky;top:130px;align-self:start}
+.comm-layout aside{position:sticky;top:140px;align-self:start}
 .hot-box{border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:20px}
 .hot-box h3{font-size:15px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:6px}
 .hot-box h3 i{width:16px;height:16px;color:var(--red-500)}
