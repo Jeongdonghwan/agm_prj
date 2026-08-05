@@ -282,6 +282,11 @@ def run_seed(app):
         db.drop_all()
         db.create_all()
 
+        # 커뮤니티 게시판 트리 (board_seed.py 공유 — migrate.py와 동일 데이터)
+        from board_seed import seed_boards
+
+        seed_boards(db)
+
         now = datetime.now()
 
         # 분야 2-depth

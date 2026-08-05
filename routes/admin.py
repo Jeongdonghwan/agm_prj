@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from datetime import datetime
 
@@ -909,6 +910,126 @@ def community_delete(pid):
     db.session.commit()
     flash("게시글을 삭제했습니다.", "success")
     return redirect(url_for("admin.community"))
+
+
+# ─────────────────────────── 게시판 관리 ───────────────────────────
+SLUG_RE = re.compile(r"^[a-z0-9-]{2,40}$")
+
+
+def _board_or_404(board_id):
+    from models import CommunityBoard
+
+    b = db.session.get(CommunityBoard, board_id)
+    if b is None:
+        abort(404)
+    return b
+
+
+@bp.route("/boards")
+@role_required("admin")
+def boards():
+    """게시판 관리 — 상위 그룹/하위 게시판 트리."""
+    from models import CommunityBoard, CommunityPost
+
+    groups = (
+        CommunityBoard.query.filter_by(parent_id=None)
+        .options(joinedload(CommunityBoard.children))
+        .order_by(CommunityBoard.sort_order, CommunityBoard.id)
+        .all()
+    )
+    # 게시판별 글 수 (라벨+토픽 카테고리 합산)
+    counts = dict(
+        db.session.query(CommunityPost.category, db.func.count())
+        .filter(CommunityPost.deleted_at.is_(None))
+        .group_by(CommunityPost.category)
+        .all()
+    )
+    post_counts = {}
+    for grp in groups:
+        for it in grp.children:
+            if it.slug:
+                cats = [it.label] + list(it.topics or [])
+                post_counts[it.id] = sum(counts.get(c, 0) for c in cats)
+    return render_template(
+        "admin/boards.html", groups=groups, post_counts=post_counts
+    )
+
+
+@bp.route("/boards/new", methods=["GET", "POST"])
+@bp.route("/boards/<int:board_id>/edit", methods=["GET", "POST"])
+@role_required("admin")
+def board_form(board_id=None):
+    from models import CommunityBoard
+
+    item = _board_or_404(board_id) if board_id else None
+    group_choices = (
+        CommunityBoard.query.filter_by(parent_id=None)
+        .order_by(CommunityBoard.sort_order, CommunityBoard.id)
+        .all()
+    )
+    if request.method == "POST":
+        label = request.form.get("label", "").strip()
+        parent_id = request.form.get("parent_id", type=int) or None
+        slug = request.form.get("slug", "").strip().lower() or None
+        link_url = request.form.get("link_url", "").strip() or None
+        topics = [
+            t.strip()
+            for t in request.form.get("topics", "").replace("\n", ",").split(",")
+            if t.strip()
+        ]
+        errors = []
+        if not label:
+            errors.append("이름을 입력해주세요.")
+        if parent_id:  # 하위 항목: 게시판(slug) 또는 링크(link_url) 중 하나
+            if not slug and not link_url:
+                errors.append("게시판 주소(slug) 또는 링크 URL 중 하나를 입력해주세요.")
+            if slug and not SLUG_RE.match(slug):
+                errors.append("주소(slug)는 영문 소문자·숫자·하이픈 2~40자입니다.")
+            if slug:
+                dup = CommunityBoard.query.filter_by(slug=slug).first()
+                if dup and dup.id != (item.id if item else None):
+                    errors.append("이미 사용 중인 주소(slug)입니다.")
+        else:
+            slug = link_url = None
+            topics = []
+        if errors:
+            for e in errors:
+                flash(e, "error")
+        else:
+            if item is None:
+                item = CommunityBoard(label=label)
+                db.session.add(item)
+            item.label = label
+            item.parent_id = parent_id
+            item.slug = slug if parent_id else None
+            item.link_url = link_url if parent_id else None
+            item.topics = topics
+            item.admin_only = request.form.get("admin_only") == "1"
+            item.show_topics = request.form.get("show_topics") == "1"
+            item.sort_order = request.form.get("sort_order", type=int) or 0
+            item.is_active = request.form.get("is_active") == "1"
+            db.session.flush()
+            _log("board_save", f"community_board:{item.id}", {"label": label, "slug": slug})
+            db.session.commit()
+            flash("게시판 구성을 저장했습니다.", "success")
+            return redirect(url_for("admin.boards"))
+    return render_template(
+        "admin/board_form.html", item=item, group_choices=group_choices
+    )
+
+
+@bp.route("/boards/<int:board_id>/delete", methods=["POST"])
+@role_required("admin")
+def board_delete(board_id):
+    b = _board_or_404(board_id)
+    if b.parent_id is None and b.children:
+        flash("하위 게시판이 있는 그룹은 삭제할 수 없습니다. 하위 항목을 먼저 삭제해주세요.", "error")
+        return redirect(url_for("admin.boards"))
+    _log("board_delete", f"community_board:{board_id}", {"label": b.label, "slug": b.slug})
+    db.session.delete(b)
+    db.session.commit()
+    flash("삭제했습니다. 해당 게시판의 글은 DB에 남지만 화면에서는 접근할 수 없습니다.", "success")
+    return redirect(url_for("admin.boards"))
 
 
 # ─────────────────────────── 신고 처리 ───────────────────────────

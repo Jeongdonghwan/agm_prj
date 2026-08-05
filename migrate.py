@@ -100,6 +100,14 @@ def run():
                 print(f"  * {label} — {result.rowcount}건")
                 applied += 1
 
+        # 커뮤니티 게시판 트리 — 테이블이 비어 있을 때만 초기 시드(재실행 안전)
+        from board_seed import seed_boards
+
+        n = seed_boards(db)
+        if n:
+            print(f"  * 커뮤니티 게시판 초기 시드 — {n}건")
+            applied += 1
+
         print(f"[migrate] 적용 {applied}건 / 이미 반영 {skipped}건 — 데이터는 보존됩니다.")
     return 0
 

@@ -21,6 +21,7 @@ ADMIN_PAGES = [
     "/admin/lawyers", "/admin/lawyers?status=all", "/admin/lawyers?q=김",
     "/admin/consultations",
     "/admin/community",
+    "/admin/boards", "/admin/boards/new",
     "/admin/posts", "/admin/posts?status=published", "/admin/posts?status=all",
     "/admin/cases", "/admin/cases/new",
     "/admin/news", "/admin/news/new",

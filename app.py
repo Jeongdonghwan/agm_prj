@@ -65,13 +65,13 @@ def create_app(config_class=Config):
 
     @app.context_processor
     def inject_globals():
-        from routes.community import COMMUNITY_MENU
+        from routes.community import get_menu
 
         return {
             "current_user": g.get("user"),
             "site_name": app.config["SITE_NAME"],
             "site_name_en": app.config["SITE_NAME_EN"],
-            "community_menu": COMMUNITY_MENU,  # GNB 커뮤니티 메가메뉴
+            "community_menu": get_menu(),  # GNB 커뮤니티 메가메뉴 (DB 관리)
         }
 
     @app.cli.command("seed")

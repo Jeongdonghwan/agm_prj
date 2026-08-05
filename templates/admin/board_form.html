@@ -1,0 +1,85 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'boards' %}
+{% block title %}게시판 {{ '수정' if item else '추가' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}게시판 {{ '수정' if item else '추가' }}{% endblock %}
+
+{% block content %}
+<form method="post" class="panel" style="margin-top:0;max-width:760px">
+  <div class="pf-body">
+    <div class="pf-row">
+      <div class="pf-field"><label>상위 그룹</label>
+        <select name="parent_id" id="parent-select">
+          <option value="">(없음 — 이 항목이 상위 그룹)</option>
+          {% for gpick in group_choices %}
+          <option value="{{ gpick.id }}" {% if (item and item.parent_id == gpick.id) or (not item and request.args.get('type') == 'item' and loop.first) %}selected{% endif %}>{{ gpick.label }}</option>
+          {% endfor %}
+        </select>
+        <small>그룹은 메가메뉴의 열 제목, 하위 항목은 그 아래 게시판/링크입니다.</small>
+      </div>
+      <div class="pf-field"><label>이름 *</label>
+        <input type="text" name="label" required maxlength="60" value="{{ item.label if item else '' }}">
+      </div>
+    </div>
+
+    <div id="item-fields">
+      <div class="pf-row">
+        <div class="pf-field"><label>게시판 주소 (slug)</label>
+          <input type="text" name="slug" maxlength="40" placeholder="예: parole (영문 소문자·숫자·하이픈)" value="{{ item.slug or '' if item else '' }}">
+          <small>입력하면 /community/board/<b>주소</b> 게시판이 생깁니다. 링크 항목이면 비워두세요.</small>
+        </div>
+        <div class="pf-field"><label>링크 URL</label>
+          <input type="text" name="link_url" maxlength="300" placeholder="예: https://… 또는 /community/board/forms?topic=탄원서" value="{{ item.link_url or '' if item else '' }}">
+          <small>게시판 대신 다른 주소로 보내는 항목. http로 시작하면 새 탭으로 열립니다.</small>
+        </div>
+      </div>
+
+      <div class="pf-field"><label>세부 주제</label>
+        <textarea name="topics" rows="3" placeholder="콤마(,) 또는 줄바꿈으로 구분 — 예: 탄원서, 반성문, 합의서">{{ item.topics | join(', ') if item and item.topics else '' }}</textarea>
+        <small>게시판 상단의 주제 칩과 글쓰기의 세부 주제 선택이 됩니다.</small>
+      </div>
+
+      <div class="pf-row">
+        <div class="pf-field"><label>관리자 전용 작성</label>
+          <select name="admin_only">
+            <option value="0" {% if not item or not item.admin_only %}selected{% endif %}>일반회원도 작성 가능</option>
+            <option value="1" {% if item and item.admin_only %}selected{% endif %}>관리자만 작성 (공지형)</option>
+          </select>
+        </div>
+        <div class="pf-field"><label>메뉴에 세부 주제 펼치기</label>
+          <select name="show_topics">
+            <option value="1" {% if not item or item.show_topics %}selected{% endif %}>펼침 (메가메뉴에 주제 목록 표시)</option>
+            <option value="0" {% if item and not item.show_topics %}selected{% endif %}>접음 (게시판 이름만 표시)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="pf-row">
+      <div class="pf-field"><label>순서</label><input type="text" name="sort_order" value="{{ item.sort_order if item else 0 }}">
+        <small>숫자가 작을수록 앞에 노출됩니다.</small></div>
+      <div class="pf-field"><label>노출</label>
+        <select name="is_active">
+          <option value="1" {% if not item or item.is_active %}selected{% endif %}>노출</option>
+          <option value="0" {% if item and not item.is_active %}selected{% endif %}>비활성 (메뉴·페이지 숨김)</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn pri" type="submit" style="padding:12px 24px">저장</button>
+      <a class="btn line" href="{{ url_for('admin.boards') }}">취소</a>
+    </div>
+  </div>
+</form>
+
+<script>
+// 상위 그룹 미선택(=그룹 생성)이면 게시판 전용 필드 숨김
+(function () {
+  const sel = document.getElementById('parent-select');
+  const fields = document.getElementById('item-fields');
+  const sync = () => { fields.style.display = sel.value ? '' : 'none'; };
+  sel.addEventListener('change', sync);
+  sync();
+})();
+</script>
+{% endblock %}

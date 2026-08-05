@@ -1,4 +1,9 @@
-from models.community import CommunityComment, CommunityPost, community_likes
+from models.community import (
+    CommunityBoard,
+    CommunityComment,
+    CommunityPost,
+    community_likes,
+)
 from models.consultation import Consultation, ConsultationAnswer
 from models.content import LawyerPost, LegalCase, News
 from models.lawyer import LawyerProfile, LawyerVerificationFile, lawyer_categories
@@ -24,6 +29,7 @@ __all__ = [
     "LawyerPost",
     "LegalCase",
     "News",
+    "CommunityBoard",
     "CommunityPost",
     "CommunityComment",
     "community_likes",

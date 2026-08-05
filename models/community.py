@@ -3,6 +3,34 @@ from sqlalchemy.dialects.mysql import ENUM
 
 from extensions import db
 
+class CommunityBoard(db.Model):
+    """게시판 트리 — parent_id NULL이면 상위 그룹, 아니면 하위 항목.
+
+    하위 항목 3형: slug 있으면 게시판(/community/board/<slug>),
+    link_url 있으면 링크(외부·내부), 관리자 화면에서 자유 추가/삭제.
+    """
+
+    __tablename__ = "community_boards"
+
+    id = db.Column(db.Integer, primary_key=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey("community_boards.id"))
+    label = db.Column(db.String(60), nullable=False)
+    slug = db.Column(db.String(40), unique=True)  # 게시판만, URL 키
+    topics = db.Column(db.JSON)                   # 세부 주제 라벨 배열
+    admin_only = db.Column(db.Boolean, default=False)
+    show_topics = db.Column(db.Boolean, default=True)  # 메가메뉴에 세부 주제 펼침 여부
+    link_url = db.Column(db.String(300))          # 링크 항목(새 탭은 http로 판별)
+    sort_order = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, server_default=func.now())
+
+    children = db.relationship(
+        "CommunityBoard",
+        backref=db.backref("parent", remote_side=[id]),
+        order_by="CommunityBoard.sort_order, CommunityBoard.id",
+    )
+
+
 community_likes = db.Table(
     "community_likes",
     db.Column(

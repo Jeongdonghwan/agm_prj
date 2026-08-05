@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'boards' %}
+{% block title %}게시판 관리 - {{ site_name }}{% endblock %}
+{% block topbar_title %}게시판 관리{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head">
+    <h2>커뮤니티 게시판 구성</h2>
+    <div style="display:flex;gap:8px">
+      <a class="btn line" href="{{ url_for('admin.board_form') }}">+ 상위 그룹</a>
+      <a class="btn pri" href="{{ url_for('admin.board_form') }}?type=item">+ 게시판/링크</a>
+    </div>
+  </div>
+  <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+    💡 여기서 만든 구성이 <b>GNB 커뮤니티 메가메뉴</b>와 <b>글쓰기 게시판 선택</b>에 바로 반영됩니다.
+    게시판을 삭제하면 글은 DB에 남지만 화면에서 접근할 수 없으니, 임시로는 <b>비활성</b>을 권장합니다.
+  </div>
+  <table>
+    <tr><th style="width:40%">이름</th><th>유형</th><th>글 수</th><th>순서</th><th>상태</th><th></th></tr>
+    {% for grp in groups %}
+    <tr style="background:#F8FAFD">
+      <td><b>{{ grp.label }}</b></td>
+      <td><span class="badge" style="background:var(--blue-100);color:var(--blue-700)">그룹</span></td>
+      <td>—</td>
+      <td>{{ grp.sort_order }}</td>
+      <td>{% if grp.is_active %}<span class="badge ok">노출</span>{% else %}<span class="badge wait">비활성</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.board_form', board_id=grp.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.board_delete', board_id=grp.id) }}" style="display:inline" onsubmit="return confirm('그룹을 삭제할까요? 하위 항목이 있으면 삭제되지 않습니다.')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% for it in grp.children %}
+    <tr>
+      <td style="padding-left:34px">{{ it.label }}
+        {% if it.slug %}<small style="color:var(--ink-500)">/community/board/{{ it.slug }}</small>{% endif %}
+        {% if it.admin_only %}<span class="badge" style="background:var(--blue-050);color:var(--blue-700)">관리자 전용</span>{% endif %}
+        {% if it.topics %}<small style="color:var(--ink-500)">주제 {{ it.topics | length }}개</small>{% endif %}
+      </td>
+      <td>{% if it.link_url %}링크{% else %}게시판{% endif %}</td>
+      <td>{{ post_counts.get(it.id, '—') }}</td>
+      <td>{{ it.sort_order }}</td>
+      <td>{% if it.is_active %}<span class="badge ok">노출</span>{% else %}<span class="badge wait">비활성</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        <a class="btn line" href="{{ url_for('admin.board_form', board_id=it.id) }}">수정</a>
+        <form method="post" action="{{ url_for('admin.board_delete', board_id=it.id) }}" style="display:inline" onsubmit="return confirm('[{{ it.label }}] 을 삭제할까요?\n글 {{ post_counts.get(it.id, 0) }}건은 DB에 남지만 화면에서 접근할 수 없게 됩니다.')">
+          <button class="btn danger" type="submit">삭제</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+    {% else %}
+    <tr><td colspan="6" style="color:var(--ink-500)">게시판이 없습니다. 서버에서 migrate.py를 실행하면 기본 구성이 들어갑니다.</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

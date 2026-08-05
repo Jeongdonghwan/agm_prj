@@ -105,11 +105,13 @@ class TestChips:
 
 
 class TestBoard:
-    def test_boards_200(self, client):
-        from routes.community import PAGE_BOARDS
+    def test_boards_200(self, app, client):
+        from routes.community import get_page_boards
 
-        assert len(PAGE_BOARDS) >= 19  # 기존 정보 3종 + 메가메뉴 신규 16종
-        for key in PAGE_BOARDS:
+        with app.app_context():
+            keys = list(get_page_boards())
+        assert len(keys) >= 19  # 정보 3종 + 메가메뉴 신규 16종
+        for key in keys:
             r = client.get(f"/community/board/{key}")
             assert r.status_code == 200, key
 
@@ -237,6 +239,90 @@ class TestAdminOnlyBoards:
         assert _write(client, category="안기모 공지사항", title="정식 공지").status_code == 302
         html = client.get("/community/board/notice-angimo").get_data(as_text=True)
         assert "정식 공지" in html
+
+
+class TestBoardAdmin:
+    """어드민 게시판 관리 — 상위/하위 추가·수정·삭제가 화면에 반영."""
+
+    def _group_id(self, app, label="커뮤니티"):
+        from models import CommunityBoard
+
+        with app.app_context():
+            return CommunityBoard.query.filter_by(label=label, parent_id=None).first().id
+
+    def test_admin_page_lists_tree(self, client, login_as):
+        login_as("admin@angimo.kr")
+        html = client.get("/admin/boards").get_data(as_text=True)
+        assert "안기모 중고세상" in html and "/community/board/market" in html
+        assert "도움되는 사이트" in html
+
+    def test_add_board_appears_everywhere(self, app, client, login_as):
+        login_as("admin@angimo.kr")
+        gid = self._group_id(app)
+        r = client.post("/admin/boards/new", data={
+            "parent_id": gid, "label": "면회 후기", "slug": "visit-review",
+            "topics": "", "admin_only": "0", "show_topics": "1",
+            "sort_order": "99", "is_active": "1"})
+        assert r.status_code == 302
+        assert client.get("/community/board/visit-review").status_code == 200
+        home = client.get("/").get_data(as_text=True)
+        assert "면회 후기" in home  # 메가메뉴 반영
+
+    def test_edit_and_deactivate(self, app, client, login_as):
+        from models import CommunityBoard
+
+        login_as("admin@angimo.kr")
+        gid = self._group_id(app)
+        client.post("/admin/boards/new", data={
+            "parent_id": gid, "label": "임시 게시판", "slug": "temp-b",
+            "topics": "주제A, 주제B", "admin_only": "0", "show_topics": "1",
+            "sort_order": "0", "is_active": "1"})
+        with app.app_context():
+            bid = CommunityBoard.query.filter_by(slug="temp-b").first().id
+        # 비활성 → 404 + 메뉴 미노출
+        client.post(f"/admin/boards/{bid}/edit", data={
+            "parent_id": gid, "label": "임시 게시판", "slug": "temp-b",
+            "topics": "", "admin_only": "0", "show_topics": "1",
+            "sort_order": "0", "is_active": "0"})
+        assert client.get("/community/board/temp-b").status_code == 404
+        assert "임시 게시판" not in client.get("/").get_data(as_text=True)
+
+    def test_delete_board(self, app, client, login_as):
+        from models import CommunityBoard
+
+        login_as("admin@angimo.kr")
+        gid = self._group_id(app)
+        client.post("/admin/boards/new", data={
+            "parent_id": gid, "label": "삭제 대상", "slug": "to-del",
+            "topics": "", "admin_only": "0", "show_topics": "1",
+            "sort_order": "0", "is_active": "1"})
+        with app.app_context():
+            bid = CommunityBoard.query.filter_by(slug="to-del").first().id
+        assert client.post(f"/admin/boards/{bid}/delete").status_code == 302
+        assert client.get("/community/board/to-del").status_code == 404
+
+    def test_group_with_children_cannot_delete(self, app, client, login_as):
+        login_as("admin@angimo.kr")
+        gid = self._group_id(app)
+        client.post(f"/admin/boards/{gid}/delete", follow_redirects=False)
+        # 여전히 존재
+        assert client.get("/community/board/market").status_code == 200
+
+    def test_duplicate_slug_rejected(self, app, client, login_as):
+        from models import CommunityBoard
+
+        login_as("admin@angimo.kr")
+        gid = self._group_id(app)
+        client.post("/admin/boards/new", data={
+            "parent_id": gid, "label": "중복 시도", "slug": "market",
+            "topics": "", "admin_only": "0", "show_topics": "1",
+            "sort_order": "0", "is_active": "1"})
+        with app.app_context():
+            assert CommunityBoard.query.filter_by(slug="market").count() == 1
+
+    def test_non_admin_blocked(self, client, login_as):
+        login_as("user1@example.com")
+        assert client.get("/admin/boards").status_code == 403
 
 
 class TestNicknameRule:
