@@ -10,8 +10,9 @@
       <select name="position">
         <option value="main_hero" {% if not item or item.position == 'main_hero' %}selected{% endif %}>메인 히어로 (롤링)</option>
         <option value="main_side" {% if item and item.position == 'main_side' %}selected{% endif %}>메인 사이드 (커뮤니티 고정 배너 — 1장만 노출)</option>
+        <option value="popup" {% if item and item.position == 'popup' %}selected{% endif %}>메인 팝업 (접속 시 모달 — 1장만 노출)</option>
       </select>
-      <small>메인 사이드는 롤링 없이 <b>순서 상위 1장만 고정</b> 노출됩니다. 여러 장 등록해도 나머지는 대기 상태가 됩니다.</small>
+      <small>메인 사이드/팝업은 롤링 없이 <b>순서 상위 1장만</b> 노출됩니다. 팝업은 방문자가 [오늘 하루 보지 않기]를 누르면 그날은 다시 뜨지 않습니다. 팝업은 <b>이미지 필수</b>입니다.</small>
     </div>
     <div class="pf-field"><label>제목 *</label><input type="text" name="title" value="{{ item.title if item else '' }}" required maxlength="100" placeholder="메인카피|포인트카피(파란 줄)|서브카피">
       <small>형식: <b>메인카피|포인트카피|서브카피</b> — 포인트카피는 히어로에선 파란 줄, 사이드에선 큰 파란 글씨로 표시됩니다.</small></div>

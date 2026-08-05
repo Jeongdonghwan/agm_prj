@@ -23,10 +23,11 @@
 
 /* 글쓰기 FAB */
 /* 카페 바로가기 플로팅(우하단 고정) 위에 배치 */
-.fab{position:fixed;right:24px;bottom:86px;width:78px;height:78px;border-radius:50%;background:var(--blue-600);color:#fff;font-size:12px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 8px 24px rgba(27,92,255,.4);z-index:90}
+/* 글쓰기 FAB — 1:1 상담·카페 플로팅(base.css) 위에 배치 */
+.fab{position:fixed;right:24px;bottom:140px;width:78px;height:78px;border-radius:50%;background:var(--blue-600);color:#fff;font-size:12px;font-weight:800;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 8px 24px rgba(27,92,255,.4);z-index:90}
 .fab:hover{background:var(--blue-700)}
 .fab i{width:20px;height:20px}
-@media (max-width:560px){.fab{right:14px;bottom:70px;width:64px;height:64px;font-size:11px}}
+@media (max-width:560px){.fab{right:14px;bottom:116px;width:64px;height:64px;font-size:11px}}
 
 /* 상세 */
 .qa-detail{max-width:none}

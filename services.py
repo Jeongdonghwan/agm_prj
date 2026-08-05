@@ -66,6 +66,19 @@ def get_home_data():
         .all()
     ]
 
+    # 메인 팝업 배너 — 이미지가 있는 1장만 (배너 관리에서 position=popup)
+    popup_banner = (
+        Banner.query.filter(
+            Banner.position == "popup",
+            Banner.is_active.is_(True),
+            Banner.image_url.isnot(None),
+            db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
+            db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
+        )
+        .order_by(Banner.sort_order)
+        .first()
+    )
+
     # 히어로 롤링 배너 (배너 관리 연동, sort_order 순)
     hero_banners = [
         _parse_banner(b)
@@ -179,6 +192,7 @@ def get_home_data():
     return {
         "hero_banners": hero_banners,
         "side_banners": side_banners,
+        "popup_banner": popup_banner,
         "hot_community": hot_community,
         "recent_cases": recent_cases,
         "cat_names": cat_names,

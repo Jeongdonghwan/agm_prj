@@ -46,6 +46,13 @@ DATA_FIXES = [
         ("lawyer_profiles", "show_in_ad"),
     ),
     (
+        # 배너 위치에 팝업 추가 — MODIFY는 재실행해도 결과 동일
+        "배너 position ENUM에 popup 추가",
+        "ALTER TABLE banners MODIFY position "
+        "ENUM('main_hero','main_side','popup') DEFAULT 'main_hero'",
+        ("banners", "position"),
+    ),
+    (
         # 승인제 도입 시점의 기존 일반회원은 자동 승인 — 이미 활동 중인 회원이 잠기지 않게.
         # 신규 가입자(approved_at NULL, visit_proof 미제출, 도입 후 가입)만 승인 대상.
         "커뮤니티 승인제 도입 — 기존 일반회원 자동 승인",

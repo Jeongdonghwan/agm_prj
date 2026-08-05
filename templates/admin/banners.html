@@ -13,13 +13,14 @@
     <tr><th>위치</th><th>제목</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
     {% for b in items %}
     <tr>
-      <td>{{ '메인 사이드' if b.position == 'main_side' else '메인 히어로' }}</td>
+      <td>{{ {'main_side': '메인 사이드', 'popup': '메인 팝업'}.get(b.position, '메인 히어로') }}</td>
       <td><b>{{ b.title }}</b></td>
       <td>{{ b.starts_at.strftime('%m.%d') if b.starts_at else '~' }} ~ {{ b.ends_at.strftime('%m.%d') if b.ends_at else '' }}</td>
       <td>{{ b.sort_order }}</td>
       <td>
         {% if not b.is_active %}<span class="badge wait">대기</span>
         {% elif b.position == 'main_side' and b.id != side_live_id %}<span class="badge wait" title="사이드는 순서 상위 1장만 노출됩니다">순번 밀림</span>
+        {% elif b.position == 'popup' and b.id != popup_live_id %}<span class="badge wait" title="팝업은 순서 상위 1장만 노출됩니다">순번 밀림</span>
         {% else %}<span class="badge ok">노출중</span>{% endif %}
       </td>
       <td style="white-space:nowrap">

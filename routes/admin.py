@@ -704,12 +704,18 @@ def news_delete(news_id):
 @role_required("admin")
 def banners():
     items = Banner.query.order_by(Banner.position, Banner.sort_order).all()
-    # 사이드 배너는 순서 상위 1장만 실제 노출 — 목록에서 구분 표시용
+    # 사이드/팝업 배너는 순서 상위 1장만 실제 노출 — 목록에서 구분 표시용
     side_live = next(
         (b for b in items if b.position == "main_side" and b.is_active), None
     )
+    popup_live = next(
+        (b for b in items if b.position == "popup" and b.is_active), None
+    )
     return render_template(
-        "admin/banners.html", items=items, side_live_id=side_live.id if side_live else None
+        "admin/banners.html",
+        items=items,
+        side_live_id=side_live.id if side_live else None,
+        popup_live_id=popup_live.id if popup_live else None,
     )
 
 
@@ -727,7 +733,7 @@ def banner_form(banner_id=None):
             db.session.add(item)
         item.position = (
             form.get("position")
-            if form.get("position") in ("main_hero", "main_side")
+            if form.get("position") in ("main_hero", "main_side", "popup")
             else "main_hero"
         )
         item.title = form.get("title", "").strip()[:100]

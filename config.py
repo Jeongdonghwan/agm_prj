@@ -46,6 +46,9 @@ class Config:
     SITE_NAME = "안기모"
     SITE_NAME_EN = "ANGIMO"
 
+    # 1:1 상담 플로팅 버튼 — 운영 카카오톡 채널 URL로 교체할 것
+    KAKAO_CONSULT_URL = "https://pf.kakao.com/_REPLACE"
+
     # 로그인 실패 잠금 정책 (§2)
     LOGIN_FAIL_LIMIT = 5
     LOGIN_LOCK_SECONDS = 600

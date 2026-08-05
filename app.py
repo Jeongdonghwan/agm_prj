@@ -72,6 +72,7 @@ def create_app(config_class=Config):
             "site_name": app.config["SITE_NAME"],
             "site_name_en": app.config["SITE_NAME_EN"],
             "community_menu": get_menu(),  # GNB 커뮤니티 메가메뉴 (DB 관리)
+            "kakao_consult_url": app.config["KAKAO_CONSULT_URL"],
         }
 
     @app.cli.command("seed")

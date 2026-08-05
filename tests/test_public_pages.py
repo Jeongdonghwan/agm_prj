@@ -125,6 +125,39 @@ class TestLayout:
         block = html.split('class="fab-cafe"', 1)[1][:200]
         assert 'target="_blank"' in block and "noopener" in block
 
+    def test_consult_floating_button(self, client):
+        """1:1 상담(카카오톡 채널) 플로팅 — 카페 버튼 위, 전 페이지, 새 탭."""
+        for path in ("/", "/counsel/", "/lawyers/"):
+            html = client.get(path).get_data(as_text=True)
+            block = html.split('class="fab-consult"', 1)[1][:200]
+            assert "pf.kakao.com" in block and 'target="_blank"' in block, path
+            assert "1:1 상담" in html
+
+    def test_popup_banner_renders_only_when_registered(self, app, client, login_as):
+        """팝업 배너 — 어드민 등록 시에만 메인에 모달 마크업."""
+        from utils import invalidate_page_cache
+
+        assert 'id="main-popup"' not in client.get("/").get_data(as_text=True)
+        login_as("admin@angimo.kr")
+        client.post("/admin/banners/new", data={
+            "position": "popup", "title": "이벤트 팝업", "link_url": "/signup",
+            "sort_order": "0", "is_active": "1"})
+        # 이미지 없는 팝업은 미노출
+        with app.app_context():
+            invalidate_page_cache()
+        assert 'id="main-popup"' not in client.get("/").get_data(as_text=True)
+        # 이미지를 붙이면 노출
+        from extensions import db
+        from models import Banner
+        with app.app_context():
+            b = Banner.query.filter_by(position="popup").first()
+            b.image_url = "/uploads/banners/test.png"
+            db.session.commit()
+            invalidate_page_cache()
+        html = client.get("/").get_data(as_text=True)
+        assert 'id="main-popup"' in html and "오늘 하루 보지 않기" in html
+        assert "/uploads/banners/test.png" in html
+
     def test_community_chips_include_info_boards(self, client, login_as):
         """커뮤니티 칩에 정보 게시판 3종이 함께 노출되고 서로 이동 가능."""
         login_as("user1@example.com")
