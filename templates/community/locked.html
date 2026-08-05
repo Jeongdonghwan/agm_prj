@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}커뮤니티 이용 인증 - {{ site_name }}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/community.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="wrap vp-locked">
+  <div class="vp-card">
+    <div class="vp-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue-600)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+
+    {% if current_user.visit_proof_at and not current_user.approve_reject_reason %}
+    <h1>승인을 기다리고 있어요</h1>
+    <p class="vp-desc">
+      {{ current_user.visit_proof_at.strftime('%m월 %d일') }}에 제출하신 접견예약확인 이미지를 관리자가 확인하고 있습니다.<br>
+      승인이 완료되면 바로 커뮤니티를 이용할 수 있어요.
+    </p>
+    {% else %}
+    {% if current_user.approve_reject_reason %}
+    <h1>제출하신 이미지가 반려되었어요</h1>
+    <p class="vp-desc vp-reject">반려 사유: {{ current_user.approve_reject_reason }}</p>
+    {% else %}
+    <h1>커뮤니티 이용을 위해 인증이 필요해요</h1>
+    {% endif %}
+
+    {% include "community/_visit_proof_guide.html" %}
+
+    <form method="post" action="{{ url_for('mypage.visit_proof') }}" enctype="multipart/form-data" class="vp-form">
+      <input type="hidden" name="next" value="{{ url_for('community.locked') }}">
+      <div class="filebox" data-max="1">
+        <input type="file" name="visit_proof" accept=".jpg,.jpeg,.png" required>
+      </div>
+      <button class="btn-submit" type="submit">{{ '다시 제출하기' if current_user.approve_reject_reason else '제출하고 승인 기다리기' }}</button>
+    </form>
+    {% endif %}
+
+    <a class="vp-back" href="{{ url_for('main.index') }}">메인으로 돌아가기</a>
+  </div>
+</div>
+{% endblock %}

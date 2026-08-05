@@ -208,8 +208,13 @@ class TestModerationFlows:
                         data={"title": "점검 공지", "content": "내용"},
                         follow_redirects=True)
         assert "공지글이 등록되었습니다" in r.get_data(as_text=True)
-        # 공지는 카테고리 칩과 무관하게 상단 고정으로 노출
-        pub = app.test_client().get("/community/").get_data(as_text=True)
+        # 공지는 카테고리 칩과 무관하게 상단 고정으로 노출 (승인 회원 시점)
+        with app.app_context():
+            member_id = User.query.filter_by(email="user1@example.com").first().id
+        c2 = app.test_client()
+        with c2.session_transaction() as sess:
+            sess["user_id"] = member_id
+        pub = c2.get("/community/").get_data(as_text=True)
         assert "점검 공지" in pub
         assert "사연신청" in pub  # 신규 카테고리 칩
 

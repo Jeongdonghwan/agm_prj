@@ -19,7 +19,7 @@ from sqlalchemy.orm import joinedload
 from extensions import db
 from models import CommunityBoard, CommunityComment, CommunityPost
 from models.community import community_likes
-from routes.decorators import role_required
+from routes.decorators import community_member_required, role_required
 from utils import mask_privacy
 
 bp = Blueprint("community", __name__, url_prefix="/community")
@@ -209,7 +209,29 @@ def first_image(post):
     return None
 
 
+@bp.route("/locked")
+def locked():
+    """커뮤니티 인증 안내 — 미승인 회원의 랜딩. 접견예약확인 제출 폼 포함."""
+    if g.user is None:
+        return redirect(url_for("auth.login", next="/community/"))
+    if g.user.community_approved:
+        return redirect(url_for("community.list_"))
+    return render_template(
+        "community/locked.html",
+        active_menu="community",
+        moj_url=MOJ_VISIT_URL,
+    )
+
+
+# 법무부 온라인민원 — 접견예약 (가입/인증 안내에 공통 사용)
+MOJ_VISIT_URL = (
+    "https://minwon.moj.go.kr/minwon/1999/subview.do"
+    "?enc=Zm5jdDF8QEB8JTJGcHJpc29uUmVzZXJ2YXRpb24lMkZtaW53b24lMkY2JTJGYXJ0Y2xTdGVwMS5kbyUzRg%3D%3D"
+)
+
+
 @bp.route("/")
+@community_member_required
 def list_():
     """커뮤니티 — 전체(자유게시판+옥바라지 이야기) / 카테고리 칩."""
     category = request.args.get("category")
@@ -262,6 +284,7 @@ def list_():
 
 
 @bp.route("/board/<key>")
+@community_member_required
 def board(key):
     """게시판 페이지 — 정보 게시판 3종 + 메가메뉴로 추가된 게시판들."""
     boards = get_page_boards()
@@ -316,6 +339,7 @@ def _require_nickname():
 
 @bp.route("/write", methods=["GET", "POST"])
 @role_required("user", "admin")
+@community_member_required
 def write():
     nickname_required = _require_nickname()
     boards = writable_boards(g.user)
@@ -372,6 +396,7 @@ def write():
 
 @bp.route("/<int:post_id>/edit", methods=["GET", "POST"])
 @role_required("user", "admin")
+@community_member_required
 def edit(post_id):
     """내 글 수정 — 작성자 본인만, 언제든 가능."""
     p = CommunityPost.query.filter_by(id=post_id, user_id=g.user.id, status="open").filter(
@@ -418,6 +443,7 @@ def edit(post_id):
 
 @bp.route("/<int:post_id>/delete", methods=["POST"])
 @role_required("user", "admin")
+@community_member_required
 def delete(post_id):
     """내 글 삭제 — soft delete (§11)."""
     p = CommunityPost.query.filter_by(id=post_id, user_id=g.user.id).filter(
@@ -434,6 +460,7 @@ def delete(post_id):
 
 @bp.route("/upload-image", methods=["POST"])
 @role_required("user", "admin")
+@community_member_required
 def upload_image():
     """본문 에디터 이미지 업로드 — 저장 후 공개 URL 반환."""
     f = request.files.get("image")
@@ -450,6 +477,7 @@ def upload_image():
 
 
 @bp.route("/<int:post_id>")
+@community_member_required
 def detail(post_id):
     p = (
         CommunityPost.query.options(joinedload(CommunityPost.user))
@@ -512,6 +540,7 @@ def detail(post_id):
 
 @bp.route("/<int:post_id>/comments", methods=["POST"])
 @role_required("user", "admin")
+@community_member_required
 def comment(post_id):
     p = CommunityPost.query.filter_by(id=post_id, status="open").filter(
         CommunityPost.deleted_at.is_(None)

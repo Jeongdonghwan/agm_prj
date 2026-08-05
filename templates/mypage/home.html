@@ -54,6 +54,30 @@
     {% endfor %}
   </div>
 
+  {% if current_user.role == 'user' %}
+  <div class="my-sec">
+    <div class="head">커뮤니티 인증 (접견예약확인)</div>
+    <div class="my-form" style="display:block">
+      {% if current_user.approved_at %}
+      <p style="font-size:13.5px;color:var(--blue-700);font-weight:700">✓ 승인 완료 — 커뮤니티를 자유롭게 이용할 수 있어요.</p>
+      {% else %}
+      {% if current_user.approve_reject_reason %}
+      <p style="font-size:13px;color:#B91C1C;background:#FEF2F2;border-radius:8px;padding:10px 14px;margin-bottom:10px">반려됨 — {{ current_user.approve_reject_reason }}</p>
+      {% elif current_user.visit_proof_at %}
+      <p style="font-size:13.5px;color:var(--ink-500);margin-bottom:10px">{{ current_user.visit_proof_at.strftime('%m.%d') }} 제출 — 관리자 승인 대기 중입니다.</p>
+      {% endif %}
+      {% if not current_user.visit_proof_at or current_user.approve_reject_reason %}
+      {% include "community/_visit_proof_guide.html" %}
+      <form method="post" action="{{ url_for('mypage.visit_proof') }}" enctype="multipart/form-data" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+        <div class="filebox" data-max="1"><input type="file" name="visit_proof" accept=".jpg,.jpeg,.png" required></div>
+        <button type="submit">제출</button>
+      </form>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   <div class="my-sec">
     <div class="head">정보 수정</div>
     <form class="my-form" method="post" action="{{ url_for('mypage.update') }}">

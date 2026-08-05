@@ -8,10 +8,10 @@ from extensions import db
 from models import LawyerProfile, LegalCase, News, User
 from utils import invalidate_page_cache
 
+# 커뮤니티는 승인 회원 전용으로 전환 — 공개 목록에서 제외 (게이트는 test_membership.py)
 PUBLIC_PATHS = [
     "/", "/main-a", "/lawyers/", "/counsel/", "/posts", "/cases", "/news", "/firms",
-    "/community/", "/community/board/facility", "/community/board/life",
-    "/community/board/forms", "/login", "/signup", "/signup/lawyer", "/admin/login",
+    "/login", "/signup", "/signup/lawyer", "/admin/login",
 ]
 
 
@@ -80,9 +80,10 @@ class TestSeoEndpoints:
         r = client.get("/sitemap.xml")
         assert r.status_code == 200 and r.mimetype == "application/xml"
         body = r.get_data(as_text=True)
-        for frag in ("/lawyers/", "/counsel/", "/cases/", "/news/", "/community/"):
+        for frag in ("/lawyers/", "/counsel/", "/cases/", "/news/"):
             assert frag in body
-        assert body.count("<loc>") >= 50  # 시드 규모 기준
+        assert "/community" not in body  # 회원 전용 — 색인 제외
+        assert body.count("<loc>") >= 40  # 시드 규모 기준
 
 
 class TestLayout:
@@ -117,15 +118,16 @@ class TestLayout:
 
     def test_cafe_floating_button(self, client):
         """네이버 카페 바로가기 플로팅 버튼 — 전 페이지 공통, 새 탭."""
-        for path in ("/", "/community/", "/lawyers/"):
+        for path in ("/", "/counsel/", "/lawyers/"):
             html = client.get(path).get_data(as_text=True)
             assert "https://cafe.naver.com/32genius" in html, path
             assert "카페 바로가기" in html, path
         block = html.split('class="fab-cafe"', 1)[1][:200]
         assert 'target="_blank"' in block and "noopener" in block
 
-    def test_community_chips_include_info_boards(self, client):
+    def test_community_chips_include_info_boards(self, client, login_as):
         """커뮤니티 칩에 정보 게시판 3종이 함께 노출되고 서로 이동 가능."""
+        login_as("user1@example.com")
         html = client.get("/community/").get_data(as_text=True)
         chips = html.split('class="cat-chips"', 1)[1].split("</div>", 1)[0]
         for label in ("자유게시판", "옥바라지 이야기", "사연신청",

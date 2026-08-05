@@ -100,6 +100,8 @@ def community_like(post_id):
         return jsonify({"error": {"code": "UNAUTHORIZED", "message": "로그인이 필요합니다."}}), 401
     if g.user.role not in ("user", "admin"):
         return jsonify({"error": {"code": "FORBIDDEN", "message": "추천 권한이 없습니다."}}), 403
+    if not g.user.community_approved:
+        return jsonify({"error": {"code": "APPROVAL_REQUIRED", "message": "커뮤니티 인증 후 이용할 수 있습니다."}}), 403
     post = CommunityPost.query.filter_by(id=post_id, status="open").filter(
         CommunityPost.deleted_at.is_(None)
     ).first()

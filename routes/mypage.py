@@ -54,6 +54,31 @@ def update():
     return redirect(url_for("mypage.home"))
 
 
+@bp.route("/visit-proof", methods=["POST"])
+@login_required
+def visit_proof():
+    """커뮤니티 인증 — 접견예약확인 캡처 제출/재제출."""
+    from routes.auth import save_visit_proof
+
+    if g.user.role != "user":
+        flash("일반회원만 제출할 수 있습니다.", "error")
+        return redirect(url_for("mypage.home"))
+    if g.user.approved_at:
+        flash("이미 커뮤니티 이용이 승인된 계정입니다.", "success")
+        return redirect(url_for("mypage.home"))
+    f = request.files.get("visit_proof")
+    if not f or not f.filename:
+        flash("접견예약확인 이미지를 선택해주세요.", "error")
+    else:
+        err = save_visit_proof(g.user, f)
+        if err:
+            flash(err, "error")
+        else:
+            db.session.commit()
+            flash("접수되었습니다. 관리자 승인 후 커뮤니티를 이용할 수 있습니다.", "success")
+    return redirect(request.form.get("next") or url_for("mypage.home"))
+
+
 @bp.route("/password", methods=["POST"])
 @login_required
 def password():

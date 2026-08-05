@@ -373,6 +373,8 @@ def run_seed(app):
                 role="user",
                 status="active",
                 created_at=now - timedelta(days=60 - i * 5),
+                # user5는 커뮤니티 미승인(승인제 테스트용), 나머지는 승인 완료
+                approved_at=None if i == 5 else now - timedelta(days=50),
             )
             u.set_password("user-1234")
             db.session.add(u)

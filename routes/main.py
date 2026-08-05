@@ -78,9 +78,11 @@ def robots():
 
 @bp.route("/sitemap.xml")
 def sitemap():
-    """동적 sitemap — 변호사/상담글/포스트/판례/뉴스/커뮤니티 (§2-1)."""
+    """동적 sitemap — 변호사/상담글/포스트/판례/뉴스 (§2-1).
+
+    커뮤니티는 승인 회원 전용(비공개)으로 전환되어 sitemap에서 제외한다.
+    """
     from models import (
-        CommunityPost,
         Consultation,
         LawyerPost,
         LawyerProfile,
@@ -97,10 +99,6 @@ def sitemap():
         url_for("contents.cases", _external=True),
         url_for("contents.news", _external=True),
         url_for("contents.firms", _external=True),
-        url_for("community.list_", _external=True),
-        url_for("community.board", key="facility", _external=True),
-        url_for("community.board", key="life", _external=True),
-        url_for("community.board", key="forms", _external=True),
     ]
     for p in (
         LawyerProfile.query.join(User, LawyerProfile.user_id == User.id)
@@ -122,10 +120,6 @@ def sitemap():
         urls.append(url_for("contents.case_detail", case_id=c.id, slug=_slug(c.title), _external=True))
     for n in News.query.filter(News.deleted_at.is_(None), News.published_at.isnot(None)):
         urls.append(url_for("contents.news_detail", news_id=n.id, slug=_slug(n.title), _external=True))
-    for p in CommunityPost.query.filter_by(status="open").filter(
-        CommunityPost.deleted_at.is_(None)
-    ):
-        urls.append(url_for("community.detail", post_id=p.id, _external=True))
 
     body = "".join(f"<url><loc>{u}</loc></url>" for u in urls)
     xml = (

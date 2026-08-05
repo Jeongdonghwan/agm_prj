@@ -535,7 +535,12 @@ class TestBoardsModeration:
                         data={"title": "테스트 공지", "content": "공지 내용"},
                         follow_redirects=True)
         assert "공지글이 등록되었습니다" in r.get_data(as_text=True)
+        # 커뮤니티는 승인 회원 전용 — 일반 회원 시점으로 확인
+        with app.app_context():
+            member_id = User.query.filter_by(email="user1@example.com").first().id
         c2 = app.test_client()
+        with c2.session_transaction() as sess:
+            sess["user_id"] = member_id
         html = c2.get("/community/").get_data(as_text=True)
         assert "테스트 공지" in html
         with app.app_context():

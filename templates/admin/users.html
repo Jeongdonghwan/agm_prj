@@ -5,20 +5,26 @@
 
 {% block content %}
 <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-  {% for st, label in [('all', '전체'), ('active', '활동중'), ('suspended', '정지'), ('withdrawn', '탈퇴')] %}
-  <a class="btn {% if status == st %}pri{% else %}line{% endif %}" href="{{ url_for('admin.users', status=st, q=keyword) }}">{{ label }}</a>
+  {% for st, label in [('all', '전체'), ('approval', '승인 대기'), ('active', '활동중'), ('suspended', '정지'), ('withdrawn', '탈퇴')] %}
+  <a class="btn {% if status == st %}pri{% else %}line{% endif %}" href="{{ url_for('admin.users', status=st, q=keyword) }}">{{ label }}{% if st == 'approval' and approval_count %} <b style="color:var(--red-500)">{{ approval_count }}</b>{% endif %}</a>
   {% endfor %}
   <form method="get" action="{{ url_for('admin.users') }}" style="display:flex;gap:6px;margin-left:auto">
     <input type="hidden" name="status" value="{{ status }}">
     <input type="text" name="q" value="{{ keyword }}" placeholder="이메일/이름/닉네임 검색" style="border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;width:220px">
     <button class="btn line" type="submit">검색</button>
   </form>
+  <a class="btn pri" href="{{ url_for('admin.user_new') }}">+ 새 회원 추가</a>
 </div>
 
 <div class="panel" style="margin-top:0">
   <div class="p-head"><h2>일반회원 <span class="cnt">{{ total }}</span>{% if total > 50 %} <small style="font-weight:500;color:var(--ink-500)">(최근 50명 표시 — 검색으로 좁혀주세요)</small>{% endif %}</h2></div>
+  {% if status == 'approval' %}
+  <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+    💡 접견예약확인 이미지를 확인하고 <b>승인</b>하면 해당 회원이 커뮤니티를 이용할 수 있습니다. 이미지가 불명확하면 사유와 함께 반려하세요.
+  </div>
+  {% endif %}
   <table>
-    <tr><th>가입일</th><th>이메일</th><th>이름</th><th>닉네임</th><th>휴대폰</th><th>상태</th><th>사유</th><th></th></tr>
+    <tr><th>가입일</th><th>이메일</th><th>이름</th><th>닉네임</th><th>휴대폰</th><th>상태</th><th>커뮤니티 인증</th><th></th></tr>
     {% for u in items %}
     <tr>
       <td>{{ u.created_at.strftime('%y.%m.%d') }}</td>
@@ -32,8 +38,24 @@
         {% elif u.status == 'withdrawn' %}<span class="badge wait">탈퇴</span>
         {% else %}<span class="badge wait">{{ u.status }}</span>{% endif %}
       </td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ u.status_reason or '' }}">{{ u.status_reason or '-' }}</td>
       <td style="white-space:nowrap">
+        {% if u.approved_at %}<span class="badge ok">승인됨</span>
+        {% elif u.approve_reject_reason %}<span class="badge red" title="{{ u.approve_reject_reason }}">반려</span>
+        {% elif u.visit_proof_at %}<span class="badge wait">대기</span>
+        {% else %}<span style="color:var(--ink-500)">미제출</span>{% endif %}
+        {% if u.visit_proof_url %}
+        <a class="btn line" href="{{ url_for('admin.visit_proof_file', user_id=u.id) }}" target="_blank" rel="noopener">이미지</a>
+        {% endif %}
+      </td>
+      <td style="white-space:nowrap">
+        {% if not u.approved_at and u.visit_proof_at %}
+        <form method="post" action="{{ url_for('admin.user_approve', user_id=u.id) }}" style="display:inline">
+          <button class="btn pri" type="submit">승인</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.user_reject_approval', user_id=u.id) }}" style="display:inline" onsubmit="var r=prompt('반려 사유를 입력하세요 (회원에게 표시됩니다)'); if(r===null) return false; this.reason.value=r;">
+          <input type="hidden" name="reason"><button class="btn danger" type="submit">반려</button>
+        </form>
+        {% endif %}
         {% if u.status == 'active' %}
         <form method="post" action="{{ url_for('admin.user_suspend', user_id=u.id) }}" style="display:inline" onsubmit="var r=prompt('정지 사유를 입력하세요'); if(r===null) return false; this.reason.value=r;">
           <input type="hidden" name="reason"><button class="btn danger" type="submit">정지</button>

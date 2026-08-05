@@ -106,6 +106,15 @@ def dashboard():
 
 
 # ─────────────────────────── 회원 관리 (§4-4) ───────────────────────────
+def _approval_pending_query():
+    """커뮤니티 승인 대기 — 접견예약확인 제출 & 미승인 & 미반려."""
+    return User.query.filter_by(role="user", status="active").filter(
+        User.visit_proof_at.isnot(None),
+        User.approved_at.is_(None),
+        User.approve_reject_reason.is_(None),
+    )
+
+
 @bp.route("/users")
 @role_required("admin")
 def users():
@@ -114,6 +123,8 @@ def users():
     q = User.query.filter_by(role="user")
     if status in ("active", "suspended", "withdrawn"):
         q = q.filter_by(status=status)
+    elif status == "approval":  # 커뮤니티 승인 대기 탭
+        q = _approval_pending_query()
     if keyword:
         like = f"%{keyword}%"
         q = q.filter(
@@ -122,7 +133,91 @@ def users():
     total = q.count()
     items = q.order_by(User.created_at.desc()).limit(50).all()
     return render_template(
-        "admin/users.html", items=items, total=total, status=status, keyword=keyword
+        "admin/users.html",
+        items=items,
+        total=total,
+        status=status,
+        keyword=keyword,
+        approval_count=_approval_pending_query().count(),
+    )
+
+
+@bp.route("/users/new", methods=["GET", "POST"])
+@role_required("admin")
+def user_new():
+    """새 회원 간단 추가 — 관리자가 직접 계정 생성."""
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        nickname = request.form.get("nickname", "").strip() or None
+        errors = []
+        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+            errors.append("올바른 이메일을 입력해주세요.")
+        elif User.query.filter_by(email=email).first():
+            errors.append("이미 가입된 이메일입니다.")
+        if len(password) < 8:
+            errors.append("비밀번호는 8자 이상이어야 합니다.")
+        if nickname and User.query.filter_by(nickname=nickname).first():
+            errors.append("이미 사용 중인 닉네임입니다.")
+        if errors:
+            for e in errors:
+                flash(e, "error")
+        else:
+            user = User(
+                email=email,
+                name=request.form.get("name", "").strip() or None,
+                nickname=nickname,
+                phone=request.form.get("phone", "").strip() or None,
+                role="user",
+                status="active",
+                approved_at=datetime.now() if request.form.get("approve_now") == "1" else None,
+            )
+            user.set_password(password)
+            db.session.add(user)
+            db.session.flush()
+            _log("user_create", f"user:{user.id}", {"email": email})
+            db.session.commit()
+            flash(f"{email} 회원을 추가했습니다.", "success")
+            return redirect(url_for("admin.users"))
+    return render_template("admin/user_form.html", form=request.form)
+
+
+@bp.route("/users/<int:user_id>/approve", methods=["POST"])
+@role_required("admin")
+def user_approve(user_id):
+    """커뮤니티 이용 승인 (접견예약확인 확인 완료)."""
+    user = _get_plain_user(user_id)
+    user.approved_at = datetime.now()
+    user.approve_reject_reason = None
+    _log("user_community_approve", f"user:{user_id}")
+    db.session.commit()
+    flash(f"{user.display_name} 회원의 커뮤니티 이용을 승인했습니다.", "success")
+    return redirect(url_for("admin.users", status="approval"))
+
+
+@bp.route("/users/<int:user_id>/reject-approval", methods=["POST"])
+@role_required("admin")
+def user_reject_approval(user_id):
+    """커뮤니티 인증 반려 — 사유는 회원에게 노출."""
+    user = _get_plain_user(user_id)
+    reason = request.form.get("reason", "").strip()[:300] or "이미지 확인이 어려워 반려되었습니다."
+    user.approved_at = None
+    user.approve_reject_reason = reason
+    _log("user_community_reject", f"user:{user_id}", {"reason": reason})
+    db.session.commit()
+    flash(f"{user.display_name} 회원의 인증을 반려했습니다.", "success")
+    return redirect(url_for("admin.users", status="approval"))
+
+
+@bp.route("/visit-proof/<int:user_id>")
+@role_required("admin")
+def visit_proof_file(user_id):
+    """접견예약확인 이미지 — admin 전용 서빙 (§11: 공개 URL 금지)."""
+    user = db.session.get(User, user_id)
+    if user is None or not user.visit_proof_url:
+        abort(404)
+    return send_from_directory(
+        current_app.config["UPLOAD_FOLDER"], user.visit_proof_url
     )
 
 

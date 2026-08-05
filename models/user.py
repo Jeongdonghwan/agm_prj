@@ -22,6 +22,11 @@ class User(db.Model):
         nullable=False,
     )
     status_reason = db.Column(db.String(300))
+    # 커뮤니티 승인제 (§가족 인증): 접견예약확인 캡처 제출 → 관리자 승인
+    approved_at = db.Column(db.DateTime)              # NULL이면 커뮤니티 이용 불가
+    visit_proof_url = db.Column(db.String(300))       # 비공개 저장 경로(admin 전용 서빙)
+    visit_proof_at = db.Column(db.DateTime)           # 제출 시각
+    approve_reject_reason = db.Column(db.String(300))  # 반려 사유
     created_at = db.Column(db.DateTime, server_default=func.now())
     last_login_at = db.Column(db.DateTime)
     deleted_at = db.Column(db.DateTime)
@@ -46,3 +51,8 @@ class User(db.Model):
     @property
     def display_name(self) -> str:
         return self.nickname or self.name or self.email.split("@")[0]
+
+    @property
+    def community_approved(self) -> bool:
+        """커뮤니티 이용 가능 여부 — 일반회원은 관리자 승인 필요, 그 외 역할은 통과."""
+        return self.role != "user" or self.approved_at is not None

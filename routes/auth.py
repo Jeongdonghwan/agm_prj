@@ -129,6 +129,24 @@ def logout():
     return redirect(url_for("main.index"))
 
 
+VISIT_PROOF_EXTENSIONS = {"jpg", "jpeg", "png"}
+
+
+def save_visit_proof(user: User, file) -> str | None:
+    """접견예약확인 캡처 저장(비공개 경로 — admin 전용 서빙). 오류 메시지 또는 None."""
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    if ext not in VISIT_PROOF_EXTENSIONS:
+        return "접견예약확인 이미지는 jpg, png 형식만 업로드할 수 있습니다."
+    d = os.path.join(current_app.config["UPLOAD_FOLDER"], "visit-proof", str(user.id))
+    os.makedirs(d, exist_ok=True)
+    fname = f"{uuid.uuid4().hex}.{ext}"
+    file.save(os.path.join(d, fname))
+    user.visit_proof_url = f"visit-proof/{user.id}/{fname}"
+    user.visit_proof_at = datetime.now()
+    user.approve_reject_reason = None  # 재제출 시 이전 반려 사유 초기화
+    return None
+
+
 def _validate_signup_common(form, *, require_name=False):
     """가입 공통 검증. 오류 메시지 리스트 반환(비면 통과)."""
     errors = []
@@ -165,19 +183,30 @@ def signup():
                 flash(e, "error")
             return render_template("auth/signup.html", **ctx)
 
+        proof = request.files.get("visit_proof")
         user = User(
             email=request.form["email"].strip(),
             name=request.form.get("name", "").strip() or None,
             nickname=nickname,
             phone=request.form["phone"].strip(),
             role="user",
-            status="active",  # 일반회원 즉시 가입
+            status="active",  # 사이트 이용은 즉시 가능 (커뮤니티만 승인 후)
         )
         user.set_password(request.form["password"])
         db.session.add(user)
+        db.session.flush()
+        if proof and proof.filename:  # 접견예약확인 캡처 — 선택 제출 (나중에 마이페이지에서도 가능)
+            err = save_visit_proof(user, proof)
+            if err:
+                db.session.rollback()
+                flash(err, "error")
+                return render_template("auth/signup.html", **ctx)
         db.session.commit()
         _login_session(user)
-        flash("가입이 완료되었습니다. 환영합니다!", "success")
+        if user.visit_proof_at:
+            flash("가입이 완료되었습니다. 접견예약확인 이미지가 접수되어 관리자 승인 후 커뮤니티를 이용할 수 있습니다.", "success")
+        else:
+            flash("가입이 완료되었습니다. 커뮤니티 이용은 마이페이지에서 접견예약확인 이미지를 제출해주세요.", "success")
         return redirect(url_for("main.index"))
     return render_template("auth/signup.html", **ctx)
 

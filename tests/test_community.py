@@ -38,7 +38,8 @@ def _write(client, sample_file=None, files=None, **kw):
 
 
 class TestList:
-    def test_200_chips_notice(self, client):
+    def test_200_chips_notice(self, client, login_as):
+        login_as("user1@example.com")
         html = client.get("/community/").get_data(as_text=True)
         assert "자유게시판" in html and "옥바라지 이야기" in html
         assert "사연신청" in html  # 신규 카테고리
@@ -53,24 +54,28 @@ class TestList:
         html = client.get("/community/?category=사연신청").get_data(as_text=True)
         assert "사연 신청합니다" in html
 
-    def test_category_filter(self, client):
+    def test_category_filter(self, client, login_as):
+        login_as("user1@example.com")
         assert client.get("/community/?category=옥바라지 이야기").status_code == 200
 
-    def test_popular_sort(self, client):
+    def test_popular_sort(self, client, login_as):
+        login_as("user1@example.com")
         assert client.get("/community/?sort=popular").status_code == 200
 
 
 class TestChips:
     """칩은 한 축 — 전체/인기/카테고리/정보 게시판 중 항상 하나만 선택된다."""
 
-    def test_chip_order_without_latest(self, client):
+    def test_chip_order_without_latest(self, client, login_as):
+        login_as("user1@example.com")
         labels = _chip_labels(client.get("/community/").get_data(as_text=True))
         assert labels[:2] == ["전체", "인기"]
         assert "최신" not in labels
         assert labels[2:5] == ["자유게시판", "옥바라지 이야기", "사연신청"]
         assert labels[5:] == ["교정시설 정보", "수용생활 정보", "양식 자료실"]
 
-    def test_exactly_one_active(self, client):
+    def test_exactly_one_active(self, client, login_as):
+        login_as("user1@example.com")
         cases = {
             "/community/": "전체",
             "/community/?sort=popular": "인기",
@@ -83,19 +88,22 @@ class TestChips:
             active = _active_chips(client.get(path).get_data(as_text=True))
             assert active == [expected], (path, active)
 
-    def test_category_wins_over_popular(self, client):
+    def test_category_wins_over_popular(self, client, login_as):
         """카테고리 + 인기를 같이 넘겨도 활성 칩은 카테고리 하나뿐."""
+        login_as("user1@example.com")
         html = client.get("/community/?category=자유게시판&sort=popular").get_data(as_text=True)
         assert _active_chips(html) == ["자유게시판"]
 
-    def test_new_board_page_keeps_one_active_chip(self, client):
+    def test_new_board_page_keeps_one_active_chip(self, client, login_as):
         """메가메뉴로 추가된 게시판도 칩 줄 끝에 자기 자신이 활성으로 붙는다."""
+        login_as("user1@example.com")
         for key, label in (("market", "안기모 중고세상"), ("stage", "단계별 소통게시판"),
                            ("petition", "징계청원 게시판")):
             html = client.get(f"/community/board/{key}").get_data(as_text=True)
             assert _active_chips(html) == [label], key
 
-    def test_list_head_shows_selection(self, client):
+    def test_list_head_shows_selection(self, client, login_as):
+        login_as("user1@example.com")
         for path, expected in (("/community/", "전체"),
                                ("/community/?sort=popular", "인기 글"),
                                ("/community/?category=옥바라지 이야기", "옥바라지 이야기"),
@@ -105,7 +113,8 @@ class TestChips:
 
 
 class TestBoard:
-    def test_boards_200(self, app, client):
+    def test_boards_200(self, app, client, login_as):
+        login_as("user1@example.com")
         from routes.community import get_page_boards
 
         with app.app_context():
@@ -115,10 +124,12 @@ class TestBoard:
             r = client.get(f"/community/board/{key}")
             assert r.status_code == 200, key
 
-    def test_bad_key_404(self, client):
+    def test_bad_key_404(self, client, login_as):
+        login_as("user1@example.com")
         assert client.get("/community/board/unknown").status_code == 404
 
-    def test_topic_filter(self, client):
+    def test_topic_filter(self, client, login_as):
+        login_as("user1@example.com")
         html = client.get("/community/board/facility?topic=영치금 계좌").get_data(as_text=True)
         assert "영치금" in html and "서울구치소 접견" not in html
 
@@ -140,8 +151,9 @@ class TestBoard:
         html = client.get("/community/board/forms?topic=고소취하서").get_data(as_text=True)
         assert "고소취하서 양식 공유" in html
 
-    def test_forms_post_detail_renders_attachments(self, app, client):
+    def test_forms_post_detail_renders_attachments(self, app, client, login_as):
         # 시드: 양식자료실 4건에 데모 첨부 — 목록은 이미지 썸네일만, 첨부는 상세에서 렌더
+        login_as("user1@example.com")
         with app.app_context():
             pid = CommunityPost.query.filter_by(category="탄원서").first().id
         html = client.get(f"/community/{pid}").get_data(as_text=True)
@@ -155,7 +167,7 @@ class TestMegaMenu:
               "단계별 소통게시판", "공지사항", "도움되는 사이트"]
 
     def test_groups_on_every_page(self, client):
-        for path in ("/", "/community/", "/lawyers/"):
+        for path in ("/", "/counsel/", "/lawyers/"):
             html = client.get(path).get_data(as_text=True)
             mega = html.split('id="mega-community"', 1)[1].split("</header>", 1)[0]
             for g in self.GROUPS:
@@ -600,6 +612,7 @@ class TestHidden:
             p.status = "hidden"
             db.session.commit()
             pid = p.id
+        login_as("user1@example.com")
         assert client.get(f"/community/{pid}").status_code == 404
         login_as("admin@angimo.kr")
         assert client.get(f"/community/{pid}").status_code == 200

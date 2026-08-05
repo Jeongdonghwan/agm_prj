@@ -10,9 +10,9 @@
 <div class="auth-wrap">
   <div class="auth-card">
     <h1 class="auth-title">회원가입</h1>
-    <p class="auth-sub">가입 즉시 상담글 작성과 커뮤니티를 이용할 수 있어요</p>
+    <p class="auth-sub">가입 즉시 상담글 작성이 가능하고, 커뮤니티는 가족 확인 후 이용할 수 있어요</p>
 
-    <form class="auth-form" method="post">
+    <form class="auth-form" method="post" enctype="multipart/form-data">
       <div>
         <label>이메일 <span class="req">*</span></label>
         <input type="email" name="email" value="{{ form.get('email', '') }}" placeholder="email@example.com" required autofocus>
@@ -37,6 +37,14 @@
         <label>닉네임</label>
         <input type="text" name="nickname" value="{{ form.get('nickname', '') }}" placeholder="닉네임 (선택 — 커뮤니티 이용 시 필요)">
         <div class="hint">닉네임은 나중에 커뮤니티 이용 시 설정할 수도 있어요.</div>
+      </div>
+      {% include "community/_visit_proof_guide.html" %}
+      <div>
+        <label>접견예약확인 이미지 (커뮤니티 이용 인증)</label>
+        <div class="filebox" data-max="1">
+          <input type="file" name="visit_proof" accept=".jpg,.jpeg,.png">
+        </div>
+        <div class="hint">지금 없다면 건너뛰고, 나중에 마이페이지에서 제출할 수 있어요.</div>
       </div>
       <button class="btn-submit" type="submit">가입하기</button>
     </form>

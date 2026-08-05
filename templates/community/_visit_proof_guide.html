@@ -1,0 +1,18 @@
+{# 접견예약확인 인증 안내 — 가입/마이페이지/커뮤니티 잠금 화면 공용.
+   moj_url 변수를 넘기지 않으면 기본 URL 사용 #}
+{% set _moj = moj_url or "https://minwon.moj.go.kr/minwon/1999/subview.do?enc=Zm5jdDF8QEB8JTJGcHJpc29uUmVzZXJ2YXRpb24lMkZtaW53b24lMkY2JTJGYXJ0Y2xTdGVwMS5kbyUzRg%3D%3D" %}
+<div class="vp-guide">
+  <b>커뮤니티는 수용자 가족·지인 확인 후 이용할 수 있어요</b>
+  <p>
+    법무부 온라인민원에서 <b>접견예약</b>을 진행하면 나오는 <b>민원인 접견예약(신청서 작성) 화면을 캡처</b>해
+    제출해주세요. 관리자 확인 후 승인되면 커뮤니티의 모든 게시판을 이용할 수 있습니다.
+    수용기관·수용번호 등 민감한 부분은 가리고 캡처하셔도 됩니다.
+  </p>
+  <div class="vp-links">
+    <a href="{{ _moj }}" target="_blank" rel="noopener noreferrer">법무부 온라인민원 접견예약 바로가기 ↗</a>
+    <details>
+      <summary>캡처 예시 보기</summary>
+      <img src="{{ url_for('static', filename='img/visit-proof-sample.png') }}" alt="민원인 접견예약 화면 캡처 예시" loading="lazy">
+    </details>
+  </div>
+</div>

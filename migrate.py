@@ -20,6 +20,11 @@ from extensions import db
 MIGRATIONS = [
     ("lawyer_profiles", "show_in_new", "TINYINT(1) DEFAULT 1"),
     ("community_posts", "attachments", "JSON NULL"),
+    # 커뮤니티 승인제 (접견예약확인 인증)
+    ("users", "approved_at", "DATETIME NULL"),
+    ("users", "visit_proof_url", "VARCHAR(300) NULL"),
+    ("users", "visit_proof_at", "DATETIME NULL"),
+    ("users", "approve_reject_reason", "VARCHAR(300) NULL"),
 ]
 
 # 데이터 보정 — (설명, SQL, 필요 컬럼(table, column) 또는 None).
@@ -39,6 +44,15 @@ DATA_FIXES = [
         "UPDATE lawyer_profiles SET show_in_ad = 0, show_in_adlist = 0 "
         "WHERE show_in_ad = 1 OR show_in_adlist = 1",
         ("lawyer_profiles", "show_in_ad"),
+    ),
+    (
+        # 승인제 도입 시점의 기존 일반회원은 자동 승인 — 이미 활동 중인 회원이 잠기지 않게.
+        # 신규 가입자(approved_at NULL, visit_proof 미제출, 도입 후 가입)만 승인 대상.
+        "커뮤니티 승인제 도입 — 기존 일반회원 자동 승인",
+        "UPDATE users SET approved_at = COALESCE(approved_at, created_at) "
+        "WHERE role = 'user' AND approved_at IS NULL AND visit_proof_at IS NULL "
+        "AND created_at < '2026-08-06'",
+        ("users", "approved_at"),
     ),
 ]
 
