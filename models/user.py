@@ -22,6 +22,9 @@ class User(db.Model):
         nullable=False,
     )
     status_reason = db.Column(db.String(300))
+    # 관리자 2단계: 메인관리자(전권)와 부관리자(admin_perms의 메뉴만)
+    is_super_admin = db.Column(db.Boolean, default=False)
+    admin_perms = db.Column(db.JSON)  # 부관리자 허용 메뉴 키 배열
     # 커뮤니티 승인제 (§가족 인증): 접견예약확인 캡처 제출 → 관리자 승인
     approved_at = db.Column(db.DateTime)              # NULL이면 커뮤니티 이용 불가
     visit_proof_url = db.Column(db.String(300))       # 비공개 저장 경로(admin 전용 서빙)

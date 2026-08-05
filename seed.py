@@ -313,7 +313,8 @@ def run_seed(app):
 
         # 총관리자 (시드로만 생성 — §4-4)
         admin = User(
-            email="admin@angimo.kr", name="총관리자", role="admin", status="active"
+            email="admin@angimo.kr", name="총관리자", role="admin", status="active",
+            is_super_admin=True,  # 메인관리자 — 부관리자는 어드민 [관리자 계정]에서 생성
         )
         admin.set_password("angimo-admin-1234")
         db.session.add(admin)

@@ -39,6 +39,71 @@ bp = Blueprint("admin", __name__)
 
 IMAGE_EXTENSIONS = {"jpg", "jpeg", "png"}
 
+# ── 관리자 2단계: 메인관리자(전권) / 부관리자(체크된 메뉴만) ──────────────
+# (권한 키, 사이드바 라벨) — 부관리자 권한 체크박스와 메뉴 노출의 기준
+ADMIN_MENUS = [
+    ("users", "회원 관리"),
+    ("lawyers", "변호사 관리"),
+    ("consultations", "상담 관리"),
+    ("community", "커뮤니티 관리"),
+    ("boards", "게시판 관리"),
+    ("posts", "포스트 검수"),
+    ("cases", "판례돋보기"),
+    ("news", "안기모뉴스"),
+    ("banners", "배너 관리"),
+    ("firms", "로펌 광고 관리"),
+    ("lawyer_ads", "변호사 광고 관리"),
+    ("reports", "신고 처리"),
+    ("inquiries", "문의 접수함"),
+    ("logs", "운영 로그"),
+]
+
+# URL 첫 세그먼트(/admin/<seg>/…) → 권한 키. 대시보드('')는 공통.
+_PATH_PERMS = {
+    "users": "users", "visit-proof": "users",
+    "lawyers": "lawyers", "verification-files": "lawyers",
+    "lawyer-ads": "lawyer_ads",
+    "consultations": "consultations",
+    "community": "community",
+    "boards": "boards",
+    "posts": "posts",
+    "cases": "cases",
+    "news": "news",
+    "banners": "banners",
+    "firms": "firms", "firm-inquiries": "inquiries",
+    "reports": "reports",
+    "logs": "logs",
+}
+
+
+def admin_allowed_keys(user):
+    """이 관리자가 볼 수 있는 메뉴 키 집합 (사이드바 노출용)."""
+    if user.is_super_admin:
+        return {k for k, _ in ADMIN_MENUS} | {"admins"}
+    return set(user.admin_perms or [])
+
+
+@bp.before_request
+def _enforce_admin_perms():
+    """부관리자 권한 강제 — 허용되지 않은 메뉴는 403.
+
+    로그인/역할 검사는 각 라우트의 @role_required가 담당하고,
+    여기서는 '관리자인데 부관리자'인 경우의 메뉴 제한만 본다.
+    """
+    user = g.get("user")
+    if user is None or user.role != "admin" or user.is_super_admin:
+        return None
+    parts = request.path.strip("/").split("/")  # ['admin', seg, ...]
+    seg = parts[1] if len(parts) > 1 else ""
+    if seg == "":  # 대시보드는 공통
+        return None
+    if seg == "admins":  # 관리자 계정 관리는 메인관리자 전용
+        abort(403)
+    key = _PATH_PERMS.get(seg)
+    if key is None or key not in (user.admin_perms or []):
+        abort(403)
+    return None
+
 POST_TYPE_LABELS = {"case": "해결사례", "guide": "법률가이드", "video": "법률동영상", "essay": "변호사에세이"}
 CASE_TYPES = [
     ("criminal", "형사"), ("civil", "민사"), ("administrative", "행정"),
@@ -263,6 +328,90 @@ def user_withdraw(user_id):
     db.session.commit()
     flash(f"{user.display_name} 회원을 탈퇴 처리했습니다.", "success")
     return redirect(url_for("admin.users"))
+
+
+# ─────────────────────────── 관리자 계정 (메인관리자 전용) ───────────────────────────
+def _super_only():
+    if not g.user.is_super_admin:
+        abort(403)
+
+
+@bp.route("/admins")
+@role_required("admin")
+def admins():
+    _super_only()
+    items = User.query.filter_by(role="admin").filter(
+        User.deleted_at.is_(None)
+    ).order_by(User.is_super_admin.desc(), User.created_at).all()
+    return render_template("admin/admins.html", items=items, menus=ADMIN_MENUS)
+
+
+@bp.route("/admins/new", methods=["GET", "POST"])
+@bp.route("/admins/<int:user_id>/edit", methods=["GET", "POST"])
+@role_required("admin")
+def admin_form(user_id=None):
+    _super_only()
+    item = None
+    if user_id:
+        item = db.session.get(User, user_id)
+        if item is None or item.role != "admin":
+            abort(404)
+        if item.is_super_admin:
+            flash("메인관리자 계정은 수정할 수 없습니다.", "error")
+            return redirect(url_for("admin.admins"))
+    if request.method == "POST":
+        perms = [k for k, _ in ADMIN_MENUS if request.form.get(f"perm_{k}") == "1"]
+        errors = []
+        if item is None:  # 신규
+            email = request.form.get("email", "").strip()
+            password = request.form.get("password", "")
+            if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+                errors.append("올바른 이메일을 입력해주세요.")
+            elif User.query.filter_by(email=email).first():
+                errors.append("이미 가입된 이메일입니다.")
+            if len(password) < 8:
+                errors.append("비밀번호는 8자 이상이어야 합니다.")
+        if not perms:
+            errors.append("허용할 메뉴를 1개 이상 선택해주세요.")
+        if errors:
+            for e in errors:
+                flash(e, "error")
+        else:
+            if item is None:
+                item = User(
+                    email=email,
+                    name=request.form.get("name", "").strip() or None,
+                    role="admin",
+                    status="active",
+                    is_super_admin=False,
+                )
+                item.set_password(password)
+                db.session.add(item)
+                db.session.flush()
+            item.admin_perms = perms  # 항상 배열 저장 (migrate 승격 조건과 구분)
+            _log("sub_admin_save", f"user:{item.id}", {"email": item.email, "perms": perms})
+            db.session.commit()
+            flash("부관리자 계정을 저장했습니다.", "success")
+            return redirect(url_for("admin.admins"))
+    return render_template("admin/admin_form.html", item=item, menus=ADMIN_MENUS, form=request.form)
+
+
+@bp.route("/admins/<int:user_id>/toggle", methods=["POST"])
+@role_required("admin")
+def admin_toggle(user_id):
+    """부관리자 정지/해제 — 메인관리자는 대상이 될 수 없다."""
+    _super_only()
+    item = db.session.get(User, user_id)
+    if item is None or item.role != "admin":
+        abort(404)
+    if item.is_super_admin:
+        flash("메인관리자 계정은 정지할 수 없습니다.", "error")
+        return redirect(url_for("admin.admins"))
+    item.status = "active" if item.status == "suspended" else "suspended"
+    _log("sub_admin_toggle", f"user:{user_id}", {"status": item.status})
+    db.session.commit()
+    flash("부관리자 상태를 변경했습니다.", "success")
+    return redirect(url_for("admin.admins"))
 
 
 # ─────────────────────────── 변호사 관리 ───────────────────────────

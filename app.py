@@ -65,9 +65,14 @@ def create_app(config_class=Config):
 
     @app.context_processor
     def inject_globals():
+        from routes.admin import admin_allowed_keys
         from routes.community import get_menu
 
+        user = g.get("user")
         return {
+            "admin_allowed": (
+                admin_allowed_keys(user) if user and user.role == "admin" else set()
+            ),
             "current_user": g.get("user"),
             "site_name": app.config["SITE_NAME"],
             "site_name_en": app.config["SITE_NAME_EN"],

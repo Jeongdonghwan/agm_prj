@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'admins' %}
+{% block title %}부관리자 {{ '권한 수정' if item else '추가' }} - {{ site_name }}{% endblock %}
+{% block topbar_title %}부관리자 {{ '권한 수정' if item else '추가' }}{% endblock %}
+
+{% block content %}
+<form method="post" class="panel" style="margin-top:0;max-width:640px">
+  <div class="pf-body">
+    {% if item %}
+    <div class="pf-field"><label>계정</label>
+      <input type="text" value="{{ item.email }}{% if item.name %} ({{ item.name }}){% endif %}" disabled></div>
+    {% else %}
+    <div class="pf-row">
+      <div class="pf-field"><label>이메일 *</label>
+        <input type="email" name="email" required value="{{ form.get('email', '') }}"></div>
+      <div class="pf-field"><label>비밀번호 * <small>(8자 이상)</small></label>
+        <input type="text" name="password" required minlength="8" placeholder="전달할 초기 비밀번호"></div>
+    </div>
+    <div class="pf-field"><label>이름</label>
+      <input type="text" name="name" value="{{ form.get('name', '') }}"></div>
+    {% endif %}
+
+    <div class="pf-field"><label>허용 메뉴 * <small>(체크한 메뉴만 보이고 접근 가능)</small></label>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px 16px;padding:4px 0">
+        {% for key, label in menus %}
+        <label style="display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;cursor:pointer">
+          <input type="checkbox" name="perm_{{ key }}" value="1" style="accent-color:var(--blue-600);width:15px;height:15px"
+            {% if (item and key in (item.admin_perms or [])) or form.get('perm_' ~ key) %}checked{% endif %}>
+          {{ label }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn pri" type="submit" style="padding:12px 24px">저장</button>
+      <a class="btn line" href="{{ url_for('admin.admins') }}">취소</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

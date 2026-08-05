@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% set admin_active = 'admins' %}
+{% block title %}관리자 계정 - {{ site_name }}{% endblock %}
+{% block topbar_title %}관리자 계정{% endblock %}
+
+{% block content %}
+<div class="panel" style="margin-top:0">
+  <div class="p-head">
+    <h2>관리자 <span class="cnt">{{ items | length }}</span></h2>
+    <a class="btn pri" href="{{ url_for('admin.admin_form') }}">+ 부관리자 추가</a>
+  </div>
+  <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
+    💡 <b>메인관리자</b>는 모든 메뉴를 관리하고 부관리자를 만들 수 있습니다.
+    <b>부관리자</b>는 체크된 메뉴만 보이고 접근할 수 있습니다. 로그인 주소는 동일하게 /admin/login 입니다.
+  </div>
+  <table>
+    <tr><th>구분</th><th>이메일</th><th>이름</th><th>허용 메뉴</th><th>상태</th><th></th></tr>
+    {% for u in items %}
+    <tr>
+      <td>{% if u.is_super_admin %}<span class="badge" style="background:var(--blue-900);color:#fff">메인</span>{% else %}<span class="badge" style="background:var(--blue-100);color:var(--blue-700)">부관리자</span>{% endif %}</td>
+      <td>{{ u.email }}</td>
+      <td><b>{{ u.name or '-' }}</b></td>
+      <td style="max-width:340px">
+        {% if u.is_super_admin %}전체
+        {% else %}
+        {% set labels = dict(menus) %}
+        {% for k in u.admin_perms or [] %}{{ labels.get(k, k) }}{% if not loop.last %} · {% endif %}{% endfor %}
+        {% endif %}
+      </td>
+      <td>{% if u.status == 'active' %}<span class="badge ok">활동중</span>{% else %}<span class="badge red">정지</span>{% endif %}</td>
+      <td style="white-space:nowrap">
+        {% if not u.is_super_admin %}
+        <a class="btn line" href="{{ url_for('admin.admin_form', user_id=u.id) }}">권한 수정</a>
+        <form method="post" action="{{ url_for('admin.admin_toggle', user_id=u.id) }}" style="display:inline">
+          <button class="btn {{ 'pri' if u.status == 'suspended' else 'danger' }}" type="submit">{{ '정지 해제' if u.status == 'suspended' else '정지' }}</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

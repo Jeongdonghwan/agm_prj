@@ -25,6 +25,9 @@ MIGRATIONS = [
     ("users", "visit_proof_url", "VARCHAR(300) NULL"),
     ("users", "visit_proof_at", "DATETIME NULL"),
     ("users", "approve_reject_reason", "VARCHAR(300) NULL"),
+    # 관리자 2단계 (메인/부관리자)
+    ("users", "is_super_admin", "TINYINT(1) DEFAULT 0"),
+    ("users", "admin_perms", "JSON NULL"),
 ]
 
 # 데이터 보정 — (설명, SQL, 필요 컬럼(table, column) 또는 None).
@@ -44,6 +47,14 @@ DATA_FIXES = [
         "UPDATE lawyer_profiles SET show_in_ad = 0, show_in_adlist = 0 "
         "WHERE show_in_ad = 1 OR show_in_adlist = 1",
         ("lawyer_profiles", "show_in_ad"),
+    ),
+    (
+        # 관리자 2단계 도입 — 기존 admin 계정은 메인관리자로.
+        # 부관리자는 admin_perms가 항상 JSON 배열(NULL 아님)이므로 재실행해도 승격되지 않는다.
+        "기존 관리자 계정을 메인관리자로 지정",
+        "UPDATE users SET is_super_admin = 1 "
+        "WHERE role = 'admin' AND is_super_admin = 0 AND admin_perms IS NULL",
+        ("users", "is_super_admin"),
     ),
     (
         # 배너 위치에 팝업 추가 — MODIFY는 재실행해도 결과 동일
