@@ -40,8 +40,16 @@
     {% endfor %}
   </div>
   <div class="panel">
-    <div class="p-head"><h2>최근 신고 <span class="cnt">{{ stats.new_reports }}</span></h2><a href="#">신고 처리(Phase 4) →</a></div>
-    <div class="list-item"><div class="m">신고 처리 화면은 Phase 4에서 구현됩니다.</div></div>
+    <div class="p-head"><h2>최근 신고 <span class="cnt">{{ stats.new_reports }}</span></h2><a href="{{ url_for('admin.reports') }}">신고 처리 →</a></div>
+    {% set report_labels = {'community_post': '커뮤니티 글', 'community_comment': '커뮤니티 댓글', 'consultation': '상담글', 'answer': '상담 답변'} %}
+    {% for r in recent_reports %}
+    <div class="list-item">
+      <div class="t"><span class="badge red">{{ report_labels.get(r.target_type, r.target_type) }}</span> {{ r.reason or '사유 없음' }}</div>
+      <div class="m">{{ r.reporter.display_name if r.reporter else '알 수 없음' }} · {{ r.created_at.strftime('%m.%d %H:%M') }}</div>
+    </div>
+    {% else %}
+    <div class="list-item"><div class="m">처리 대기 중인 신고가 없습니다.</div></div>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

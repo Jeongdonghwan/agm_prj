@@ -52,6 +52,23 @@ def test_dashboard(client, login_as):
     login_as(ADMIN)
     html = client.get("/admin/").get_data(as_text=True)
     assert "승인 대기" in html and "검수" in html
+    assert "Phase" not in html  # 스캐폴딩 스텁 문구 잔존 금지
+
+
+def test_dashboard_recent_reports(app, client, login_as):
+    """최근 신고 패널 — 실데이터 렌더 + 신고 처리로 링크."""
+    from models import Report, User
+
+    with app.app_context():
+        uid = User.query.filter_by(email="user1@example.com").first().id
+        db.session.add(Report(reporter_id=uid, target_type="community_post",
+                              target_id=1, reason="대시보드 확인용 신고"))
+        db.session.commit()
+    login_as(ADMIN)
+    html = client.get("/admin/").get_data(as_text=True)
+    panel = html.split("최근 신고", 1)[1]
+    assert "대시보드 확인용 신고" in panel and "커뮤니티 글" in panel
+    assert 'href="/admin/reports"' in panel
 
 
 class TestUserManagement:

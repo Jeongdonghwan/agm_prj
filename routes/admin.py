@@ -151,6 +151,13 @@ def dashboard():
         .limit(5)
         .all()
     )
+    recent_reports = (
+        Report.query.filter_by(status="new")
+        .options(joinedload(Report.reporter))
+        .order_by(Report.created_at.desc())
+        .limit(5)
+        .all()
+    )
     stats = {
         "total_users": User.query.filter_by(role="user").count(),
         "total_lawyers": User.query.filter_by(role="lawyer", status="active").count(),
@@ -166,6 +173,7 @@ def dashboard():
         stats=stats,
         pending_lawyers=pending_lawyers,
         pending_posts=pending_posts,
+        recent_reports=recent_reports,
         type_labels=POST_TYPE_LABELS,
     )
 
