@@ -336,6 +336,49 @@ class TestBoardAdmin:
         login_as("user1@example.com")
         assert client.get("/admin/boards").status_code == 403
 
+    def test_topics_via_multiple_inputs(self, app, client, login_as):
+        """[+ 주제 추가] 행 다중 입력 — getlist로 수집되고 주제 칩에 반영."""
+        from models import CommunityBoard
+
+        login_as("admin@angimo.kr")
+        gid = self._group_id(app)
+        client.post("/admin/boards/new", data={
+            "parent_id": gid, "label": "주제행 게시판", "slug": "topic-rows",
+            "topics": ["주제하나", "주제둘", "주제하나"],  # 다중 입력 + 중복
+            "admin_only": "0", "show_topics": "1", "sort_order": "0", "is_active": "1"})
+        with app.app_context():
+            b = CommunityBoard.query.filter_by(slug="topic-rows").first()
+            assert b.topics == ["주제하나", "주제둘"]  # 중복 제거·순서 유지
+        html = client.get("/community/board/topic-rows").get_data(as_text=True)
+        assert "주제하나" in html and "주제둘" in html
+
+
+class TestBoardNotice:
+    """공지 등록 시 대상 게시판 선택 — 메인 전체 또는 특정 게시판 상단 고정."""
+
+    def test_notice_to_specific_board(self, client, login_as):
+        login_as("admin@angimo.kr")
+        client.post("/admin/community", data={
+            "board": "안기모 중고세상", "title": "중고세상 거래 규칙", "content": "내용"})
+        # 해당 게시판 상단에 고정
+        html = client.get("/community/board/market").get_data(as_text=True)
+        assert "중고세상 거래 규칙" in html and 'class="pcat notice"' in html
+        # 커뮤니티 메인·다른 게시판에는 안 뜬다
+        assert "중고세상 거래 규칙" not in client.get("/community/").get_data(as_text=True)
+        assert "중고세상 거래 규칙" not in client.get("/community/board/ask").get_data(as_text=True)
+
+    def test_notice_default_goes_to_main(self, client, login_as):
+        login_as("admin@angimo.kr")
+        client.post("/admin/community", data={"title": "메인 전체 공지", "content": "내용"})
+        assert "메인 전체 공지" in client.get("/community/").get_data(as_text=True)
+
+    def test_admin_form_has_board_select_toggle(self, client, login_as):
+        login_as("admin@angimo.kr")
+        html = client.get("/admin/community").get_data(as_text=True)
+        assert 'id="notice-form" hidden' in html  # 기본 접힘, 버튼으로 토글
+        sel = html.split('name="board"', 1)[1].split("</select>", 1)[0]
+        assert "커뮤니티 메인" in sel and "안기모 중고세상" in sel
+
 
 class TestNicknameRule:
     def test_write_get_triggers_modal(self, client, login_as):

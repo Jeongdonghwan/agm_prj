@@ -34,8 +34,13 @@
       </div>
 
       <div class="pf-field"><label>세부 주제</label>
-        <textarea name="topics" rows="3" placeholder="콤마(,) 또는 줄바꿈으로 구분 — 예: 탄원서, 반성문, 합의서">{{ item.topics | join(', ') if item and item.topics else '' }}</textarea>
-        <small>게시판 상단의 주제 칩과 글쓰기의 세부 주제 선택이 됩니다.</small>
+        <div class="topic-rows" id="topic-rows">
+          {% for t in (item.topics if item and item.topics else []) %}
+          <div class="t-row"><input type="text" name="topics" maxlength="30" value="{{ t }}"><button type="button" class="t-del">삭제</button></div>
+          {% endfor %}
+        </div>
+        <button type="button" class="topic-add" id="topic-add">+ 주제 추가</button>
+        <small>게시판 상단의 주제 칩과 글쓰기의 세부 주제 선택이 됩니다. 필요 없으면 비워두세요.</small>
       </div>
 
       <div class="pf-row">
@@ -80,6 +85,25 @@
   const sync = () => { fields.style.display = sel.value ? '' : 'none'; };
   sel.addEventListener('change', sync);
   sync();
+})();
+// 세부 주제 — [+ 주제 추가]로 행을 늘리고, 행마다 [삭제]
+(function () {
+  const rows = document.getElementById('topic-rows');
+  const addRow = (value = '') => {
+    const row = document.createElement('div');
+    row.className = 't-row';
+    row.innerHTML = '<input type="text" name="topics" maxlength="30" placeholder="예: 탄원서">'
+      + '<button type="button" class="t-del">삭제</button>';
+    row.querySelector('input').value = value;
+    rows.appendChild(row);
+    return row;
+  };
+  document.getElementById('topic-add').addEventListener('click', () => {
+    addRow().querySelector('input').focus();
+  });
+  rows.addEventListener('click', e => {
+    if (e.target.classList.contains('t-del')) e.target.closest('.t-row').remove();
+  });
 })();
 </script>
 {% endblock %}

@@ -257,8 +257,9 @@ def list_():
     total = q.count()
     items = q.offset((page - 1) * PER_PAGE).limit(PER_PAGE).all()
 
+    # 커뮤니티 메인 공지 = category '공지'(전체 대상)만. 게시판 지정 공지는 그 게시판에서.
     notices = (
-        CommunityPost.query.filter_by(status="open", is_notice=True)
+        CommunityPost.query.filter_by(status="open", is_notice=True, category="공지")
         .filter(CommunityPost.deleted_at.is_(None))
         .order_by(CommunityPost.created_at.desc())
         .limit(3)
@@ -312,9 +313,19 @@ def board(key):
 
     total = q.count()
     items = q.offset((page - 1) * PER_PAGE).limit(PER_PAGE).all()
+
+    # 이 게시판을 대상으로 등록된 공지 (어드민 커뮤니티 관리)
+    notices = (
+        CommunityPost.query.filter_by(status="open", is_notice=True, category=b["label"])
+        .filter(CommunityPost.deleted_at.is_(None))
+        .order_by(CommunityPost.created_at.desc())
+        .limit(3)
+        .all()
+    )
     return render_template(
         "community/board.html",
         active_menu="community",  # 정보 게시판도 커뮤니티 메뉴 안에 속한다
+        notices=notices,
         board_key=key,
         board=b,
         categories=COMMUNITY_CATS,

@@ -34,6 +34,11 @@
     <span>{{ '{:,}'.format(total) }}개의 글</span>
   </div>
 
+  {# 이 게시판 대상 공지 상단 고정 #}
+  {% for n in notices %}
+  {% include "community/_notice_item.html" %}
+  {% endfor %}
+
   {% for p in items %}
   {% include "community/_post_item.html" %}
   {% else %}

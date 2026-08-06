@@ -13,7 +13,7 @@
     <input type="text" name="q" value="{{ keyword }}" placeholder="이메일/이름/닉네임 검색" style="border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:8px 12px;font-size:13px;width:220px">
     <button class="btn line" type="submit">검색</button>
   </form>
-  <a class="btn pri" href="{{ url_for('admin.user_new') }}">+ 새 회원 추가</a>
+  <button class="btn pri" type="button" id="open-user-new">+ 새 회원 추가</button>
 </div>
 
 <div class="panel" style="margin-top:0">
@@ -77,4 +77,50 @@
     {% endfor %}
   </table>
 </div>
+
+<!-- 새 회원 추가 모달 -->
+<div class="adm-modal-bg" id="user-new-modal" hidden>
+  <div class="adm-modal" role="dialog" aria-modal="true" aria-labelledby="unm-title">
+    <div class="m-head"><h2 id="unm-title">새 회원 추가</h2><button type="button" id="user-new-close" aria-label="닫기">✕</button></div>
+    <form method="post" action="{{ url_for('admin.user_new') }}" class="pf-body">
+      <div class="pf-row">
+        <div class="pf-field"><label>이메일 <span class="req">*</span></label>
+          <input type="email" name="email" required></div>
+        <div class="pf-field"><label>비밀번호 <span class="req">*</span> <small style="display:inline;margin:0">(8자 이상)</small></label>
+          <input type="text" name="password" required minlength="8" placeholder="회원에게 전달할 초기 비밀번호"></div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field"><label>이름</label><input type="text" name="name"></div>
+        <div class="pf-field"><label>닉네임</label><input type="text" name="nickname" placeholder="커뮤니티 표시명 (선택)"></div>
+      </div>
+      <div class="pf-row">
+        <div class="pf-field"><label>휴대폰</label><input type="tel" name="phone" placeholder="010-0000-0000"></div>
+        <div class="pf-field"><label>커뮤니티 이용</label>
+          <select name="approve_now">
+            <option value="1" selected>즉시 승인 (접견예약확인 생략)</option>
+            <option value="0">미승인 (본인이 인증 제출)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn pri" type="submit" style="padding:11px 22px">회원 추가</button>
+        <button class="btn line" type="button" id="user-new-cancel">취소</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function () {
+  const bg = document.getElementById('user-new-modal');
+  const open = () => { bg.hidden = false; bg.querySelector('input[name=email]').focus(); };
+  const close = () => { bg.hidden = true; };
+  document.getElementById('open-user-new').addEventListener('click', open);
+  document.getElementById('user-new-close').addEventListener('click', close);
+  document.getElementById('user-new-cancel').addEventListener('click', close);
+  bg.addEventListener('click', e => { if (e.target === bg) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+  if (new URLSearchParams(location.search).get('new') === '1') open(); // 검증 실패 재진입
+})();
+</script>
 {% endblock %}

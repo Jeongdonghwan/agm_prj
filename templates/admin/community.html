@@ -5,22 +5,35 @@
 
 {% block content %}
 <div class="panel" style="margin-top:0">
-  <div class="p-head"><h2>공지글 작성 (상단 고정)</h2></div>
-  <form method="post" class="pf-body">
+  <div class="p-head">
+    <h2>게시글 <span class="cnt">{{ posts | length }}</span> <small style="font-weight:600;color:var(--ink-500)">신고된 글 우선</small></h2>
+    <button class="btn pri" type="button" id="open-notice">+ 공지 등록</button>
+  </div>
+
+  {# 공지 작성란 — 버튼으로 열고 닫음 #}
+  <form method="post" class="pf-body" id="notice-form" hidden style="border-bottom:1px solid var(--ink-200)">
+    <div class="pf-field"><label>공지를 띄울 게시판</label>
+      <select name="board">
+        <option value="공지" selected>커뮤니티 메인 (전체 상단 고정)</option>
+        {% for t in notice_targets %}
+        <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+      </select>
+      <small>커뮤니티 메인을 고르면 /community/ 목록 상단에, 게시판을 고르면 그 게시판 상단에 고정됩니다.</small>
+    </div>
     <div class="pf-field"><label>제목</label><input type="text" name="title" required maxlength="200"></div>
     <div class="pf-field"><label>내용</label><textarea name="content" rows="3" required></textarea></div>
-    <button class="btn pri" type="submit" style="padding:11px 0">공지 등록</button>
+    <div style="display:flex;gap:8px">
+      <button class="btn pri" type="submit" style="padding:11px 22px">공지 등록</button>
+      <button class="btn line" type="button" id="close-notice">취소</button>
+    </div>
   </form>
-</div>
-
-<div class="panel">
-  <div class="p-head"><h2>게시글 <span class="cnt">{{ posts | length }}</span> <small style="font-weight:600;color:var(--ink-500)">신고된 글 우선</small></h2></div>
   <table>
     <tr><th>작성일</th><th>카테고리</th><th>제목</th><th>작성자</th><th>조회/추천</th><th>상태</th><th></th></tr>
     {% for p in posts %}
     <tr>
       <td>{{ p.created_at.strftime('%m.%d') }}</td>
-      <td>{% if p.is_notice %}<span class="badge blue">공지</span>{% else %}{{ p.category }}{% endif %}</td>
+      <td>{% if p.is_notice %}<span class="badge blue">공지</span> <small style="color:var(--ink-500)">{{ '메인' if p.category == '공지' else p.category }}</small>{% else %}{{ p.category }}{% endif %}</td>
       <td><a href="{{ url_for('community.detail', post_id=p.id) }}" target="_blank"><b>{{ p.title }}</b></a>
         {% if p.id in reported_ids %}<span class="badge red">신고됨</span>{% endif %}
         {% if p.is_anonymous %}<span class="badge wait">익명</span>{% endif %}
@@ -42,4 +55,15 @@
     {% endfor %}
   </table>
 </div>
+
+<script>
+(function () {
+  const form = document.getElementById('notice-form');
+  document.getElementById('open-notice').addEventListener('click', () => {
+    form.hidden = !form.hidden;
+    if (!form.hidden) form.querySelector('select').focus();
+  });
+  document.getElementById('close-notice').addEventListener('click', () => { form.hidden = true; });
+})();
+</script>
 {% endblock %}

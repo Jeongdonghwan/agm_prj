@@ -210,41 +210,41 @@ def users():
 @bp.route("/users/new", methods=["GET", "POST"])
 @role_required("admin")
 def user_new():
-    """새 회원 간단 추가 — 관리자가 직접 계정 생성."""
-    if request.method == "POST":
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-        nickname = request.form.get("nickname", "").strip() or None
-        errors = []
-        if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
-            errors.append("올바른 이메일을 입력해주세요.")
-        elif User.query.filter_by(email=email).first():
-            errors.append("이미 가입된 이메일입니다.")
-        if len(password) < 8:
-            errors.append("비밀번호는 8자 이상이어야 합니다.")
-        if nickname and User.query.filter_by(nickname=nickname).first():
-            errors.append("이미 사용 중인 닉네임입니다.")
-        if errors:
-            for e in errors:
-                flash(e, "error")
-        else:
-            user = User(
-                email=email,
-                name=request.form.get("name", "").strip() or None,
-                nickname=nickname,
-                phone=request.form.get("phone", "").strip() or None,
-                role="user",
-                status="active",
-                approved_at=datetime.now() if request.form.get("approve_now") == "1" else None,
-            )
-            user.set_password(password)
-            db.session.add(user)
-            db.session.flush()
-            _log("user_create", f"user:{user.id}", {"email": email})
-            db.session.commit()
-            flash(f"{email} 회원을 추가했습니다.", "success")
-            return redirect(url_for("admin.users"))
-    return render_template("admin/user_form.html", form=request.form)
+    """새 회원 간단 추가 — 회원 관리 화면의 모달에서 POST."""
+    if request.method == "GET":  # 옛 링크 호환 — 모달 자동 오픈으로
+        return redirect(url_for("admin.users", new=1))
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "")
+    nickname = request.form.get("nickname", "").strip() or None
+    errors = []
+    if not re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", email):
+        errors.append("올바른 이메일을 입력해주세요.")
+    elif User.query.filter_by(email=email).first():
+        errors.append("이미 가입된 이메일입니다.")
+    if len(password) < 8:
+        errors.append("비밀번호는 8자 이상이어야 합니다.")
+    if nickname and User.query.filter_by(nickname=nickname).first():
+        errors.append("이미 사용 중인 닉네임입니다.")
+    if errors:
+        for e in errors:
+            flash(e, "error")
+        return redirect(url_for("admin.users", new=1))  # 모달 다시 열어 재입력
+    user = User(
+        email=email,
+        name=request.form.get("name", "").strip() or None,
+        nickname=nickname,
+        phone=request.form.get("phone", "").strip() or None,
+        role="user",
+        status="active",
+        approved_at=datetime.now() if request.form.get("approve_now") == "1" else None,
+    )
+    user.set_password(password)
+    db.session.add(user)
+    db.session.flush()
+    _log("user_create", f"user:{user.id}", {"email": email})
+    db.session.commit()
+    flash(f"{email} 회원을 추가했습니다.", "success")
+    return redirect(url_for("admin.users"))
 
 
 @bp.route("/users/<int:user_id>/approve", methods=["POST"])
@@ -1095,21 +1095,28 @@ def consultation_delete(cid):
 @role_required("admin")
 def community():
     from models import CommunityComment, CommunityPost
+    from routes.community import get_page_boards
+
+    # 공지 대상: '공지' = 커뮤니티 메인(전체), 그 외 = 해당 게시판 상단 고정
+    notice_targets = [b["label"] for b in get_page_boards().values()]
 
     if request.method == "POST":  # 공지글 작성 (상단 고정)
         title = request.form.get("title", "").strip()
         content = request.form.get("content", "").strip()
+        board = request.form.get("board", "공지")
+        if board not in notice_targets:
+            board = "공지"
         if title and content:
             db.session.add(
                 CommunityPost(
                     user_id=g.user.id,
-                    category="공지",
+                    category=board,
                     title=title[:200],
                     content=content,
                     is_notice=True,
                 )
             )
-            _log("community_notice", "community:new", {"title": title})
+            _log("community_notice", "community:new", {"title": title, "board": board})
             db.session.commit()
             flash("공지글이 등록되었습니다.", "success")
         else:
@@ -1128,7 +1135,12 @@ def community():
         .all()
     )
     posts.sort(key=lambda p: (not p.is_notice, p.id not in reported_ids), reverse=False)
-    return render_template("admin/community.html", posts=posts, reported_ids=reported_ids)
+    return render_template(
+        "admin/community.html",
+        posts=posts,
+        reported_ids=reported_ids,
+        notice_targets=notice_targets,
+    )
 
 
 @bp.route("/community/<int:pid>/hide", methods=["POST"])
@@ -1222,11 +1234,13 @@ def board_form(board_id=None):
         parent_id = request.form.get("parent_id", type=int) or None
         slug = request.form.get("slug", "").strip().lower() or None
         link_url = request.form.get("link_url", "").strip() or None
-        topics = [
-            t.strip()
-            for t in request.form.get("topics", "").replace("\n", ",").split(",")
-            if t.strip()
-        ]
+        # [+ 주제 추가] 행 다중 입력 — 붙여넣기 편의로 각 항목의 콤마도 분할, 중복 제거
+        topics = []
+        for raw in request.form.getlist("topics"):
+            for t in raw.replace("\n", ",").split(","):
+                t = t.strip()
+                if t and t not in topics:
+                    topics.append(t)
         errors = []
         if not label:
             errors.append("이름을 입력해주세요.")

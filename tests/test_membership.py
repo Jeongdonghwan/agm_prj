@@ -174,3 +174,11 @@ class TestAdminUserCreate:
     def test_non_admin_blocked(self, client, login_as):
         login_as("user1@example.com")
         assert client.get("/admin/users/new").status_code == 403
+
+    def test_users_page_has_modal(self, client, login_as):
+        """새 회원 추가는 회원 관리 화면의 모달 — GET /users/new는 모달 오픈으로 리다이렉트."""
+        login_as("admin@angimo.kr")
+        html = client.get("/admin/users").get_data(as_text=True)
+        assert 'id="user-new-modal"' in html and 'type="email"' in html
+        r = client.get("/admin/users/new", follow_redirects=False)
+        assert r.status_code == 302 and "new=1" in r.headers["Location"]
