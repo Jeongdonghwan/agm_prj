@@ -14,7 +14,7 @@
   <h1>{{ board.label }}{% if board.topics %}<small>{{ board.topics | join(' · ') }}</small>{% endif %}</h1>
 </div></div>
 
-<div class="wrap comm-shell">
+<div class="comm-shell">
   {% set active_board = board_key %}
   {% include "community/_side_menu.html" %}
 
