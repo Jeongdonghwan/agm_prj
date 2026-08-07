@@ -7,7 +7,8 @@
 <form method="post" class="panel" style="margin-top:0;max-width:760px">
   <div class="pf-body">
     <div class="pf-field"><label>변호사 *</label>
-      <select name="lawyer_id" required>
+      <input type="text" id="lawyer-search" placeholder="이름·소속으로 검색" autocomplete="off" style="margin-bottom:6px">
+      <select name="lawyer_id" id="lawyer-select" required size="1">
         <option value="">선택</option>
         {% for u in lawyers %}
         <option value="{{ u.id }}" {% if item and item.lawyer_id == u.id %}selected{% endif %}>
@@ -15,19 +16,23 @@
         </option>
         {% endfor %}
       </select>
-      <small>프로필이 미완성이거나 노출 정지된 변호사는 광고를 지정해도 화면에 표시되지 않습니다.</small>
+      <small>검색어를 입력하면 목록이 좁혀집니다. 프로필이 미완성이거나 노출 정지된 변호사는 광고를 지정해도 화면에 표시되지 않습니다.</small>
+    </div>
+
+    <div class="pf-field"><label>노출 분야 <small>(여러 개 선택 가능 — 하나도 안 고르면 전체 노출)</small></label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 14px;padding:6px 0">
+        {% for p in parents %}
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;cursor:pointer">
+          <input type="checkbox" name="category_ids" value="{{ p.id }}" style="accent-color:var(--blue-600);width:15px;height:15px"
+            {% if item and item.category_ids and p.id in item.category_ids %}checked{% endif %}>
+          {{ p.name }}
+        </label>
+        {% endfor %}
+      </div>
+      <small>선택한 각 분야로 필터한 화면에 모두 노출됩니다.</small>
     </div>
 
     <div class="pf-row">
-      <div class="pf-field"><label>노출 분야</label>
-        <select name="category_id">
-          <option value="">전체 노출 (모든 분야)</option>
-          {% for p in parents %}
-          <option value="{{ p.id }}" {% if item and item.category_id == p.id %}selected{% endif %}>{{ p.name }}</option>
-          {% endfor %}
-        </select>
-        <small>선택한 분야로 필터한 화면에 노출됩니다.</small>
-      </div>
       <div class="pf-field"><label>광고 자리 *</label>
         <select name="slot" required>
           {% for value, label in slots %}
@@ -36,16 +41,6 @@
         </select>
         <small>포토카드는 분야당 최대 6명까지 표시됩니다.</small>
       </div>
-    </div>
-
-    <div class="pf-row">
-      <div class="pf-field"><label>시작일</label><input type="datetime-local" name="starts_at" value="{{ item.starts_at.strftime('%Y-%m-%dT%H:%M') if item and item.starts_at else '' }}"></div>
-      <div class="pf-field"><label>종료일</label><input type="datetime-local" name="ends_at" value="{{ item.ends_at.strftime('%Y-%m-%dT%H:%M') if item and item.ends_at else '' }}"></div>
-    </div>
-
-    <div class="pf-row">
-      <div class="pf-field"><label>순서</label><input type="text" name="sort_order" value="{{ item.sort_order if item else 0 }}">
-        <small>숫자가 작을수록 앞에 노출됩니다.</small></div>
       <div class="pf-field"><label>노출</label>
         <select name="is_active">
           <option value="1" {% if not item or item.is_active %}selected{% endif %}>노출</option>
@@ -54,10 +49,37 @@
       </div>
     </div>
 
+    <div class="pf-row">
+      <div class="pf-field"><label>시작일</label><input type="datetime-local" name="starts_at" value="{{ item.starts_at.strftime('%Y-%m-%dT%H:%M') if item and item.starts_at else '' }}"></div>
+      <div class="pf-field"><label>종료일</label><input type="datetime-local" name="ends_at" value="{{ item.ends_at.strftime('%Y-%m-%dT%H:%M') if item and item.ends_at else '' }}"></div>
+    </div>
+
     <div style="display:flex;gap:8px;align-items:center">
       <button class="btn pri" type="submit" style="padding:12px 24px">저장</button>
       <a class="btn line" href="{{ url_for('admin.lawyer_ads') }}">취소</a>
     </div>
   </div>
 </form>
+
+<script>
+// 변호사 검색 — 입력한 글자로 option(이름·소속)을 좁힌다
+(function () {
+  const box = document.getElementById('lawyer-search');
+  const sel = document.getElementById('lawyer-select');
+  const all = Array.from(sel.options).slice(1); // '선택' 제외
+  box.addEventListener('input', () => {
+    const kw = box.value.trim().toLowerCase();
+    let first = null;
+    all.forEach(o => {
+      const hit = !kw || o.text.toLowerCase().includes(kw);
+      o.hidden = !hit;
+      if (hit && !first) first = o;
+    });
+    // 현재 선택이 필터에서 사라졌으면 첫 매치로
+    if (kw && sel.selectedOptions[0] && sel.selectedOptions[0].hidden) {
+      sel.value = first ? first.value : '';
+    }
+  });
+})();
+</script>
 {% endblock %}

@@ -1,3 +1,4 @@
+import random
 import re
 from datetime import datetime
 
@@ -234,7 +235,8 @@ def firms():
     ).options(joinedload(FirmAd.category))
     if category_id:
         q = q.filter(FirmAd.category_id == category_id)
-    items = q.order_by(FirmAd.sort_order).all()
+    items = q.all()
+    random.shuffle(items)  # 광고 구좌 공평 노출 — 순서 랜덤
 
     # 칩: 광고가 존재하는 분야만
     used_cat_ids = {

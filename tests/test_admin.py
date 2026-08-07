@@ -201,9 +201,9 @@ class TestLawyerAds:
             u = User.query.filter_by(email=email).first()
             return u.id, u.name
 
-    def _add_ad(self, app, client, lawyer_id, slot="photocard", category_id="", **kw):
-        data = {"lawyer_id": lawyer_id, "slot": slot, "category_id": category_id,
-                "is_active": "1", "sort_order": "0", **kw}
+    def _add_ad(self, app, client, lawyer_id, slot="photocard", category_ids=(), **kw):
+        data = {"lawyer_id": lawyer_id, "slot": slot,
+                "category_ids": list(category_ids), "is_active": "1", **kw}
         return client.post("/admin/lawyer-ads/new", data=data, follow_redirects=True)
 
     def test_category_specific_ad(self, app, client, login_as):
@@ -211,7 +211,7 @@ class TestLawyerAds:
         self._clear(app)
         uid, name = self._lawyer(app)
         login_as(ADMIN)
-        r = self._add_ad(app, client, uid, category_id="1")
+        r = self._add_ad(app, client, uid, category_ids=["1"])
         assert "변호사 광고가 저장되었습니다" in r.get_data(as_text=True)
         c2 = app.test_client()
         # 지정 분야에는 노출
@@ -220,12 +220,33 @@ class TestLawyerAds:
         # 다른 분야에는 미노출
         assert 'class="sa-grid"' not in c2.get("/lawyers/?category=7").get_data(as_text=True)
 
+    def test_multi_category_ad(self, app, client, login_as):
+        """분야 여러 개 지정 — 지정한 각 분야 화면에 모두 노출, 그 외 미노출."""
+        from models import Category
+
+        self._clear(app)
+        uid, name = self._lawyer(app)
+        with app.app_context():
+            pid = {c.name: c.id for c in Category.query.filter_by(parent_id=None)}
+        a, b, other = pid["형사일반"], pid["교통"], pid["의료"]
+        login_as(ADMIN)
+        self._add_ad(app, client, uid, category_ids=[str(a), str(b)])
+        with app.app_context():
+            assert LawyerAd.query.first().category_ids == [a, b]
+        c2 = app.test_client()
+        assert f"{name} 변호사" in c2.get(f"/lawyers/?category={a}").get_data(as_text=True)
+        assert f"{name} 변호사" in c2.get(f"/lawyers/?category={b}").get_data(as_text=True)
+        assert 'class="sa-grid"' not in c2.get(f"/lawyers/?category={other}").get_data(as_text=True)
+        # 어드민 목록에선 두 분야 그룹 모두에 표시
+        html = client.get("/admin/lawyer-ads").get_data(as_text=True)
+        assert html.count(f"{name}</a>") >= 2
+
     def test_global_ad_shows_everywhere(self, app, client, login_as):
         """전체 노출(카테고리 미지정) 광고는 모든 분야 화면에 노출."""
         self._clear(app)
         uid, name = self._lawyer(app)
         login_as(ADMIN)
-        self._add_ad(app, client, uid, category_id="")
+        self._add_ad(app, client, uid)
         c2 = app.test_client()
         for path in ("/lawyers/", "/lawyers/?category=1", "/lawyers/?category=7"):
             assert f"{name} 변호사" in c2.get(path).get_data(as_text=True), path
@@ -285,8 +306,8 @@ class TestLawyerAds:
         self._clear(app)
         uid, name = self._lawyer(app)
         login_as(ADMIN)
-        self._add_ad(app, client, uid, category_id="1")
-        self._add_ad(app, client, uid, slot="adlist", category_id="")
+        self._add_ad(app, client, uid, category_ids=["1"])
+        self._add_ad(app, client, uid, slot="adlist")
         html = client.get("/admin/lawyer-ads").get_data(as_text=True)
         assert "전체 노출" in html and name in html
         assert "최상단 포토카드" in html and "AD LAWYERS" in html

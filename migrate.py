@@ -28,6 +28,8 @@ MIGRATIONS = [
     # 관리자 2단계 (메인/부관리자)
     ("users", "is_super_admin", "TINYINT(1) DEFAULT 0"),
     ("users", "admin_perms", "JSON NULL"),
+    # 변호사 광고 노출 분야 다중 선택
+    ("lawyer_ads", "category_ids", "JSON NULL"),
 ]
 
 # 데이터 보정 — (설명, SQL, 필요 컬럼(table, column) 또는 None).
@@ -55,6 +57,13 @@ DATA_FIXES = [
         "UPDATE users SET is_super_admin = 1 "
         "WHERE role = 'admin' AND is_super_admin = 0 AND admin_perms IS NULL",
         ("users", "is_super_admin"),
+    ),
+    (
+        # 변호사 광고 단일 분야(category_id) → 다중(category_ids) 이전 — 1회만
+        "변호사 광고 분야를 다중 선택 컬럼으로 이전",
+        "UPDATE lawyer_ads SET category_ids = JSON_ARRAY(category_id) "
+        "WHERE category_id IS NOT NULL AND category_ids IS NULL",
+        ("lawyer_ads", "category_ids"),
     ),
     (
         # 배너 위치에 팝업 추가 — MODIFY는 재실행해도 결과 동일

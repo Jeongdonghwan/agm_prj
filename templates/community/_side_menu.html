@@ -1,0 +1,28 @@
+{# 커뮤니티 좌측 메뉴 (PC) — 카테고리 + DB 게시판 트리. 960px 이하에선 숨고 칩 줄이 대신한다.
+   active 판정: active_board(게시판 key) / category(커뮤니티 카테고리) / sort #}
+{% set in_list = not active_board %}
+<aside class="side-menu">
+  <b class="sm-h">커뮤니티</b>
+  <ul>
+    <li><a href="{{ url_for('community.list_') }}" class="{% if in_list and not category and sort != 'popular' %}on{% endif %}">전체</a></li>
+    <li><a href="{{ url_for('community.list_', sort='popular') }}" class="{% if in_list and not category and sort == 'popular' %}on{% endif %}">인기</a></li>
+    {% for c in categories %}
+    <li><a href="{{ url_for('community.list_', category=c) }}" class="{% if in_list and category == c %}on{% endif %}">{{ c }}</a></li>
+    {% endfor %}
+  </ul>
+
+  {% for grp in community_menu %}
+  <b class="sm-h">{{ grp.label }}</b>
+  <ul>
+    {% for it in grp['items'] %}
+    <li>
+      {% if it.url %}
+      <a href="{{ it.url }}"{% if it.external %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ it.label }}{% if it.external %} ↗{% endif %}</a>
+      {% else %}
+      <a href="{{ url_for('community.board', key=it.board) }}" class="{% if active_board == it.board %}on{% endif %}">{{ it.label }}</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endfor %}
+</aside>

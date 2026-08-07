@@ -46,8 +46,10 @@ class LawyerAd(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     lawyer_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    # NULL = 전체 노출(분야 필터와 무관하게 항상)
+    # (구) 단일 분야 — category_ids로 대체, 데이터 이전 후 미사용
     category_id = db.Column(db.Integer, db.ForeignKey("categories.id"))
+    # 노출 분야 id 배열 — 비었거나 NULL이면 전체 노출
+    category_ids = db.Column(db.JSON)
     slot = db.Column(ENUM("photocard", "adlist"), default="photocard")
     sort_order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)

@@ -353,6 +353,27 @@ class TestBoardAdmin:
         assert "주제하나" in html and "주제둘" in html
 
 
+class TestSideMenu:
+    """커뮤니티 좌측 게시판 메뉴 (PC) — 카테고리 + DB 게시판 트리."""
+
+    def test_side_menu_on_list_and_board(self, client, login_as):
+        login_as("user1@example.com")
+        for path in ("/community/", "/community/board/market"):
+            html = client.get(path).get_data(as_text=True)
+            side = html.split('class="side-menu"', 1)[1].split("</aside>", 1)[0]
+            for label in ("전체", "인기", "자유게시판", "상담소", "양식 자료실",
+                          "안기모 중고세상", "도움되는 사이트"):
+                assert label in side, (path, label)
+
+    def test_side_menu_marks_active(self, client, login_as):
+        login_as("user1@example.com")
+        html = client.get("/community/board/market").get_data(as_text=True)
+        side = html.split('class="side-menu"', 1)[1].split("</aside>", 1)[0]
+        import re
+        on = re.findall(r'class="on"[^>]*>([^<]+)', side)
+        assert [t.strip() for t in on] == ["안기모 중고세상"]
+
+
 class TestBoardNotice:
     """공지 등록 시 대상 게시판 선택 — 메인 전체 또는 특정 게시판 상단 고정."""
 

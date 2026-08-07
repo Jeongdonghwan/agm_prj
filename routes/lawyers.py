@@ -1,3 +1,4 @@
+import random
 import re
 from datetime import datetime
 
@@ -98,8 +99,11 @@ def find():
 
     q = _apply_filters(_visible_profiles_query())
     total = q.count()
+    # 노출 공정성: 일자 시드 셔플 — 하루 동안 순서가 고정돼 페이지네이션이 안전하고,
+    # 매일 순서가 바뀐다 (RAND(seed)는 시드 동일 시 결정적)
+    daily_seed = int(datetime.now().strftime("%Y%m%d"))
     profiles = (
-        q.order_by(LawyerProfile.view_count.desc())
+        q.order_by(db.func.rand(daily_seed))
         .offset((page - 1) * PER_PAGE)
         .limit(PER_PAGE)
         .all()
@@ -108,30 +112,29 @@ def find():
 
     # 광고: 관리자가 분야별로 지정한 변호사 (lawyer_ads)
     def _ad_profiles(slot, limit=None):
-        """현재 분야에 지정된 광고 + 전체 노출 광고를 순서대로."""
+        """현재 분야에 지정된 광고 + 전체 노출 광고 — 구좌 순서는 매번 랜덤."""
         if page != 1:
             return []
         now = datetime.now()
-        ad_q = LawyerAd.query.filter(
+        ads = LawyerAd.query.filter(
             LawyerAd.slot == slot,
             LawyerAd.is_active.is_(True),
             db.or_(LawyerAd.starts_at.is_(None), LawyerAd.starts_at <= now),
             db.or_(LawyerAd.ends_at.is_(None), LawyerAd.ends_at >= now),
-        )
+        ).all()
         if selected:
-            # 세부분야 선택 시 대분류 광고도, 대분류 선택 시 그 자식 광고도 매칭
-            cat_ids = [selected.id]
+            # 세부분야 선택 시 대분류 광고도, 대분류 선택 시 그 자식 광고도 매칭.
+            # 분야는 다중(category_ids JSON) — 비어 있으면 전체 노출
+            cat_ids = {selected.id}
             if selected.parent_id:
-                cat_ids.append(selected.parent_id)
+                cat_ids.add(selected.parent_id)
             else:
-                cat_ids += [c.id for c in children]
-            ad_q = ad_q.filter(
-                db.or_(
-                    LawyerAd.category_id.is_(None),  # 전체 노출 광고
-                    LawyerAd.category_id.in_(cat_ids),
-                )
-            )
-        ads = ad_q.order_by(LawyerAd.sort_order, LawyerAd.id).all()
+                cat_ids |= {c.id for c in children}
+            ads = [
+                a for a in ads
+                if not a.category_ids or cat_ids & set(a.category_ids)
+            ]
+        random.shuffle(ads)  # 광고 구좌 공평 노출 — 요청마다 순서 랜덤
         if not ads:
             return []
         # 노출 조건(활성·프로필 완성)을 만족하는 프로필만, 광고 순서대로

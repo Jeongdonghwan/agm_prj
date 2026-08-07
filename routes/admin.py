@@ -506,12 +506,7 @@ def lawyer_detail(user_id):
         ).count(),
     }
     files = LawyerVerificationFile.query.filter_by(user_id=user.id).all()
-    ads = (
-        LawyerAd.query.filter_by(lawyer_id=user.id)
-        .options(joinedload(LawyerAd.category))
-        .order_by(LawyerAd.sort_order)
-        .all()
-    )
+    ads = LawyerAd.query.filter_by(lawyer_id=user.id).order_by(LawyerAd.id).all()
     return render_template(
         "admin/lawyer_detail.html",
         user=user,
@@ -519,6 +514,7 @@ def lawyer_detail(user_id):
         stats=stats,
         files=files,
         ads=ads,
+        ad_cat_names={c.id: c.name for c in Category.query.all()},
         **profile_form_context(prof),
     )
 
@@ -594,19 +590,22 @@ def lawyer_ads():
 
     slot = request.args.get("slot")
     category_id = request.args.get("category", type=int)
-    q = LawyerAd.query.options(
-        joinedload(LawyerAd.lawyer), joinedload(LawyerAd.category)
-    )
+    q = LawyerAd.query.options(joinedload(LawyerAd.lawyer))
     if slot in AD_SLOT_LABELS:
         q = q.filter_by(slot=slot)
-    if category_id:
-        q = q.filter_by(category_id=category_id)
-    items = q.order_by(LawyerAd.category_id, LawyerAd.slot, LawyerAd.sort_order).all()
+    items = q.order_by(LawyerAd.slot, LawyerAd.id).all()
+    if category_id:  # 분야 필터 — 다중 분야(JSON)라 파이썬에서
+        items = [a for a in items if a.category_ids and category_id in a.category_ids]
 
-    # 카테고리별 그룹 (전체 노출이 맨 앞)
+    cat_names = {c.id: c.name for c in Category.query.all()}
+    # 분야별 그룹 (전체 노출이 맨 앞) — 다분야 광고는 지정한 각 분야 그룹에 모두 표시
     groups = {}
     for ad in items:
-        groups.setdefault(ad.category.name if ad.category else "전체 노출", []).append(ad)
+        if not ad.category_ids:
+            groups.setdefault("전체 노출", []).append(ad)
+        else:
+            for cid in ad.category_ids:
+                groups.setdefault(cat_names.get(cid, f"#{cid}"), []).append(ad)
     ordered = sorted(groups.items(), key=lambda kv: (kv[0] != "전체 노출", kv[0]))
 
     parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
@@ -619,6 +618,7 @@ def lawyer_ads():
         slot_labels=AD_SLOT_LABELS,
         parents=parents,
         category_id=category_id,
+        cat_names=cat_names,
         now=datetime.now(),
     )
 
@@ -643,7 +643,11 @@ def lawyer_ad_form(ad_id=None):
                 item = LawyerAd()
                 db.session.add(item)
             item.lawyer_id = lawyer_id
-            item.category_id = form.get("category_id", type=int) or None  # 없으면 전체
+            # 노출 분야 다중 선택 — 아무것도 안 고르면 전체 노출
+            item.category_ids = [
+                int(c) for c in form.getlist("category_ids") if c.isdigit()
+            ]
+            item.category_id = None  # 구 단일 분야 컬럼은 더 쓰지 않음
             item.slot = form.get("slot") if form.get("slot") in AD_SLOT_LABELS else "photocard"
             item.sort_order = form.get("sort_order", type=int) or 0
             item.is_active = form.get("is_active") == "1"

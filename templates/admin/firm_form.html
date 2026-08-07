@@ -22,6 +22,7 @@
     <div class="pf-field"><label>링크칩 (줄마다 "라벨|URL")</label><textarea name="links" rows="3" placeholder="홈페이지|https://...">{% if item and item.links %}{% for l in item.links %}{{ l.label }}|{{ l.url }}
 {% endfor %}{% endif %}</textarea></div>
     <div class="pf-field"><label>사진 (jpg/png, 여러 장, 최대 5)</label>
+      <small style="margin-top:0;margin-bottom:6px">권장 사이즈 <b>800×600px (4:3 가로)</b> — 목록에서 4:3 썸네일로 잘려 보이므로 비율을 맞춰 올려주세요.</small>
       {% if item and item.photos %}<div class="pf-photo-cur">{% for ph in item.photos %}<img src="{{ ph }}" alt="">{% endfor %} 현재 {{ item.photos | length }}장</div>{% endif %}
       <div class="filebox" data-max="5" data-label="사진 추가 (jpg / png, 최대 5장)">
         <input type="file" name="photos" accept=".jpg,.jpeg,.png" multiple>

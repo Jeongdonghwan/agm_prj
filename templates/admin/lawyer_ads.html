@@ -23,9 +23,9 @@
 <div class="panel" style="margin-top:0">
   <div class="p-head"><h2>변호사 광고 <span class="cnt">{{ total }}</span></h2><a class="btn pri" href="{{ url_for('admin.lawyer_ad_form') }}">+ 새 광고</a></div>
   <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
-    💡 <b>분야별로</b> 어떤 변호사를 어느 자리에 노출할지 지정합니다.
+    💡 <b>분야별로</b> 어떤 변호사를 어느 자리에 노출할지 지정합니다(분야 여러 개 선택 가능 — 여러 분야를 고르면 각 분야 그룹에 모두 표시).
     <b>최상단 포토카드</b>는 변호사 목록 맨 위 사진 카드(분야당 최대 6명), <b>AD LAWYERS</b>는 목록 중간 배너 카드(인원 제한 없음).
-    분야를 <b>전체 노출</b>로 두면 모든 분야 화면에 함께 표시됩니다.
+    분야를 하나도 안 고르면 <b>전체 노출</b> — 모든 분야 화면에 표시됩니다. 노출 순서는 <b>랜덤 로테이션</b>입니다.
   </div>
 
   {% for group_name, ads in groups %}
@@ -33,14 +33,14 @@
     {{ group_name }} <span style="color:var(--ink-500);font-weight:600">({{ ads | length }})</span>
   </div>
   <table>
-    <tr><th>슬롯</th><th>변호사</th><th>소속</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
+    <tr><th>슬롯</th><th>변호사</th><th>소속</th><th>노출 분야</th><th>기간</th><th>상태</th><th></th></tr>
     {% for a in ads %}
     <tr>
       <td>{% if a.slot == 'photocard' %}<span class="badge blue">최상단 포토카드</span>{% else %}<span class="badge blue">AD LAWYERS</span>{% endif %}</td>
       <td><a href="{{ url_for('admin.lawyer_detail', user_id=a.lawyer_id) }}" style="color:var(--blue-600);font-weight:800">{{ a.lawyer.name }}</a></td>
       <td>{{ a.lawyer.lawyer_profile.firm_name if a.lawyer.lawyer_profile else '-' }}</td>
+      <td style="max-width:220px">{% if a.category_ids %}{% for cid in a.category_ids %}{{ cat_names.get(cid, cid) }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}전체{% endif %}</td>
       <td>{{ a.starts_at.strftime('%y.%m.%d') if a.starts_at else '~' }} ~ {{ a.ends_at.strftime('%y.%m.%d') if a.ends_at else '무기한' }}</td>
-      <td>{{ a.sort_order }}</td>
       <td>
         {% if not a.is_active %}<span class="badge wait">중지</span>
         {% elif a.ends_at and a.ends_at < now %}<span class="badge wait">기간 만료</span>

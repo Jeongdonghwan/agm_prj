@@ -10,6 +10,26 @@
 .comm-layout{display:grid;grid-template-columns:1fr 280px;gap:28px;margin-top:26px;align-items:start}
 /* 1열 목록 컨테이너 */
 .comm-single{max-width:840px;margin:26px auto 0}
+
+/* ===== 좌측 게시판 메뉴 + 본문 (PC) ===== */
+.comm-shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:36px;margin-top:26px;align-items:start}
+.comm-main{max-width:840px;min-width:0}
+.side-menu{position:sticky;top:140px;max-height:calc(100vh - 160px);overflow-y:auto;scrollbar-width:thin;padding-right:4px}
+.side-menu .sm-h{display:block;font-size:13.5px;font-weight:800;letter-spacing:-.2px;margin:22px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--ink-200)}
+.side-menu .sm-h:first-child{margin-top:0}
+.side-menu ul{display:flex;flex-direction:column;gap:9px}
+.side-menu a{font-size:13.5px;color:var(--ink-500);line-height:1.4;display:block}
+.side-menu a:hover{color:var(--blue-600)}
+.side-menu a.on{color:var(--blue-600);font-weight:800}
+/* PC에서는 사이드 메뉴가 칩 줄을 대체 */
+@media (min-width:961px){
+  .comm-shell .cat-chips{display:none}
+}
+@media (max-width:960px){
+  .comm-shell{display:block}
+  .side-menu{display:none}
+  .comm-main{max-width:none}
+}
 /* 칩 한 줄 — 정렬(인기/최신) + 커뮤니티 카테고리 + 정보 게시판을 같은 모양으로 통일 */
 .cat-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
 .cat-chips a{border:1px solid var(--ink-200);border-radius:999px;background:#fff;

@@ -619,22 +619,21 @@ def run_seed(app):
                 )
             )
 
-        # 변호사 광고 데모 — 분야별로 누구를 어느 자리에 (전체 노출 + 분야 지정)
+        # 변호사 광고 데모 — 분야(다중)별로 누구를 어느 자리에 (빈 리스트 = 전체 노출)
         lawyer_ad_demo = [
-            (0, None, "photocard", 0),  # 전체 노출 포토카드
-            (1, None, "photocard", 1),
-            (0, "형사일반", "photocard", 0),  # 분야 지정 포토카드
-            (4, "부동산/임대차", "photocard", 0),
-            (2, None, "adlist", 0),  # 전체 노출 AD LAWYERS
-            (3, "이혼/가족", "adlist", 0),
+            (0, [], "photocard"),  # 전체 노출 포토카드
+            (1, [], "photocard"),
+            (0, ["형사일반"], "photocard"),  # 분야 지정 포토카드
+            (4, ["부동산/임대차", "민사일반"], "photocard"),  # 다분야 예시
+            (2, [], "adlist"),  # 전체 노출 AD LAWYERS
+            (3, ["이혼/가족"], "adlist"),
         ]
-        for lidx, cat_name, slot, order in lawyer_ad_demo:
+        for lidx, cat_names_, slot in lawyer_ad_demo:
             db.session.add(
                 LawyerAd(
                     lawyer_id=lawyer_users[lidx].id,
-                    category_id=cat_by_name[cat_name].id if cat_name else None,
+                    category_ids=[cat_by_name[c].id for c in cat_names_],
                     slot=slot,
-                    sort_order=order,
                     is_active=True,
                     starts_at=now - timedelta(days=1),
                     ends_at=now + timedelta(days=365),

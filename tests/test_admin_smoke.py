@@ -161,19 +161,18 @@ class TestCrudRoundTrip:
         with app.app_context():
             uid = User.query.filter_by(email="lawyer1@angimo.kr").first().id
         client.post("/admin/lawyer-ads/new", data={
-            "lawyer_id": uid, "category_id": "1", "slot": "photocard",
-            "sort_order": "0", "is_active": "1"})
+            "lawyer_id": uid, "category_ids": ["1", "2"], "slot": "photocard",
+            "is_active": "1"})
         with app.app_context():
-            ad = LawyerAd.query.filter_by(lawyer_id=uid, category_id=1).first()
-            assert ad
+            ad = LawyerAd.query.filter_by(lawyer_id=uid).order_by(LawyerAd.id.desc()).first()
+            assert ad and ad.category_ids == [1, 2]
             aid = ad.id
         client.post(f"/admin/lawyer-ads/{aid}/edit", data={
-            "lawyer_id": uid, "category_id": "", "slot": "adlist",
-            "sort_order": "3", "is_active": "0"})
+            "lawyer_id": uid, "slot": "adlist", "is_active": "0"})
         with app.app_context():
             ad = db.session.get(LawyerAd, aid)
-            assert ad.slot == "adlist" and ad.category_id is None
-            assert ad.sort_order == 3 and ad.is_active is False
+            assert ad.slot == "adlist" and ad.category_ids == []  # 전체 노출
+            assert ad.is_active is False
         client.post(f"/admin/lawyer-ads/{aid}/delete")
         with app.app_context():
             assert db.session.get(LawyerAd, aid) is None
