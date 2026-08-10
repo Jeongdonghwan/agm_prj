@@ -121,6 +121,21 @@ def _log(action, target, detail=None):
     )
 
 
+def _parse_start(value):
+    """기간 시작 — 날짜만 오면 00:00부터."""
+    return datetime.fromisoformat(value) if value else None
+
+
+def _parse_end(value):
+    """기간 종료 — 날짜만 오면 그날 23:59:59까지 포함."""
+    if not value:
+        return None
+    dt = datetime.fromisoformat(value)
+    if len(value) == 10:  # 'YYYY-MM-DD'
+        dt = dt.replace(hour=23, minute=59, second=59)
+    return dt
+
+
 def _save_image(file, subdir):
     """이미지 업로드 → /uploads 공개 URL 반환. 확장자 불일치 시 None."""
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
@@ -651,12 +666,8 @@ def lawyer_ad_form(ad_id=None):
             item.slot = form.get("slot") if form.get("slot") in AD_SLOT_LABELS else "photocard"
             item.sort_order = form.get("sort_order", type=int) or 0
             item.is_active = form.get("is_active") == "1"
-            item.starts_at = (
-                datetime.fromisoformat(form["starts_at"]) if form.get("starts_at") else None
-            )
-            item.ends_at = (
-                datetime.fromisoformat(form["ends_at"]) if form.get("ends_at") else None
-            )
+            item.starts_at = _parse_start(form.get("starts_at"))
+            item.ends_at = _parse_end(form.get("ends_at"))
             _log("lawyer_ad_save", f"lawyer_ad:{item.id or 'new'}", {"lawyer": lawyer.name})
             db.session.commit()
             flash("변호사 광고가 저장되었습니다.", "success")
@@ -901,12 +912,8 @@ def banner_form(banner_id=None):
         item.link_url = form.get("link_url", "").strip()[:300] or None
         item.sort_order = form.get("sort_order", type=int) or 0
         item.is_active = form.get("is_active") == "1"
-        item.starts_at = (
-            datetime.fromisoformat(form["starts_at"]) if form.get("starts_at") else None
-        )
-        item.ends_at = (
-            datetime.fromisoformat(form["ends_at"]) if form.get("ends_at") else None
-        )
+        item.starts_at = _parse_start(form.get("starts_at"))
+        item.ends_at = _parse_end(form.get("ends_at"))
         img = request.files.get("image")
         if img and img.filename:
             saved = _save_image(img, "banners")
@@ -962,12 +969,8 @@ def firm_form(firm_id=None):
         item.category_id = form.get("category_id", type=int) or None
         item.sort_order = form.get("sort_order", type=int) or 0
         item.is_active = form.get("is_active") == "1"
-        item.starts_at = (
-            datetime.fromisoformat(form["starts_at"]) if form.get("starts_at") else None
-        )
-        item.ends_at = (
-            datetime.fromisoformat(form["ends_at"]) if form.get("ends_at") else None
-        )
+        item.starts_at = _parse_start(form.get("starts_at"))
+        item.ends_at = _parse_end(form.get("ends_at"))
         # 링크칩: "라벨|URL" 줄 단위
         links = []
         for line in form.get("links", "").splitlines():

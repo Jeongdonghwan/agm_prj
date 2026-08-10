@@ -276,6 +276,22 @@ class TestLawyerAds:
         self._add_ad(app, client, uid, ends_at="2020-01-01T00:00")  # 기간 만료
         assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
 
+    def test_date_only_period_inclusive(self, app, client, login_as):
+        """기간은 날짜만 입력 — 종료일 당일 23:59까지 노출로 처리."""
+        from datetime import date
+
+        self._clear(app)
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        today = date.today().isoformat()
+        self._add_ad(app, client, uid, starts_at=today, ends_at=today)
+        with app.app_context():
+            ad = LawyerAd.query.first()
+            assert ad.starts_at.hour == 0
+            assert (ad.ends_at.hour, ad.ends_at.minute) == (23, 59)
+        # 종료일이 오늘이어도 당일 내내 노출
+        assert f"{name} 변호사" in app.test_client().get("/lawyers/").get_data(as_text=True)
+
     def test_adlist_has_no_headcount_limit(self, app, client, login_as):
         """AD LAWYERS는 인원 제한 없이 지정한 만큼 전부 노출."""
         self._clear(app)
