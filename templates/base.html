@@ -71,6 +71,38 @@
 
 {% block content %}{% endblock %}
 
+<!-- 모바일 하단 GNB (960px 이하 고정) -->
+<nav class="bottom-nav" aria-label="모바일 메뉴">
+  <a href="{{ url_for('main.index') }}" class="{% if active_menu == 'home' %}on{% endif %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    홈
+  </a>
+  <a href="{{ url_for('lawyers.find') }}" class="{% if active_menu == 'lawyers' %}on{% endif %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+    변호사
+  </a>
+  <a href="{{ url_for('counsel.list_') }}" class="{% if active_menu == 'counsel' %}on{% endif %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8"/><path d="M8 13h5"/></svg>
+    상담신청
+  </a>
+  <a href="{{ url_for('community.menu') }}" class="{% if active_menu == 'community' %}on{% endif %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a2 2 0 0 1 2 2v10l-3.7-2.5a1 1 0 0 0-.6-.2H10a2 2 0 0 1-2-2v-1"/><path d="M14 3a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H6.6a1 1 0 0 0-.6.2L2 16V5a2 2 0 0 1 2-2z"/></svg>
+    커뮤니티
+  </a>
+  {% if current_user and current_user.role == 'lawyer' %}
+  <a href="{{ url_for('lawyer_admin.dashboard') }}" class="{% if request.path.startswith('/lawyer') %}on{% endif %}">
+  {% elif current_user and current_user.role == 'admin' %}
+  <a href="{{ url_for('admin.dashboard') }}">
+  {% elif current_user %}
+  <a href="{{ url_for('mypage.home') }}" class="{% if request.path.startswith('/mypage') %}on{% endif %}">
+  {% else %}
+  <a href="{{ url_for('auth.login') }}" class="{% if request.path == '/login' %}on{% endif %}">
+  {% endif %}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+    마이페이지
+  </a>
+</nav>
+
 <!-- 플로팅: 1:1 상담(카카오톡 채널) + 네이버 카페 바로가기 -->
 <a class="fab-consult" href="{{ kakao_consult_url }}" target="_blank" rel="noopener noreferrer">
   <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 3C6.48 3 2 6.54 2 10.9c0 2.8 1.86 5.26 4.66 6.65-.15.52-.96 3.33-.99 3.55 0 0-.02.17.09.23.11.07.24.02.24.02.31-.05 3.57-2.34 4.13-2.74.6.09 1.22.13 1.87.13 5.52 0 10-3.54 10-7.84S17.52 3 12 3z"/></svg>

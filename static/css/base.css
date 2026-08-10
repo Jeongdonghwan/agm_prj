@@ -63,10 +63,26 @@ nav.gnb a.has-badge{padding:0 14px}
 .fab-consult svg{width:17px;height:17px;flex-shrink:0}
 .fab-cafe:hover{background:#02B152;transform:translateY(-2px);box-shadow:0 10px 26px rgba(3,199,90,.45)}
 .fab-cafe svg{width:17px;height:17px;flex-shrink:0}
+@media (max-width:960px){
+  /* 하단 GNB 위로 올린다 */
+  .fab-cafe{bottom:76px}
+  .fab-consult{bottom:126px}
+}
 @media (max-width:560px){
-  .fab-cafe{right:14px;bottom:14px;padding:11px 16px;font-size:12.5px}
-  .fab-consult{right:14px;bottom:64px;padding:11px 16px;font-size:12.5px}
+  .fab-cafe{right:14px;bottom:74px;padding:11px 16px;font-size:12.5px}
+  .fab-consult{right:14px;bottom:122px;padding:11px 16px;font-size:12.5px}
   .fab-cafe svg,.fab-consult svg{width:15px;height:15px}
+}
+
+/* ===== 모바일 하단 GNB (당근 스타일 고정 바) ===== */
+.bottom-nav{display:none}
+@media (max-width:960px){
+  body{padding-bottom:64px}
+  .bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:110;display:flex;background:#fff;border-top:1px solid var(--ink-200);padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+  .bottom-nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--ink-500);padding:4px 0}
+  .bottom-nav a svg{width:22px;height:22px}
+  .bottom-nav a.on{color:var(--blue-600);font-weight:800}
+  .bottom-nav a.on svg{stroke-width:2.4}
 }
 
 /* ===== Footer ===== */

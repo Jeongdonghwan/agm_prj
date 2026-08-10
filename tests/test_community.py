@@ -212,6 +212,21 @@ class TestBoardMenuPage:
         assert 'class="pc-only' in nav and 'class="m-only' in nav
         assert "/community/menu" in nav
 
+    def test_bottom_nav_order_and_focus(self, client, login_as):
+        """모바일 하단 GNB — 홈/변호사/상담신청/커뮤니티/마이페이지 순, 현재 탭 표시."""
+        html = client.get("/").get_data(as_text=True)
+        bar = html.split('class="bottom-nav"', 1)[1].split("</nav>", 1)[0]
+        labels = ["홈", "변호사", "상담신청", "커뮤니티", "마이페이지"]
+        idx = [bar.index(lb) for lb in labels]
+        assert idx == sorted(idx)  # 순서 보장
+        assert "/community/menu" in bar
+        # 커뮤니티 진입 시 커뮤니티 탭 활성
+        login_as("user1@example.com")
+        bar = client.get("/community/menu").get_data(as_text=True) \
+            .split('class="bottom-nav"', 1)[1].split("</nav>", 1)[0]
+        chunk = bar.split("커뮤니티", 1)[0].rsplit("<a ", 1)[1]
+        assert 'class="on"' in chunk
+
 
 class TestLawyerRandomOrder:
     """일반 변호사 목록 — 방문마다 랜덤, 같은 시드로는 페이지 이어짐."""
