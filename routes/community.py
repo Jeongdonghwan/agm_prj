@@ -230,6 +230,17 @@ MOJ_VISIT_URL = (
 )
 
 
+@bp.route("/menu")
+@community_member_required
+def menu():
+    """전체 게시판 메뉴 — 모바일에서 GNB 커뮤니티의 랜딩(카페 스타일 목록)."""
+    return render_template(
+        "community/menu.html",
+        active_menu="community",
+        categories=COMMUNITY_CATS,
+    )
+
+
 @bp.route("/")
 @community_member_required
 def list_():

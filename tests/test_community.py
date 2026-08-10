@@ -188,6 +188,31 @@ class TestGnb:
         assert '<span class="plus">+</span>' in html
 
 
+class TestBoardMenuPage:
+    """전체 게시판 메뉴(/community/menu) — 모바일 GNB 커뮤니티의 랜딩."""
+
+    def test_menu_page_lists_everything(self, client, login_as):
+        login_as("user1@example.com")
+        html = client.get("/community/menu").get_data(as_text=True)
+        assert "커뮤니티' 홈" in html and 'id="bm-filter"' in html
+        for label in ("자유게시판", "가석방관련 상담신청", "안기모 중고세상",
+                      "양식 자료실", "도움되는 사이트", "전국 교정기관 주소"):
+            assert label in html, label
+
+    def test_menu_requires_membership(self, client, login_as):
+        r = client.get("/community/menu", follow_redirects=False)
+        assert r.status_code == 302 and "/login" in r.headers["Location"]
+        login_as("user5@example.com")  # 미승인
+        r = client.get("/community/menu", follow_redirects=False)
+        assert "locked" in r.headers["Location"]
+
+    def test_gnb_has_mobile_menu_link(self, client):
+        html = client.get("/").get_data(as_text=True)
+        nav = html.split('<nav class="gnb', 1)[1].split("</nav>", 1)[0]
+        assert 'class="pc-only' in nav and 'class="m-only' in nav
+        assert "/community/menu" in nav
+
+
 class TestLawyerRandomOrder:
     """일반 변호사 목록 — 방문마다 랜덤, 같은 시드로는 페이지 이어짐."""
 

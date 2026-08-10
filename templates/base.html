@@ -52,8 +52,9 @@
       <li><a href="{{ url_for('contents.posts') }}" class="{% if active_menu == 'posts' %}active{% endif %}">변호사포스트</a></li>
       <li><a href="{{ url_for('contents.cases') }}" class="{% if active_menu == 'cases' %}active{% endif %}">판례돋보기</a></li>
       <li><a href="{{ url_for('contents.news') }}" class="{% if active_menu == 'news' %}active{% endif %}">안기모뉴스</a></li>
-      {# 커뮤니티 — 전체 게시판 탐색은 커뮤니티 페이지의 좌측 메뉴에서 #}
-      <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
+      {# 커뮤니티 — PC는 목록(좌측 메뉴 포함), 모바일은 카페식 전체 게시판 메뉴로 #}
+      <li><a href="{{ url_for('community.list_') }}" class="pc-only has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a>
+          <a href="{{ url_for('community.menu') }}" class="m-only has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
     </ul>
   </nav>
 </header>

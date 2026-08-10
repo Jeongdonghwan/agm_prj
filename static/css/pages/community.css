@@ -104,6 +104,25 @@
 .notice-box{margin-top:14px;background:var(--blue-050);border-radius:var(--radius-md);padding:16px;font-size:12px;color:var(--ink-500);line-height:1.7;margin-bottom:40px}
 .notice-box b{color:var(--blue-900);display:block;font-size:13px;margin-bottom:4px}
 
+/* ===== 전체 게시판 메뉴 (모바일 랜딩 — 카페 스타일) ===== */
+.board-menu{max-width:520px;margin:18px auto 60px}
+.bm-search{display:flex;align-items:center;gap:8px;border:1px solid var(--ink-200);border-radius:var(--radius-md);padding:12px 16px;color:var(--ink-500)}
+.bm-search input{flex:1;border:none;outline:none;font-size:14.5px;font-family:inherit;background:transparent}
+.bm-search svg{width:18px;height:18px;flex-shrink:0}
+.bm-home{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;padding:18px 4px;border-bottom:1px solid var(--ink-200);margin-top:6px}
+.bm-home svg{width:18px;height:18px;color:var(--ink-500)}
+.bm-group{border-bottom:1px solid var(--ink-200);padding:4px 0 10px}
+.bm-group summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14.5px;font-weight:800;padding:14px 4px 10px}
+.bm-group summary::-webkit-details-marker{display:none}
+.bm-group summary::after{content:"⌃";font-size:13px;color:var(--ink-500);transform:translateY(3px)}
+.bm-group:not([open]) summary::after{transform:rotate(180deg) translateY(3px)}
+.bm-group ul{display:flex;flex-direction:column}
+.bm-group li a{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink-900);padding:11px 4px 11px 18px;position:relative}
+.bm-group li a::before{content:"ㄴ";position:absolute;left:2px;font-size:11px;color:var(--ink-200)}
+.bm-group li a:active,.bm-group li a:hover{color:var(--blue-600);background:var(--blue-050);border-radius:8px}
+.bm-group .ext{width:13px;height:13px;color:var(--ink-500);margin-left:auto}
+.bm-tag{font-size:10px;font-weight:700;color:var(--blue-700);background:var(--blue-050);border-radius:4px;padding:1px 5px}
+
 /* ===== 커뮤니티 인증 (접견예약확인) ===== */
 .vp-guide{background:var(--blue-050);border-radius:var(--radius-md);padding:16px 18px;font-size:13px;color:var(--ink-500);line-height:1.7;text-align:left}
 .vp-guide>b{display:block;color:var(--blue-900);font-size:13.5px;margin-bottom:6px}
