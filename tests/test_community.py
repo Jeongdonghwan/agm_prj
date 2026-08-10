@@ -199,6 +199,17 @@ class TestBoardMenuPage:
                       "양식 자료실", "도움되는 사이트", "전국 교정기관 주소"):
             assert label in html, label
 
+    def test_menu_page_shows_recent_posts_preview(self, app, client, login_as):
+        """게시판 목록 위에 최신 전체 글 미리보기 + 더보기."""
+        login_as("user1@example.com")
+        html = client.get("/community/menu").get_data(as_text=True)
+        assert 'class="bm-recent"' in html and "더보기" in html
+        with app.app_context():
+            latest = (CommunityPost.query.filter_by(status="open", is_notice=False)
+                      .filter(CommunityPost.deleted_at.is_(None))
+                      .order_by(CommunityPost.created_at.desc()).first())
+        assert latest.title in html
+
     def test_menu_requires_membership(self, client, login_as):
         r = client.get("/community/menu", follow_redirects=False)
         assert r.status_code == 302 and "/login" in r.headers["Location"]

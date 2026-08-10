@@ -111,6 +111,17 @@
 .bm-search svg{width:18px;height:18px;flex-shrink:0}
 .bm-home{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:800;padding:18px 4px;border-bottom:1px solid var(--ink-200);margin-top:6px}
 .bm-home svg{width:18px;height:18px;color:var(--ink-500)}
+/* 최신 전체 글 미리보기 */
+.bm-recent{background:var(--blue-050);border-radius:var(--radius-md);padding:14px 16px;margin:14px 0 4px}
+.bm-recent-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bm-recent-head b{font-size:14px;font-weight:800}
+.bm-recent-head a{font-size:12.5px;font-weight:700;color:var(--blue-600)}
+.bm-post{display:block;padding:9px 0;border-bottom:1px solid rgba(10,42,94,.07)}
+.bm-post:last-child{border-bottom:none;padding-bottom:2px}
+.bm-post .tt{display:block;font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bm-post .mt{display:block;margin-top:3px;font-size:11.5px;color:var(--ink-500)}
+.bm-post:active .tt{color:var(--blue-600)}
+
 .bm-group{border-bottom:1px solid var(--ink-200);padding:4px 0 10px}
 .bm-group summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14.5px;font-weight:800;padding:14px 4px 10px}
 .bm-group summary::-webkit-details-marker{display:none}

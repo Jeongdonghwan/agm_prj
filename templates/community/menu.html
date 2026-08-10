@@ -18,6 +18,22 @@
     '{{ site_name }} 커뮤니티' 홈
   </a>
 
+  {# 최신 전체 글 미리보기 — 게시판 목록 위에 한 눈에 #}
+  {% if recent %}
+  <div class="bm-recent">
+    <div class="bm-recent-head">
+      <b>전체 글</b>
+      <a href="{{ url_for('community.list_') }}">더보기 →</a>
+    </div>
+    {% for p in recent %}
+    <a class="bm-post" href="{{ url_for('community.detail', post_id=p.id) }}">
+      <span class="tt">{{ p.title }}</span>
+      <span class="mt">{{ p.category }} · {{ author_name(p) }} · {{ p.created_at.strftime('%m.%d') }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <details class="bm-group" open>
     <summary>커뮤니티</summary>
     <ul>

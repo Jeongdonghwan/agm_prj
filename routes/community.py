@@ -233,11 +233,24 @@ MOJ_VISIT_URL = (
 @bp.route("/menu")
 @community_member_required
 def menu():
-    """전체 게시판 메뉴 — 모바일에서 GNB 커뮤니티의 랜딩(카페 스타일 목록)."""
+    """전체 게시판 메뉴 — 모바일에서 GNB 커뮤니티의 랜딩.
+
+    상단에 최신 전체 글 미리보기(화면 1/3가량) + 아래 게시판 목록(카페 스타일).
+    """
+    recent = (
+        CommunityPost.query.filter_by(status="open", is_notice=False)
+        .filter(CommunityPost.deleted_at.is_(None))
+        .options(joinedload(CommunityPost.user), joinedload(CommunityPost.comments))
+        .order_by(CommunityPost.created_at.desc())
+        .limit(4)
+        .all()
+    )
     return render_template(
         "community/menu.html",
         active_menu="community",
         categories=COMMUNITY_CATS,
+        recent=recent,
+        author_name=author_name,
     )
 
 
