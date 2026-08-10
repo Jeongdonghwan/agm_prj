@@ -62,7 +62,7 @@
 </form>
 
 <script>
-// 변호사 검색 — 입력한 글자로 option(이름·소속)을 좁힌다
+// 변호사 검색 — 입력한 글자로 option(이름·소속)을 좁히고 첫 매치를 바로 선택
 (function () {
   const box = document.getElementById('lawyer-search');
   const sel = document.getElementById('lawyer-select');
@@ -72,11 +72,13 @@
     let first = null;
     all.forEach(o => {
       const hit = !kw || o.text.toLowerCase().includes(kw);
-      o.hidden = !hit;
+      o.hidden = o.disabled = !hit;
       if (hit && !first) first = o;
     });
-    // 현재 선택이 필터에서 사라졌으면 첫 매치로
-    if (kw && sel.selectedOptions[0] && sel.selectedOptions[0].hidden) {
+    if (!kw) return;
+    // 검색 중엔 첫 매치를 자동 선택 — '선택' 상태로 남아 저장이 막히지 않게
+    const cur = sel.selectedOptions[0];
+    if (!cur || cur.value === '' || cur.hidden) {
       sel.value = first ? first.value : '';
     }
   });

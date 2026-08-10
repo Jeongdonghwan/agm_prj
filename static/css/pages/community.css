@@ -12,8 +12,9 @@
 .comm-single{max-width:840px;margin:26px auto 0}
 
 /* ===== 좌측 게시판 메뉴(화면 왼쪽 레일) + 중앙 본문 (PC) ===== */
-.comm-shell{display:grid;grid-template-columns:250px minmax(0,1fr);align-items:stretch}
-.side-menu{border-right:1px solid var(--ink-200);padding:28px 24px 60px 28px}
+/* 화면 끝에 딱 붙지 않게 1280px 안에서 좌측 레일 + 본문 */
+.comm-shell{display:grid;grid-template-columns:250px minmax(0,1fr);align-items:stretch;max-width:1280px;margin:0 auto}
+.side-menu{border-right:1px solid var(--ink-200);padding:28px 24px 60px 20px}
 .comm-main{max-width:840px;min-width:0;width:100%;margin:26px auto 0;padding:0 24px}
 .side-menu .sm-h{display:block;font-size:13.5px;font-weight:800;letter-spacing:-.2px;margin:24px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--ink-200)}
 .side-menu .sm-h:first-child{margin-top:0}
