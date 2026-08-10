@@ -59,22 +59,11 @@ class TestGate:
 
 
 class TestProofSubmit:
-    def test_signup_page_has_guide(self, client):
+    def test_signup_page_has_no_proof_form(self, client):
+        """인증은 커뮤니티 진입 시(locked)에서만 — 가입 폼에는 없다."""
         html = client.get("/signup").get_data(as_text=True)
-        assert MOJ_URL in html and "visit-proof-sample.png" in html
-        assert 'name="visit_proof"' in html
-
-    def test_signup_with_proof_starts_pending(self, app, client, sample_file):
-        r = client.post("/signup", data={
-            "email": "newfam@example.com", "password": "pw-123456",
-            "password2": "pw-123456", "phone": "010-2222-3333",
-            "visit_proof": sample_file("proof.png"),
-        }, content_type="multipart/form-data", follow_redirects=False)
-        assert r.status_code == 302
-        with app.app_context():
-            u = User.query.filter_by(email="newfam@example.com").first()
-            assert u.visit_proof_at is not None and u.approved_at is None
-            assert u.visit_proof_url.startswith(f"visit-proof/{u.id}/")
+        assert 'name="visit_proof"' not in html
+        assert "visit-proof-sample.png" not in html
 
     def test_signup_without_proof_ok(self, app, client):
         r = client.post("/signup", data={

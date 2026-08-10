@@ -160,37 +160,26 @@ class TestBoard:
         assert "/uploads/community/samples/" in html and "탄원서_양식.txt" in html
 
 
-class TestMegaMenu:
-    """GNB 커뮤니티 메가메뉴 — 전 페이지 공통."""
+class TestGnb:
+    """GNB — 메가메뉴는 제거(게시판 탐색은 커뮤니티 좌측 메뉴가 담당)."""
 
-    GROUPS = ["안내", "상담소", "커뮤니티", "양식 자료실", "교정시설 정보",
-              "단계별 소통게시판", "공지사항", "도움되는 사이트"]
-
-    def test_groups_on_every_page(self, client):
-        for path in ("/", "/counsel/", "/lawyers/"):
+    def test_mega_menu_removed(self, client):
+        for path in ("/", "/lawyers/"):
             html = client.get(path).get_data(as_text=True)
-            mega = html.split('id="mega-community"', 1)[1].split("</header>", 1)[0]
-            for g in self.GROUPS:
-                assert g in mega, (path, g)
+            assert 'id="mega-community"' not in html, path
+            assert "mega-toggle" not in html, path
 
-    def test_board_links_present(self, client):
-        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1].split("</header>", 1)[0]
-        for key, label in (("parole", "가석방관련 상담신청"), ("letter", "편지발송 인터넷 서신"),
-                           ("market", "안기모 중고세상"), ("prison", "교정기관별 게시판"),
-                           ("petition", "징계청원 게시판")):
-            assert f"/community/board/{key}" in mega and label in mega, key
-        # 기존 게시판의 세부 주제로 링크되는 항목
-        assert "topic=%EA%B3%A0%EC%86%8C%EC%B7%A8%ED%95%98%EC%84%9C" in mega  # 고소취하서
-
-    def test_external_links_open_safely(self, client):
-        mega = client.get("/").get_data(as_text=True).split('id="mega-community"', 1)[1].split("</header>", 1)[0]
+    def test_external_links_open_safely(self, client, login_as):
+        """도움되는 사이트 외부 링크 — 커뮤니티 좌측 메뉴에서 새 탭."""
         import re
+
+        login_as("user1@example.com")
+        side = client.get("/community/").get_data(as_text=True) \
+            .split('class="side-menu"', 1)[1].split("</aside>", 1)[0]
         for url in ("https://www.moj.go.kr/corrections/1125/subview.do",
-                    "https://www.scourt.go.kr/portal/information/events/search/search.jsp",
                     "https://www.kics.go.kr/",
-                    "https://sc.scourt.go.kr/sc/krsc/criterion/down/standard_down.jsp",
                     "https://koreha.or.kr/"):
-            m = re.search(r'<a href="%s"[^>]*>' % re.escape(url), mega)
+            m = re.search(r'<a href="%s"[^>]*>' % re.escape(url), side)
             assert m, url
             assert 'target="_blank"' in m.group(0) and "noopener" in m.group(0), url
 
@@ -198,14 +187,26 @@ class TestMegaMenu:
         html = client.get("/").get_data(as_text=True)
         assert '<span class="plus">+</span>' in html
 
-    def test_panel_outside_gnb_nav(self, client):
-        """패널이 nav 안에 있으면 nav.gnb의 ul{height:48px}·li{display:flex}가 새어
-        각 열이 잘린다 — 반드시 nav 밖(header 안)에 있어야 한다."""
-        html = client.get("/").get_data(as_text=True)
-        nav = html.split('<nav class="gnb', 1)[1].split("</nav>", 1)[0]
-        assert 'id="mega-community"' not in nav
-        header = html.split("<header", 1)[1].split("</header>", 1)[0]
-        assert 'id="mega-community"' in header
+
+class TestLawyerRandomOrder:
+    """일반 변호사 목록 — 방문마다 랜덤, 같은 시드로는 페이지 이어짐."""
+
+    @staticmethod
+    def _names(html):
+        import re
+        area = html.split("plain-label", 1)[1] if "plain-label" in html else html
+        return re.findall(r"<b>([가-힣]+) 변호사</b>", area)
+
+    def test_same_seed_is_stable_and_paginates(self, client):
+        import re
+        h1 = client.get("/lawyers/?seed=42").get_data(as_text=True)
+        h2 = client.get("/lawyers/?seed=42").get_data(as_text=True)
+        names1 = re.findall(r"([가-힣]{2,4}) 변호사", h1.split("LAWYERS", 1)[1]) if "LAWYERS" in h1 else []
+        names2 = re.findall(r"([가-힣]{2,4}) 변호사", h2.split("LAWYERS", 1)[1]) if "LAWYERS" in h2 else []
+        assert names1 and names1 == names2  # 같은 시드 = 같은 순서
+        # 더보기 링크에 시드가 이어진다
+        if "more-btn" in h1:
+            assert "seed=42" in h1.split('class="more-btn"', 1)[1][:200]
 
 
 class TestAdminOnlyBoards:
@@ -277,8 +278,10 @@ class TestBoardAdmin:
             "sort_order": "99", "is_active": "1"})
         assert r.status_code == 302
         assert client.get("/community/board/visit-review").status_code == 200
-        home = client.get("/").get_data(as_text=True)
-        assert "면회 후기" in home  # 메가메뉴 반영
+        # 커뮤니티 좌측 메뉴에 반영
+        side = client.get("/community/").get_data(as_text=True) \
+            .split('class="side-menu"', 1)[1].split("</aside>", 1)[0]
+        assert "면회 후기" in side
 
     def test_edit_and_deactivate(self, app, client, login_as):
         from models import CommunityBoard

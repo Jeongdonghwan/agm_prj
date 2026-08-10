@@ -99,11 +99,11 @@ def find():
 
     q = _apply_filters(_visible_profiles_query())
     total = q.count()
-    # 노출 공정성: 일자 시드 셔플 — 하루 동안 순서가 고정돼 페이지네이션이 안전하고,
-    # 매일 순서가 바뀐다 (RAND(seed)는 시드 동일 시 결정적)
-    daily_seed = int(datetime.now().strftime("%Y%m%d"))
+    # 노출 공정성: 방문마다 순서 랜덤. RAND(seed)는 시드 동일 시 결정적이므로
+    # '더보기'(다음 페이지)에는 같은 시드를 물려줘 중복/누락 없이 이어진다.
+    seed = request.args.get("seed", type=int) or random.randint(1, 2**31 - 1)
     profiles = (
-        q.order_by(db.func.rand(daily_seed))
+        q.order_by(db.func.rand(seed))
         .offset((page - 1) * PER_PAGE)
         .limit(PER_PAGE)
         .all()
@@ -186,6 +186,7 @@ def find():
         total=total,
         page=page,
         has_more=has_more,
+        seed=seed,
         remaining=max(total - page * PER_PAGE, 0),
         category=selected,
         region=region,

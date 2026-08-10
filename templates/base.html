@@ -52,15 +52,10 @@
       <li><a href="{{ url_for('contents.posts') }}" class="{% if active_menu == 'posts' %}active{% endif %}">변호사포스트</a></li>
       <li><a href="{{ url_for('contents.cases') }}" class="{% if active_menu == 'cases' %}active{% endif %}">판례돋보기</a></li>
       <li><a href="{{ url_for('contents.news') }}" class="{% if active_menu == 'news' %}active{% endif %}">안기모뉴스</a></li>
-      {# 커뮤니티 — 전체 게시판은 캐럿을 눌러 메가메뉴로 #}
-      <li class="has-mega" id="mega-li">
-        <a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a>
-        <button type="button" class="mega-toggle" id="mega-toggle" aria-expanded="false" aria-controls="mega-community" aria-label="커뮤니티 전체 게시판 열기">▾</button>
-      </li>
+      {# 커뮤니티 — 전체 게시판 탐색은 커뮤니티 페이지의 좌측 메뉴에서 #}
+      <li><a href="{{ url_for('community.list_') }}" class="has-badge{% if active_menu == 'community' %} active{% endif %}">커뮤니티<span class="badge-new">NEW</span></a></li>
     </ul>
   </nav>
-  {# 메가메뉴는 nav 밖에 — nav.gnb의 ul/li/a 규칙이 패널 안으로 새지 않게 #}
-  {% include "_mega_menu.html" %}
 </header>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -110,25 +105,6 @@
   if (!dd || !btn) return;
   btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   document.addEventListener('click', () => dd.classList.remove('open'));
-})();
-// GNB 커뮤니티 메가메뉴 — 캐럿 클릭으로 토글(라벨 클릭은 그대로 목록 이동), 넓은 화면에선 hover로도
-(function () {
-  const li = document.getElementById('mega-li');
-  const btn = document.getElementById('mega-toggle');
-  const panel = document.getElementById('mega-community');
-  const header = li && li.closest('header.site');
-  if (!li || !btn || !panel || !header) return;
-  const setOpen = on => {
-    header.classList.toggle('mega-open', on);
-    btn.setAttribute('aria-expanded', on ? 'true' : 'false');
-  };
-  btn.addEventListener('click', e => { e.stopPropagation(); setOpen(!header.classList.contains('mega-open')); });
-  panel.addEventListener('click', e => e.stopPropagation());
-  document.addEventListener('click', () => setOpen(false));
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
-  const wide = window.matchMedia('(min-width:961px)');
-  li.addEventListener('mouseenter', () => { if (wide.matches) setOpen(true); });
-  header.addEventListener('mouseleave', () => { if (wide.matches) setOpen(false); });
 })();
 </script>
 {% block scripts %}{% endblock %}

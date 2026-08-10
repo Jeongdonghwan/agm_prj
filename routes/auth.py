@@ -183,30 +183,19 @@ def signup():
                 flash(e, "error")
             return render_template("auth/signup.html", **ctx)
 
-        proof = request.files.get("visit_proof")
         user = User(
             email=request.form["email"].strip(),
             name=request.form.get("name", "").strip() or None,
             nickname=nickname,
             phone=request.form["phone"].strip(),
             role="user",
-            status="active",  # 사이트 이용은 즉시 가능 (커뮤니티만 승인 후)
+            status="active",  # 사이트 이용은 즉시 가능 — 커뮤니티 인증은 커뮤니티 진입 시 안내
         )
         user.set_password(request.form["password"])
         db.session.add(user)
-        db.session.flush()
-        if proof and proof.filename:  # 접견예약확인 캡처 — 선택 제출 (나중에 마이페이지에서도 가능)
-            err = save_visit_proof(user, proof)
-            if err:
-                db.session.rollback()
-                flash(err, "error")
-                return render_template("auth/signup.html", **ctx)
         db.session.commit()
         _login_session(user)
-        if user.visit_proof_at:
-            flash("가입이 완료되었습니다. 접견예약확인 이미지가 접수되어 관리자 승인 후 커뮤니티를 이용할 수 있습니다.", "success")
-        else:
-            flash("가입이 완료되었습니다. 커뮤니티 이용은 마이페이지에서 접견예약확인 이미지를 제출해주세요.", "success")
+        flash("가입이 완료되었습니다. 환영합니다!", "success")
         return redirect(url_for("main.index"))
     return render_template("auth/signup.html", **ctx)
 
