@@ -139,6 +139,16 @@
   btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   document.addEventListener('click', () => dd.classList.remove('open'));
 })();
+// 모바일 상단 GNB — 페이지 이동 후에도 활성 탭이 보이게 가로 스크롤 복원
+(function () {
+  const ul = document.querySelector('nav.gnb ul');
+  if (!ul || ul.scrollWidth <= ul.clientWidth) return;
+  let on = null;  // pc-only/m-only 중 화면에 보이는 활성 탭만 (display:none 제외)
+  ul.querySelectorAll('a.active').forEach(a => { if (a.offsetParent !== null) on = a; });
+  if (!on) return;
+  const delta = on.getBoundingClientRect().left - ul.getBoundingClientRect().left;
+  ul.scrollLeft += delta - (ul.clientWidth - on.offsetWidth) / 2;
+})();
 </script>
 {% block scripts %}{% endblock %}
 </body>
