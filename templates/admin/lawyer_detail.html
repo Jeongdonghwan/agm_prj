@@ -118,6 +118,19 @@
         </div>
         <button type="button" class="btn line" id="add-career">+ 경력 추가</button>
       </div>
+      <div class="pf-field"><label>보도·활약 (연도 + 내용 + 링크 선택)</label>
+        <div id="press-rows">
+          {% for item in (profile.press or []) %}
+          <div class="career-row press-row">
+            <input type="text" name="press_year" value="{{ item.year }}" placeholder="연도" maxlength="10">
+            <input type="text" name="press_text" value="{{ item.text }}" placeholder="보도·수상·활동 내용">
+            <input type="text" name="press_url" value="{{ item.url or '' }}" placeholder="링크 URL (선택)">
+            <button type="button" class="btn danger rm-press">삭제</button>
+          </div>
+          {% endfor %}
+        </div>
+        <button type="button" class="btn line" id="add-press">+ 보도·활약 추가</button>
+      </div>
       <button class="btn pri" type="submit" style="padding:12px 0">프로필 저장</button>
     </div>
   </div>
@@ -135,8 +148,18 @@ document.getElementById('add-career').addEventListener('click', () => {
     + '<button type="button" class="btn danger rm-career">삭제</button>';
   document.getElementById('career-rows').appendChild(row);
 });
+document.getElementById('add-press').addEventListener('click', () => {
+  const row = document.createElement('div');
+  row.className = 'career-row press-row';
+  row.innerHTML = '<input type="text" name="press_year" placeholder="연도" maxlength="10">'
+    + '<input type="text" name="press_text" placeholder="보도·수상·활동 내용">'
+    + '<input type="text" name="press_url" placeholder="링크 URL (선택)">'
+    + '<button type="button" class="btn danger rm-press">삭제</button>';
+  document.getElementById('press-rows').appendChild(row);
+});
 document.addEventListener('click', e => {
   if (e.target.classList.contains('rm-career')) e.target.closest('.career-row').remove();
+  if (e.target.classList.contains('rm-press')) e.target.closest('.press-row').remove();
 });
 </script>
 {% endblock %}

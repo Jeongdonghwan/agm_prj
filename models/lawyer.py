@@ -25,6 +25,7 @@ class LawyerProfile(db.Model):
     address = db.Column(db.String(200))
     intro_full = db.Column(db.Text)
     career = db.Column(db.JSON)  # [{year,text}]
+    press = db.Column(db.JSON)   # 보도·활약 [{year,text,url?}]
     region_id = db.Column(db.Integer, db.ForeignKey("regions.id"))
     view_count = db.Column(db.Integer, default=0)
     contact_click_count = db.Column(db.Integer, default=0)  # 전화/카톡 클릭 합산

@@ -32,6 +32,8 @@ MIGRATIONS = [
     ("lawyer_ads", "category_ids", "JSON NULL"),
     # 배너 모바일 이미지 (없으면 PC 이미지 사용)
     ("banners", "image_url_mobile", "VARCHAR(300) NULL"),
+    # 변호사 보도·활약 히스토리
+    ("lawyer_profiles", "press", "JSON NULL"),
 ]
 
 # 데이터 보정 — (설명, SQL, 필요 컬럼(table, column) 또는 None).

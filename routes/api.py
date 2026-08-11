@@ -48,6 +48,40 @@ def firm_inquiry(firm_id):
     return jsonify({"ok": True})
 
 
+@bp.route("/search-suggest")
+def search_suggest():
+    """헤더 검색 자동완성 — 분야명(#해시태그) + 변호사명 상위 8건."""
+    from models import Category, LawyerProfile, User
+
+    q = (request.args.get("q") or "").strip().lstrip("#")
+    if len(q) < 1:
+        return jsonify({"suggestions": []})
+    like = f"%{q}%"
+    out = []
+    for c in (
+        Category.query.filter(Category.name.like(like))
+        .order_by(Category.parent_id.isnot(None), Category.sort_order)
+        .limit(5)
+    ):
+        out.append({"type": "category", "id": c.id, "label": f"#{c.name}"})
+    for p in (
+        LawyerProfile.query.join(User, LawyerProfile.user_id == User.id)
+        .filter(
+            User.status == "active",
+            User.deleted_at.is_(None),
+            LawyerProfile.is_visible.is_(True),
+            db.or_(User.name.like(like), LawyerProfile.firm_name.like(like)),
+        )
+        .limit(5)
+    ):
+        out.append({
+            "type": "lawyer",
+            "id": p.user_id,
+            "label": f"{p.user.name} 변호사" + (f" · {p.firm_name}" if p.firm_name else ""),
+        })
+    return jsonify({"suggestions": out[:8]})
+
+
 @bp.route("/me/nickname/check")
 def nickname_check():
     """닉네임 중복/금칙어 확인 (실시간)."""

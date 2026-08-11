@@ -115,7 +115,7 @@
     {% endif %}
 
     {% if has_more %}
-    <a class="more-btn" href="{{ url_for('lawyers.find', category=category.id if category else none, region=region.id if region else none, page=page + 1, seed=seed) }}" rel="next">변호사 {{ remaining }}명 더보기</a>
+    <a class="more-btn" href="{{ url_for('lawyers.find', category=category.id if category else none, region=region.id if region else none, q=keyword or none, page=page + 1, seed=seed) }}" rel="next">변호사 {{ remaining }}명 더보기</a>
     {% endif %}
   </div>
 </div>

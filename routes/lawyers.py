@@ -60,6 +60,19 @@ def find():
     region_id = request.args.get("region", type=int)
     page = max(request.args.get("page", 1, type=int), 1)
 
+    # 검색어(q) — 분야명(해시태그)이면 그 분야 필터로, 아니면 이름·소속·헤드라인 검색
+    keyword = (request.args.get("q") or "").strip().lstrip("#")
+    if keyword and not category_id:
+        cat = (
+            Category.query.filter(Category.name == keyword).first()
+            or Category.query.filter(Category.name.like(f"%{keyword}%"))
+            .order_by(Category.parent_id.isnot(None), Category.sort_order)
+            .first()
+        )
+        if cat:
+            category_id = cat.id
+            keyword = ""  # 분야 필터로 소화
+
     parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
 
     # 선택 분야: 대분류/세부분야 모두 허용
@@ -79,7 +92,7 @@ def find():
     )
 
     def _apply_filters(query):
-        """분야·지역 필터 — 목록과 광고 영역에 동일 적용."""
+        """분야·지역·검색어 필터 — 목록과 광고 영역에 동일 적용."""
         if selected:
             cat_ids = [selected.id]
             if selected.parent_id:
@@ -89,6 +102,15 @@ def find():
             query = query.filter(LawyerProfile.categories.any(Category.id.in_(cat_ids)))
         if region_id:
             query = query.filter(LawyerProfile.region_id == region_id)
+        if keyword:
+            like = f"%{keyword}%"
+            query = query.filter(
+                db.or_(
+                    User.name.like(like),
+                    LawyerProfile.firm_name.like(like),
+                    LawyerProfile.headline.like(like),
+                )
+            )
         return query
 
     region = None
@@ -187,6 +209,7 @@ def find():
         page=page,
         has_more=has_more,
         seed=seed,
+        keyword=keyword,
         remaining=max(total - page * PER_PAGE, 0),
         category=selected,
         region=region,

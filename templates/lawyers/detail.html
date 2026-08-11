@@ -114,6 +114,18 @@
     </div>
     {% endif %}
 
+    <!-- 보도·활약 -->
+    {% if profile.press %}
+    <div class="sec">
+      <h2>보도·활약</h2>
+      <ul class="career press-list">
+        {% for item in profile.press %}
+        <li><b>{{ item.year }}</b>{% if item.url %}<a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.text }} ↗</a>{% else %}{{ item.text }}{% endif %}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
     <!-- 사무소 안내 -->
     {% if profile.address or profile.firm_name %}
     <div class="sec" id="office">

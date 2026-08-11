@@ -120,6 +120,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 footer{border-top:1px solid var(--ink-200);margin-top:100px;padding:32px 0;font-size:12.5px;color:var(--ink-500)}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
+/* 보도·활약 — 경력 리스트와 동일 톤, 링크는 블루 */
+.press-list a{color:var(--blue-700);font-weight:600}
+.press-list a:hover{text-decoration:underline}
+
 /* 모바일 전용: 상단 프로필 사진 (PC는 우측 카드가 담당) */
 .m-profile-top{display:none}
 @media (max-width:960px){

@@ -90,6 +90,7 @@ td{padding:13px 16px;border-top:1px solid var(--ink-200);vertical-align:middle}
 .pf-cat-children{display:flex;flex-wrap:wrap;gap:6px 16px;margin:8px 0 0 22px}
 .pf-cat-children label{font-size:12.5px;color:var(--ink-500);display:flex;align-items:center;gap:5px;font-weight:600}
 .career-row{display:grid;grid-template-columns:90px 1fr auto;gap:8px;margin-bottom:8px}
+.career-row.press-row{grid-template-columns:90px 1fr 1fr auto}
 .career-row input{border:1px solid var(--ink-200);border-radius:var(--radius-sm);padding:9px 11px;font-size:13px;font-family:inherit;outline:none}
 /* 미리보기 */
 .pf-preview{position:sticky;top:80px}

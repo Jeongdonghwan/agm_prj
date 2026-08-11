@@ -68,6 +68,33 @@ class TestProfile:
         html = client.get(f"/lawyers/{uid}", follow_redirects=True).get_data(as_text=True)
         assert "테스트 헤드라인입니다" in html
 
+    def test_press_history_save_and_render(self, app, client, login_as):
+        """보도·활약 히스토리 — 저장 후 공개 프로필에 연도 리스트(링크 새 탭)로."""
+        uid = login_as("lawyer1@angimo.kr")
+        r = client.post("/lawyer/profile", data={
+            "office_phone": "02-555-0000",
+            "press_year": ["2025", "2024"],
+            "press_text": ["OO일보 인터뷰", "형사 대응 강연"],
+            "press_url": ["https://news.example.com/1", ""],
+        }, follow_redirects=True)
+        assert "프로필이 저장되었습니다" in r.get_data(as_text=True)
+        with app.app_context():
+            prof = db.session.get(LawyerProfile, uid)
+            assert prof.press == [
+                {"year": "2025", "text": "OO일보 인터뷰", "url": "https://news.example.com/1"},
+                {"year": "2024", "text": "형사 대응 강연"},
+            ]
+        html = client.get(f"/lawyers/{uid}", follow_redirects=True).get_data(as_text=True)
+        assert "보도·활약" in html and "OO일보 인터뷰" in html
+        assert 'href="https://news.example.com/1" target="_blank"' in html
+
+    def test_press_url_scheme(self, client, login_as):
+        login_as("lawyer1@angimo.kr")
+        r = client.post("/lawyer/profile", data={
+            "office_phone": "02-1", "press_year": ["2025"],
+            "press_text": ["기사"], "press_url": ["news.example.com"]})
+        assert "http(s)://로 시작" in r.get_data(as_text=True)
+
     def test_contact_required(self, client, login_as):
         login_as("lawyer1@angimo.kr")
         r = client.post("/lawyer/profile", data={"headline": "h", "office_phone": "", "kakao_url": ""})

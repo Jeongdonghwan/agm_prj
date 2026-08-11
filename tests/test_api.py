@@ -71,6 +71,41 @@ class TestFirmInquiry:
         assert r.status_code == 404
 
 
+class TestSearch:
+    """해시태그(분야)·변호사 검색 + 자동완성."""
+
+    def test_suggest_returns_categories_and_lawyers(self, client):
+        data = client.get("/api/search-suggest?q=형사").get_json()
+        labels = [s["label"] for s in data["suggestions"]]
+        assert any(l.startswith("#") for l in labels)  # 분야 해시태그
+        data = client.get("/api/search-suggest?q=김").get_json()
+        assert any(s["type"] == "lawyer" for s in data["suggestions"])
+
+    def test_suggest_empty_query(self, client):
+        assert client.get("/api/search-suggest?q=").get_json() == {"suggestions": []}
+
+    def test_q_matches_category_as_hashtag(self, app, client):
+        """분야명 검색(#형사일반)이면 그 분야 필터로 전환."""
+        html = client.get("/lawyers/?q=%23형사일반").get_data(as_text=True)
+        assert "형사일반" in html
+
+    def test_q_matches_lawyer_name(self, app, client):
+        from models import LawyerProfile
+
+        with app.app_context():
+            p = (LawyerProfile.query.filter(LawyerProfile.is_visible.is_(True),
+                                            LawyerProfile.photo_url.isnot(None)).first())
+            name = p.user.name
+        html = client.get(f"/lawyers/?q={name}").get_data(as_text=True)
+        area = html.split("plain-label", 1)[1] if "plain-label" in html else html
+        assert f"{name} 변호사" in area
+
+    def test_header_has_search_form(self, client):
+        html = client.get("/").get_data(as_text=True)
+        assert 'id="gsearch"' in html and 'action="/lawyers/"' in html
+        assert 'id="gsearch-suggest"' in html  # 자동완성 드롭다운
+
+
 class TestNickname:
     def test_check_banned_and_duplicate(self, app, client):
         r = client.get("/api/me/nickname/check?value=관리자짱")

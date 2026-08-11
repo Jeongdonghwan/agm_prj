@@ -52,6 +52,17 @@ def apply_profile_form(prof, form, files, owner_id):
         if year or text:
             career.append({"year": year, "text": text})
 
+    # 보도·활약: press_year[] + press_text[] + press_url[] (URL 선택)
+    press = []
+    for year, text, url in zip(
+        form.getlist("press_year"), form.getlist("press_text"), form.getlist("press_url")
+    ):
+        year, text, url = year.strip(), text.strip(), url.strip()
+        if url and not url.startswith(("http://", "https://")):
+            errors.append("보도·활약 링크는 http(s)://로 시작해야 합니다.")
+        if year or text:
+            press.append({"year": year, "text": text, **({"url": url} if url else {})})
+
     photo = files.get("photo") if files else None
     photo_url = prof.photo_url
     if photo and photo.filename:
@@ -74,6 +85,7 @@ def apply_profile_form(prof, form, files, owner_id):
     prof.address = form.get("address", "").strip() or None
     prof.intro_full = form.get("intro_full", "").strip() or None
     prof.career = career or None
+    prof.press = press or None
     prof.region_id = form.get("region_id", type=int) or None
     prof.photo_url = photo_url
     prof.categories = (
