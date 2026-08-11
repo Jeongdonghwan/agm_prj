@@ -43,11 +43,15 @@
 <div class="wrap profile-layout">
   <!-- 좌측 본문 -->
   <div>
-    <!-- 모바일 전용: 프로필 사진을 최상단에 (PC는 우측 카드가 담당) -->
-    <div class="m-profile-top">
-      <div class="ph">{% if profile.photo_url %}<img src="{{ profile.photo_url }}" alt="{{ user.name }} 변호사">{% else %}{{ user.name[0] }}{% endif %}</div>
+    <!-- 모바일 전용: 상단 대형 사진 + 헤드라인 오버레이 (PC는 우측 카드 + 좌측 헤드라인) -->
+    <div class="m-hero">
+      {% if profile.photo_url %}<img src="{{ profile.photo_url }}" alt="{{ user.name }} 변호사">{% endif %}
+      <div class="m-hero-tx">{{ profile.headline }}<b>.</b></div>
+    </div>
+    <div class="m-name">
       <b>{{ user.name }} 변호사</b>
-      {% if profile.firm_name %}<small>{{ profile.firm_name }}</small>{% endif %}
+      {% if profile.firm_name %}<span class="fm">{{ profile.firm_name }}</span>{% endif %}
+      {% if profile.address %}<span class="ad"><i data-lucide="map-pin"></i>{{ profile.address }}</span>{% endif %}
     </div>
 
     <!-- 헤드라인 -->
@@ -90,7 +94,10 @@
       {% if solve_posts %}
       <div class="solve-list">
         {% for post in solve_posts %}
-        <a class="solve-item" href="{{ url_for('contents.posts') }}"><span class="rb">{{ post.result_badge or '해결' }}</span><h4>{{ post.title }}</h4><i data-lucide="chevron-right"></i></a>
+        <a class="solve-item" href="{{ url_for('contents.posts') }}">
+          {% if post.thumbnail_url %}<span class="th"><img src="{{ post.thumbnail_url }}" alt="" loading="lazy"></span>{% endif %}
+          <span class="rb">{{ post.result_badge or '해결' }}</span><h4>{{ post.title }}</h4><i data-lucide="chevron-right"></i>
+        </a>
         {% endfor %}
       </div>
       <a class="see-all" href="{{ url_for('contents.posts') }}">해결사례 전체보기 <i data-lucide="chevron-right"></i></a>
@@ -176,7 +183,31 @@
   <span>상호: {{ site_name }} · 사업자등록번호 000-00-00000 · contact@angimo.co.kr</span>
 </div></footer>
 
+<!-- 위로가기 (이 페이지는 base 미상속이라 별도 포함) -->
+<button type="button" class="fab-top" id="fab-top" aria-label="맨 위로" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+</button>
+
+<!-- 모바일 전용: 하단 고정 문의 바 (로톡식) -->
+{% if profile.office_phone or profile.kakao_url %}
+<div class="m-contact-bar">
+  {% if profile.kakao_url %}<a class="kk contact-click" data-id="{{ profile.user_id }}" data-type="kakao" href="{{ profile.kakao_url }}" target="_blank" rel="noopener">{{ ico.kakao(16) }}카카오톡 문의</a>{% endif %}
+  {% if profile.office_phone %}<a class="call contact-click" data-id="{{ profile.user_id }}" data-type="phone" href="tel:{{ profile.office_phone }}"><i data-lucide="phone"></i>전화 문의하기</a>{% endif %}
+</div>
+{% endif %}
+
 <script>lucide.createIcons();</script>
 <script src="{{ url_for('static', filename='js/contact-click.js') }}"></script>
+<script>
+// 위로가기 — 스크롤 400 넘으면 표시
+(function () {
+  const btn = document.getElementById('fab-top');
+  if (!btn) return;
+  const sync = () => { btn.hidden = window.scrollY < 400; };
+  window.addEventListener('scroll', sync, { passive: true });
+  sync();
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+})();
+</script>
 </body>
 </html>

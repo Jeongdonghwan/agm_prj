@@ -131,19 +131,54 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .press-list a{color:var(--blue-700);font-weight:600}
 .press-list a:hover{text-decoration:underline}
 
-/* 모바일 전용: 상단 프로필 사진 (PC는 우측 카드가 담당) */
-.m-profile-top{display:none}
+/* 위로가기 (이 페이지는 base.css 미로드 — 자체 정의) */
+.fab-top{position:fixed;right:24px;bottom:24px;z-index:96;width:44px;height:44px;border-radius:50%;background:#fff;color:var(--ink-900);border:1px solid var(--ink-200);box-shadow:0 6px 18px rgba(10,42,94,.15);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.18s}
+.fab-top:hover{color:var(--blue-600);border-color:var(--blue-600);transform:translateY(-2px)}
+.fab-top svg{width:19px;height:19px}
+.fab-top[hidden]{display:none}
+@media (max-width:960px){.fab-top{right:14px;bottom:92px;width:40px;height:40px}}  /* 하단 문의 바 위 */
+
+/* ===== 모바일 재구성 (로톡식) — 상단 대형 사진+헤드라인 오버레이, 하단 고정 문의 바 ===== */
+.m-hero,.m-name,.m-contact-bar{display:none}
+.solve-item .th{display:none}
 @media (max-width:960px){
-  .profile-layout{grid-template-columns:1fr;gap:40px}
-  .side{position:static}
+  body{padding-bottom:78px}  /* 하단 고정 문의 바 자리 */
+  .profile-layout{grid-template-columns:1fr;gap:40px;margin-top:0}
   .basic{grid-template-columns:1fr;gap:24px}
-  .headline{font-size:26px}
-  .sec{margin-top:64px}
-  .m-profile-top{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:28px}
-  .m-profile-top .ph{width:120px;height:120px;border-radius:50%;overflow:hidden;background:linear-gradient(160deg,#E8ECF3,#F4F6FA);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#B0B8C1;box-shadow:var(--shadow-card)}
-  .m-profile-top .ph img{width:100%;height:100%;object-fit:cover}
-  .m-profile-top b{font-size:17px;font-weight:800;margin-top:6px}
-  .m-profile-top small{font-size:13px;color:var(--ink-500)}
-  /* 우측 카드의 대형 사진은 상단과 중복 — 모바일에선 숨김 */
-  .side .cc-photo{display:none}
+  .sec{margin-top:56px}
+  /* PC용 헤드라인·우측 카드는 모바일에서 대체됨 */
+  .headline{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}  /* h1 유지(SEO), 시각적 숨김 */
+  .side{display:none}
+
+  /* 상단 대형 사진 + 헤드라인 오버레이 */
+  .m-hero{display:block;position:relative;margin:0 -20px;background:linear-gradient(150deg,#123B7E,var(--blue-900));min-height:300px;overflow:hidden}
+  .m-hero img{display:block;width:100%;aspect-ratio:4/4.2;max-height:440px;object-fit:cover;object-position:top center}
+  .m-hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,20,40,0) 42%,rgba(10,20,40,.72) 100%)}
+  .m-hero-tx{position:absolute;left:22px;right:22px;bottom:20px;z-index:2;color:#fff;font-size:22px;font-weight:800;line-height:1.42;letter-spacing:-.5px;word-break:keep-all}
+  .m-hero-tx b{color:var(--red-500)}
+
+  /* 사진 아래 이름·소속·주소 */
+  .m-name{display:flex;flex-direction:column;gap:5px;padding:20px 0 22px;border-bottom:1px solid var(--ink-200)}
+  .m-name b{font-size:19px;font-weight:800;letter-spacing:-.4px}
+  .m-name .fm{font-size:13.5px;color:var(--ink-500);font-weight:600}
+  .m-name .ad{font-size:12.5px;color:var(--ink-500);display:flex;align-items:center;gap:4px}
+  .m-name .ad i{width:13px;height:13px;flex-shrink:0}
+
+  /* 해결사례 — 가로 스크롤 카드 (썸네일 + 결과 뱃지) */
+  .solve-list{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:6px;border-top:none;margin-top:18px}
+  .solve-list::-webkit-scrollbar{display:none}
+  .solve-item{flex:0 0 156px;display:flex;flex-direction:column;align-items:flex-start;gap:7px;border:none;padding:0}
+  .solve-item .th{display:block;width:100%;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--blue-050)}
+  .solve-item .th img{width:100%;height:100%;object-fit:cover}
+  .solve-item h4{font-size:13px;font-weight:600;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal}
+  .solve-item i{display:none}
+  .solve-item .rb{order:9}
+
+  /* 하단 고정 문의 바 */
+  .m-contact-bar{display:flex;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:120;background:#fff;border-top:1px solid var(--ink-200);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+  .m-contact-bar a{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;font-size:14.5px;font-weight:800;padding:13px 0;border-radius:var(--radius-md)}
+  .m-contact-bar .call{background:var(--blue-600);color:#fff}
+  .m-contact-bar .call:active{background:var(--blue-700)}
+  .m-contact-bar .kk{background:#FAE100;color:#371D1E}
+  .m-contact-bar a i,.m-contact-bar a svg{width:16px;height:16px}
 }
