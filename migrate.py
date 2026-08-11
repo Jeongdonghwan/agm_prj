@@ -183,22 +183,35 @@ def run():
             print("  * 커뮤니티 기본 카테고리 3종 DB 이관")
             applied += 1
 
-        # 게시판 그룹 '안내'를 '공지사항'으로 통합 (있을 때만 — 재실행 안전)
-
+        # 게시판 그룹 '안내'를 '공지사항'으로 통합 (있을 때만 — 재실행 안전).
+        # ⚠️ ORM delete는 삭제 직전 자식 FK를 NULL로 되돌리므로 raw SQL로 처리한다.
+        notice = CommunityBoard.query.filter_by(label="공지사항", parent_id=None).first()
         guide = CommunityBoard.query.filter_by(label="안내", parent_id=None).first()
-        if guide:
-            notice = CommunityBoard.query.filter_by(label="공지사항", parent_id=None).first()
-            if notice:
-                base_order = max(
-                    [c.sort_order or 0 for c in notice.children] or [0]
-                )
-                for i, child in enumerate(list(guide.children), start=1):
-                    child.parent_id = notice.id
-                    child.sort_order = base_order + i
-                db.session.flush()
-                db.session.delete(guide)
-                db.session.commit()
-                print("  * 게시판 그룹 '안내' → '공지사항' 통합")
+        if guide and notice:
+            db.session.execute(
+                text("UPDATE community_boards SET parent_id = :n WHERE parent_id = :g"),
+                {"n": notice.id, "g": guide.id},
+            )
+            db.session.execute(
+                text("DELETE FROM community_boards WHERE id = :g"), {"g": guide.id}
+            )
+            db.session.commit()
+            print("  * 게시판 그룹 '안내' → '공지사항' 통합")
+            applied += 1
+
+        # 위 통합의 구버전 버그 복구 — 최상위로 떨어져 나간 3개 게시판을 공지사항 밑으로
+        if notice:
+            result = db.session.execute(
+                text(
+                    "UPDATE community_boards SET parent_id = :n "
+                    "WHERE slug IN ('ad-inquiry', 'notice-angimo', 'notice-community') "
+                    "AND (parent_id IS NULL OR parent_id != :n)"
+                ),
+                {"n": notice.id},
+            )
+            db.session.commit()
+            if result.rowcount:
+                print(f"  * 공지사항 하위 게시판 위치 복구 — {result.rowcount}건")
                 applied += 1
 
         print(f"[migrate] 적용 {applied}건 / 이미 반영 {skipped}건 — 데이터는 보존됩니다.")

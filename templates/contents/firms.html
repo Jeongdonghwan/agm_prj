@@ -71,11 +71,20 @@
 const modal = document.getElementById('inquiry-modal');
 const agree = document.getElementById('inq-agree');
 const submitBtn = document.getElementById('inq-submit');
+function openInquiry(id, name) {
+  document.getElementById('inq-firm-id').value = id;
+  document.getElementById('inq-firm-name').textContent = name;
+  modal.classList.add('on');
+}
 document.querySelectorAll('.open-inquiry').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.getElementById('inq-firm-id').value = btn.dataset.id;
-    document.getElementById('inq-firm-name').textContent = btn.dataset.name;
-    modal.classList.add('on');
+  btn.addEventListener('click', () => openInquiry(btn.dataset.id, btn.dataset.name));
+});
+// 카드 아무 곳(텍스트·사진)을 눌러도 간편상담 — 링크칩·버튼은 원래 동작 유지
+document.querySelectorAll('.firm-card').forEach(card => {
+  card.addEventListener('click', e => {
+    if (e.target.closest('a') || e.target.closest('.open-inquiry')) return;
+    const btn = card.querySelector('.open-inquiry');
+    if (btn) openInquiry(btn.dataset.id, btn.dataset.name);
   });
 });
 agree.addEventListener('change', () => { submitBtn.disabled = !agree.checked; });

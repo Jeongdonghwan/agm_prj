@@ -9,7 +9,7 @@
 .firm-chips a.on{border-color:var(--blue-600);color:var(--blue-600);background:var(--blue-050);font-weight:700}
 .ad-label{margin:22px 0 6px;font-size:11px;color:var(--ink-500);letter-spacing:1px;display:flex;align-items:center;gap:6px}
 .ad-label em{font-style:normal;border:1px solid var(--ink-200);border-radius:4px;padding:0 5px;font-size:10px}
-.firm-card{padding:26px 0;border-bottom:1px solid var(--ink-200)}
+.firm-card{padding:26px 0;border-bottom:1px solid var(--ink-200);cursor:pointer}
 .firm-card h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
 .firm-card h2 b{color:var(--blue-600)}
 .firm-card .desc{margin-top:10px;font-size:14px;color:var(--ink-500);line-height:1.65;max-width:640px}

@@ -495,7 +495,9 @@ class TestSideMenu:
             html = client.get(path).get_data(as_text=True)
             side = html.split('class="side-menu"', 1)[1].split("</aside>", 1)[0]
             for label in ("전체", "인기", "자유게시판", "상담소", "양식 자료실",
-                          "안기모 중고세상", "도움되는 사이트"):
+                          "안기모 중고세상", "도움되는 사이트",
+                          # 공지사항 그룹에 통합된 3종 (안내 그룹 통합 회귀 방지)
+                          "광고 및 협업 문의", "안기모 공지사항", "커뮤니티 공지사항"):
                 assert label in side, (path, label)
 
     def test_side_menu_marks_active(self, client, login_as):
