@@ -133,6 +133,57 @@ class TestLayout:
             assert "pf.kakao.com" in block and 'target="_blank"' in block, path
             assert "1:1 상담" in html
 
+    def test_banner_slots_posts_and_counsel(self, app, client, login_as):
+        """신규 배너 구좌 — 변호사포스트 상단 대체 / 상담신청 2번째 글 아래."""
+        from extensions import db
+        from models import Banner
+        from utils import invalidate_page_cache
+
+        # 등록 전: 텍스트 히어로 유지, counsel엔 배너 없음
+        assert 'class="post-hero"' in client.get("/posts").get_data(as_text=True)
+        assert "counsel-feed-banner" not in client.get("/counsel/").get_data(as_text=True)
+        with app.app_context():
+            db.session.add(Banner(position="posts_hero", title="포스트 상단",
+                                  image_url="/uploads/banners/p.png",
+                                  image_url_mobile="/uploads/banners/p-m.png"))
+            db.session.add(Banner(position="counsel_feed", title="상담 피드",
+                                  image_url="/uploads/banners/c.png", link_url="/firms"))
+            db.session.commit()
+            invalidate_page_cache()
+        html = client.get("/posts").get_data(as_text=True)
+        assert "posts-hero-banner" in html and 'class="post-hero"' not in html
+        assert '<source media="(max-width: 960px)" srcset="/uploads/banners/p-m.png">' in html
+        html = client.get("/counsel/").get_data(as_text=True)
+        assert "counsel-feed-banner" in html and "/uploads/banners/c.png" in html
+        # 2번째 글 다음에 위치
+        second = html.split('class="qa-item"')[2]
+        assert "counsel-feed-banner" in second
+
+    def test_hero_image_banner_and_arrows(self, app, client, login_as):
+        """히어로 — 이미지 배너 슬라이드(picture) + 2장 이상이면 ←→ 화살표."""
+        from extensions import db
+        from models import Banner
+        from utils import invalidate_page_cache
+
+        with app.app_context():
+            db.session.add(Banner(position="main_hero", title="h1", image_url="/uploads/banners/h1.png",
+                                  image_url_mobile="/uploads/banners/h1-m.png", link_url="/lawyers/"))
+            db.session.add(Banner(position="main_hero", title="h2", image_url="/uploads/banners/h2.png"))
+            db.session.commit()
+            invalidate_page_cache()
+        html = client.get("/").get_data(as_text=True)
+        assert "img-slide" in html and "/uploads/banners/h1.png" in html
+        assert 'id="hero-prev"' in html and 'id="hero-next"' in html
+        assert 'srcset="/uploads/banners/h1-m.png"' in html
+
+    def test_banner_form_has_mobile_field_and_size_hints(self, client, login_as):
+        login_as("admin@angimo.kr")
+        html = client.get("/admin/banners/new").get_data(as_text=True)
+        assert 'name="image_mobile"' in html
+        for hint in ("1140×460", "750×360", "2000×260", "1600×200"):
+            assert hint in html, hint
+        assert "관리용 메모" in html and "메인카피" not in html
+
     def test_popup_banner_renders_only_when_registered(self, app, client, login_as):
         """팝업 배너 — 어드민 등록 시에만 메인에 모달 마크업."""
         from utils import invalidate_page_cache

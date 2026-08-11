@@ -38,60 +38,54 @@ CATEGORY_ICONS = [
 
 
 def _parse_banner(b):
-    """배너 title 규칙: '메인카피|포인트카피(파란 줄)|서브카피' — 배너관리에서 그대로 입력."""
+    """(구) 텍스트 배너 호환 — title '메인|포인트|서브'. 이미지가 있으면 이미지가 우선."""
     parts = (b.title or "").split("|")
     return {
         "main": parts[0].strip() if parts else "",
         "point": parts[1].strip() if len(parts) > 1 else "",
         "sub": parts[2].strip() if len(parts) > 2 else "",
         "image": b.image_url,
+        "image_mobile": b.image_url_mobile,
         "link": b.link_url,
     }
+
+
+def _active_banners(position, limit=None):
+    """활성 + 기간 유효 배너 (sort_order 순)."""
+    now = datetime.now()
+    q = (
+        Banner.query.filter(
+            Banner.position == position,
+            Banner.is_active.is_(True),
+            db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
+            db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
+        )
+        .order_by(Banner.sort_order)
+    )
+    if limit:
+        q = q.limit(limit)
+    return q.all()
+
+
+def get_slot_banner(position):
+    """단일 구좌 배너(posts_hero·counsel_feed 등) — 이미지 있는 상위 1장."""
+    for b in _active_banners(position):
+        if b.image_url:
+            return b
+    return None
 
 
 def get_home_data():
     now = datetime.now()
 
-    # 메인 사이드 배너 (B안 우측 커뮤니티 슬롯) — 고정 1장만 노출
-    side_banners = [
-        _parse_banner(b)
-        for b in Banner.query.filter(
-            Banner.position == "main_side",
-            Banner.is_active.is_(True),
-            db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
-            db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
-        )
-        .order_by(Banner.sort_order)
-        .limit(1)
-        .all()
-    ]
+    # 메인 사이드 배너 (B안 우측 슬롯) — 고정 1장만 노출
+    side_banners = [_parse_banner(b) for b in _active_banners("main_side", 1)]
 
-    # 메인 팝업 배너 — 이미지가 있는 1장만 (배너 관리에서 position=popup)
-    popup_banner = (
-        Banner.query.filter(
-            Banner.position == "popup",
-            Banner.is_active.is_(True),
-            Banner.image_url.isnot(None),
-            db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
-            db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
-        )
-        .order_by(Banner.sort_order)
-        .first()
-    )
+    # 메인 팝업 배너 — 이미지가 있는 1장만
+    popup_banner = get_slot_banner("popup")
 
-    # 히어로 롤링 배너 (배너 관리 연동, sort_order 순)
-    hero_banners = [
-        _parse_banner(b)
-        for b in Banner.query.filter(
-            Banner.position == "main_hero",
-            Banner.is_active.is_(True),
-            db.or_(Banner.starts_at.is_(None), Banner.starts_at <= now),
-            db.or_(Banner.ends_at.is_(None), Banner.ends_at >= now),
-        )
-        .order_by(Banner.sort_order)
-        .limit(6)
-        .all()
-    ]
+    # 히어로 롤링 배너 — 이미지+링크 (구 텍스트 배너는 텍스트로 폴백)
+    hero_banners = [_parse_banner(b) for b in _active_banners("main_hero", 6)]
 
     # 탭1: 커뮤니티 인기글 6 (조회+추천×3)
     hot_community = (

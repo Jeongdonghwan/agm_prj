@@ -39,6 +39,11 @@
         <span>{{ c.created_at.strftime('%Y.%m.%d') }} 질문</span>
       </div>
     </a>
+    {# 위에서 두 번째 글 아래 — 배너 광고 구좌 (어드민 배너 관리: 상담신청 목록) #}
+    {% if loop.index == 2 and page == 1 and feed_banner %}
+    {% set slot_banner = feed_banner %}{% set slot_class = 'counsel-feed-banner' %}
+    {% include "_banner_slot.html" %}
+    {% endif %}
     {% else %}
     <div style="padding:60px 0;text-align:center;color:var(--ink-500)">등록된 상담글이 없습니다.</div>
     {% endfor %}

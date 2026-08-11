@@ -16,6 +16,11 @@
   {% endfor %}
 </div></div>
 
+{% if hero_banner and hero_banner.image_url %}
+{# 어드민 배너(변호사포스트 상단)가 있으면 텍스트 히어로 대신 배너 #}
+{% set slot_banner = hero_banner %}{% set slot_class = 'posts-hero-banner' %}
+{% include "_banner_slot.html" %}
+{% else %}
 <div class="post-hero">
   {% if ptype == 'case' %}
   <h1><span class="script">Case</span>의뢰인의 문제를 해결한 실제 사례<b>.</b></h1>
@@ -31,6 +36,7 @@
   <p>현장에서 길어 올린 변호사들의 이야기입니다.</p>
   {% endif %}
 </div>
+{% endif %}
 
 <div class="wrap">
   <div class="post-filter">

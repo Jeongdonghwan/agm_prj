@@ -66,8 +66,11 @@ def list_():
     for u in User.query.filter(User.id.in_(lawyer_ids or [0])):
         lawyer_names[u.id] = u.name
 
+    from services import get_slot_banner
+
     return render_template(
         "counsel/list.html",
+        feed_banner=get_slot_banner("counsel_feed"),
         active_menu="counsel",
         items=items,
         total=total,

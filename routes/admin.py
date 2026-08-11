@@ -876,19 +876,13 @@ def news_delete(news_id):
 @role_required("admin")
 def banners():
     items = Banner.query.order_by(Banner.position, Banner.sort_order).all()
-    # 사이드/팝업 배너는 순서 상위 1장만 실제 노출 — 목록에서 구분 표시용
-    side_live = next(
-        (b for b in items if b.position == "main_side" and b.is_active), None
-    )
-    popup_live = next(
-        (b for b in items if b.position == "popup" and b.is_active), None
-    )
-    return render_template(
-        "admin/banners.html",
-        items=items,
-        side_live_id=side_live.id if side_live else None,
-        popup_live_id=popup_live.id if popup_live else None,
-    )
+    # 히어로 외 구좌는 순서 상위 1장만 실제 노출 — 목록에서 구분 표시용
+    live_ids = {}
+    for pos in ("main_side", "popup", "posts_hero", "counsel_feed"):
+        live = next((b for b in items if b.position == pos and b.is_active), None)
+        if live:
+            live_ids[pos] = live.id
+    return render_template("admin/banners.html", items=items, live_ids=live_ids)
 
 
 @bp.route("/banners/new", methods=["GET", "POST"])
@@ -905,7 +899,8 @@ def banner_form(banner_id=None):
             db.session.add(item)
         item.position = (
             form.get("position")
-            if form.get("position") in ("main_hero", "main_side", "popup")
+            if form.get("position")
+            in ("main_hero", "main_side", "popup", "posts_hero", "counsel_feed")
             else "main_hero"
         )
         item.title = form.get("title", "").strip()[:100]
@@ -920,7 +915,14 @@ def banner_form(banner_id=None):
             if saved:
                 item.image_url = saved
         elif form.get("remove_image") == "1":
-            item.image_url = None  # 기본 일러스트로 되돌리기
+            item.image_url = None  # 기본 표시(텍스트/일러스트)로 되돌리기
+        img_m = request.files.get("image_mobile")
+        if img_m and img_m.filename:
+            saved = _save_image(img_m, "banners")
+            if saved:
+                item.image_url_mobile = saved
+        elif form.get("remove_image_mobile") == "1":
+            item.image_url_mobile = None  # 모바일도 PC 이미지 사용
         _log("banner_save", f"banner:{item.id or 'new'}", {"title": item.title})
         db.session.commit()
         flash("배너가 저장되었습니다.", "success")

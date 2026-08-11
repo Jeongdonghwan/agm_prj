@@ -7,20 +7,21 @@
 <div class="panel" style="margin-top:0">
   <div class="p-head"><h2>배너 <span class="cnt">{{ items | length }}</span></h2><a class="btn pri" href="{{ url_for('admin.banner_form') }}">+ 새 배너</a></div>
   <div style="background:var(--blue-050);padding:11px 20px;font-size:12.5px;color:var(--ink-500);border-bottom:1px solid var(--ink-200)">
-    💡 <b>메인 히어로</b>는 등록한 배너가 순서대로 롤링되고, <b>메인 사이드</b>(커뮤니티 칸)는 <b>순서 상위 1장만 고정</b>으로 노출됩니다.
+    💡 <b>메인 히어로</b>는 등록한 배너가 롤링(←→ 이동 가능)되고, 나머지 위치는 <b>순서 상위 1장만</b> 노출됩니다. 위치를 고르면 등록 화면에 권장 이미지 사이즈가 표시됩니다.
   </div>
+  {% set pos_labels = {'main_hero': '메인 히어로', 'main_side': '메인 사이드', 'popup': '메인 팝업', 'posts_hero': '변호사포스트 상단', 'counsel_feed': '상담신청 목록'} %}
   <table>
-    <tr><th>위치</th><th>제목</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
+    <tr><th>위치</th><th>제목(메모)</th><th>이미지</th><th>기간</th><th>순서</th><th>상태</th><th></th></tr>
     {% for b in items %}
     <tr>
-      <td>{{ {'main_side': '메인 사이드', 'popup': '메인 팝업'}.get(b.position, '메인 히어로') }}</td>
+      <td>{{ pos_labels.get(b.position, b.position) }}</td>
       <td><b>{{ b.title }}</b></td>
+      <td style="white-space:nowrap">{% if b.image_url %}<span class="badge ok">PC</span>{% endif %}{% if b.image_url_mobile %} <span class="badge blue">모바일</span>{% endif %}{% if not b.image_url %}<span class="badge wait">없음</span>{% endif %}</td>
       <td>{{ b.starts_at.strftime('%m.%d') if b.starts_at else '~' }} ~ {{ b.ends_at.strftime('%m.%d') if b.ends_at else '' }}</td>
       <td>{{ b.sort_order }}</td>
       <td>
         {% if not b.is_active %}<span class="badge wait">대기</span>
-        {% elif b.position == 'main_side' and b.id != side_live_id %}<span class="badge wait" title="사이드는 순서 상위 1장만 노출됩니다">순번 밀림</span>
-        {% elif b.position == 'popup' and b.id != popup_live_id %}<span class="badge wait" title="팝업은 순서 상위 1장만 노출됩니다">순번 밀림</span>
+        {% elif b.position != 'main_hero' and b.id != live_ids.get(b.position) %}<span class="badge wait" title="이 위치는 순서 상위 1장만 노출됩니다">순번 밀림</span>
         {% else %}<span class="badge ok">노출중</span>{% endif %}
       </td>
       <td style="white-space:nowrap">
@@ -31,7 +32,7 @@
       </td>
     </tr>
     {% else %}
-    <tr><td colspan="6" style="color:var(--ink-500)">등록된 배너가 없습니다.</td></tr>
+    <tr><td colspan="7" style="color:var(--ink-500)">등록된 배너가 없습니다.</td></tr>
     {% endfor %}
   </table>
 </div>

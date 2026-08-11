@@ -60,9 +60,12 @@ def posts():
     total = q.count()
     items = q.offset((page - 1) * PER_PAGE).limit(PER_PAGE).all()
 
+    from services import get_slot_banner
+
     parents = Category.query.filter_by(parent_id=None).order_by(Category.sort_order).all()
     return render_template(
         "contents/posts.html",
+        hero_banner=get_slot_banner("posts_hero"),
         active_menu="posts",
         items=items,
         total=total,

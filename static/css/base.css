@@ -93,6 +93,16 @@ nav.gnb a.has-badge{padding:0 14px}
   .bottom-nav a.on svg{stroke-width:2.4}
 }
 
+/* ===== 배너 구좌 공용 ===== */
+.banner-slot{overflow:hidden}
+.banner-slot img{display:block;width:100%;height:auto}
+/* 변호사포스트 상단 배너 — 권장 PC 2000×260 / 모바일 750×280 */
+.banner-slot.posts-hero-banner{max-height:280px}
+.banner-slot.posts-hero-banner img{max-height:280px;object-fit:cover}
+/* 상담신청 목록 중간 배너 — 권장 PC 1600×200 / 모바일 750×200 */
+.banner-slot.counsel-feed-banner{border-radius:var(--radius-md);margin:6px 0}
+.banner-slot.counsel-feed-banner img{max-height:200px;object-fit:cover}
+
 /* ===== Footer ===== */
 footer.site{background:var(--blue-900);color:#fff;margin-top:56px;padding:40px 0 32px;font-size:13px}
 footer.site .logo{color:#fff;font-size:20px}

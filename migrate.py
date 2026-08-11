@@ -30,6 +30,8 @@ MIGRATIONS = [
     ("users", "admin_perms", "JSON NULL"),
     # 변호사 광고 노출 분야 다중 선택
     ("lawyer_ads", "category_ids", "JSON NULL"),
+    # 배너 모바일 이미지 (없으면 PC 이미지 사용)
+    ("banners", "image_url_mobile", "VARCHAR(300) NULL"),
 ]
 
 # 데이터 보정 — (설명, SQL, 필요 컬럼(table, column) 또는 None).
@@ -66,10 +68,11 @@ DATA_FIXES = [
         ("lawyer_ads", "category_ids"),
     ),
     (
-        # 배너 위치에 팝업 추가 — MODIFY는 재실행해도 결과 동일
-        "배너 position ENUM에 popup 추가",
+        # 배너 위치 ENUM 확장 — MODIFY는 재실행해도 결과 동일
+        "배너 position ENUM 확장(popup·posts_hero·counsel_feed)",
         "ALTER TABLE banners MODIFY position "
-        "ENUM('main_hero','main_side','popup') DEFAULT 'main_hero'",
+        "ENUM('main_hero','main_side','popup','posts_hero','counsel_feed') "
+        "DEFAULT 'main_hero'",
         ("banners", "position"),
     ),
     (

@@ -29,9 +29,13 @@ class Banner(db.Model):
     __tablename__ = "banners"
 
     id = db.Column(db.Integer, primary_key=True)
-    position = db.Column(ENUM("main_hero", "main_side", "popup"), default="main_hero")
-    title = db.Column(db.String(100))
-    image_url = db.Column(db.String(300))
+    position = db.Column(
+        ENUM("main_hero", "main_side", "popup", "posts_hero", "counsel_feed"),
+        default="main_hero",
+    )
+    title = db.Column(db.String(100))          # 관리용 메모 (화면 미노출)
+    image_url = db.Column(db.String(300))      # PC 이미지
+    image_url_mobile = db.Column(db.String(300))  # 모바일 이미지 (없으면 PC 이미지 사용)
     link_url = db.Column(db.String(300))
     sort_order = db.Column(db.Integer, default=0)
     is_active = db.Column(db.Boolean, default=True)

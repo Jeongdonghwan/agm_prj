@@ -17,8 +17,34 @@ function initRolling(containerSel, slideClass, curId, intervalMs) {
     if (cur) cur.textContent = i + 1;
   }, intervalMs);
 }
-initRolling('#hero-banner', '.hero-slide', 'hero-cur', 4000); // 히어로 (B안은 data-static 랜덤 고정)
-// B안 우측 커뮤니티 배너는 고정 1장 — 롤링 없음
+// 히어로 — 랜덤 시작 + 자동 롤링 + ←/→ 화살표 이동
+(function () {
+  const container = document.querySelector('#hero-banner');
+  if (!container) return;
+  const slides = container.querySelectorAll('.hero-slide');
+  const cur = document.getElementById('hero-cur');
+  if (!slides.length) return;
+  let i = Math.floor(Math.random() * slides.length);
+  let timer = null;
+  const show = idx => {
+    slides[i].classList.remove('on');
+    i = (idx + slides.length) % slides.length;
+    slides[i].classList.add('on');
+    if (cur) cur.textContent = i + 1;
+  };
+  show(i);
+  const restart = () => {
+    if (slides.length < 2) return;
+    clearInterval(timer);
+    timer = setInterval(() => show(i + 1), 5000);
+  };
+  restart();
+  const prev = document.getElementById('hero-prev');
+  const next = document.getElementById('hero-next');
+  if (prev) prev.addEventListener('click', e => { e.preventDefault(); show(i - 1); restart(); });
+  if (next) next.addEventListener('click', e => { e.preventDefault(); show(i + 1); restart(); });
+})();
+// B안 우측 배너는 고정 1장 — 롤링 없음
 
 // 가로 슬라이더 — 화살표 스크롤 + 끝단 버튼 비활성
 document.querySelectorAll('.hs-wrap').forEach(wrap => {
