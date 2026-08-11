@@ -68,6 +68,13 @@ DATA_FIXES = [
         ("lawyer_ads", "category_ids"),
     ),
     (
+        # 변호사 광고 슬롯에 메인 상담하기 슬라이더 추가 — MODIFY 재실행 안전
+        "변호사 광고 slot ENUM에 main 추가",
+        "ALTER TABLE lawyer_ads MODIFY slot "
+        "ENUM('photocard','adlist','main') DEFAULT 'photocard'",
+        ("lawyer_ads", "slot"),
+    ),
+    (
         # 배너 위치 ENUM 확장 — MODIFY는 재실행해도 결과 동일
         "배너 position ENUM 확장(popup·posts_hero·counsel_feed)",
         "ALTER TABLE banners MODIFY position "

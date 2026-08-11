@@ -36,7 +36,7 @@
     <tr><th>슬롯</th><th>변호사</th><th>소속</th><th>노출 분야</th><th>기간</th><th>상태</th><th></th></tr>
     {% for a in ads %}
     <tr>
-      <td>{% if a.slot == 'photocard' %}<span class="badge blue">최상단 포토카드</span>{% else %}<span class="badge blue">AD LAWYERS</span>{% endif %}</td>
+      <td><span class="badge blue">{{ slot_labels.get(a.slot, a.slot) }}</span></td>
       <td><a href="{{ url_for('admin.lawyer_detail', user_id=a.lawyer_id) }}" style="color:var(--blue-600);font-weight:800">{{ a.lawyer.name }}</a></td>
       <td>{{ a.lawyer.lawyer_profile.firm_name if a.lawyer.lawyer_profile else '-' }}</td>
       <td style="max-width:220px">{% if a.category_ids %}{% for cid in a.category_ids %}{{ cat_names.get(cid, cid) }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}전체{% endif %}</td>

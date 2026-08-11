@@ -593,7 +593,11 @@ def lawyer_toggle_new(user_id):
 
 
 # ─────────────────── 변호사 광고 관리 (카테고리별) ───────────────────
-AD_SLOTS = [("photocard", "최상단 포토카드"), ("adlist", "AD LAWYERS")]
+AD_SLOTS = [
+    ("photocard", "최상단 포토카드"),
+    ("adlist", "AD LAWYERS"),
+    ("main", "메인 상담하기 슬라이더"),
+]
 AD_SLOT_LABELS = dict(AD_SLOTS)
 
 

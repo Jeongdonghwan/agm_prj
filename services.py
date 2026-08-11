@@ -144,30 +144,35 @@ def get_home_data():
 
     regions = Region.query.order_by(Region.sort_order).all()
 
-    # 지금 법률전문가와 상담하기 — 최근 30일 답변수 상위 (가로 슬라이더)
-    since = datetime.now() - timedelta(days=30)
-    active_rows = (
-        db.session.query(
-            ConsultationAnswer.lawyer_id,
-            db.func.count(ConsultationAnswer.id).label("cnt"),
-        )
-        .filter(ConsultationAnswer.created_at >= since, ConsultationAnswer.deleted_at.is_(None))
-        .group_by(ConsultationAnswer.lawyer_id)
-        .order_by(db.text("cnt DESC"))
-        .limit(10)
-        .all()
-    )
+    # 지금 법률전문가와 상담하기 — AD구좌 (어드민 변호사 광고 slot='main').
+    # 광고 지정이 없으면 섹션 자체를 숨긴다. 순서는 요청마다 랜덤.
+    import random as _random
+
+    from models import LawyerAd
+
+    main_ads = LawyerAd.query.filter(
+        LawyerAd.slot == "main",
+        LawyerAd.is_active.is_(True),
+        db.or_(LawyerAd.starts_at.is_(None), LawyerAd.starts_at <= now),
+        db.or_(LawyerAd.ends_at.is_(None), LawyerAd.ends_at >= now),
+    ).all()
+    ad_lawyer_ids = list({a.lawyer_id for a in main_ads})
     profiles_by_id = {
         p.user_id: p
-        for p in LawyerProfile.query.options(
-            joinedload(LawyerProfile.user), joinedload(LawyerProfile.categories)
-        ).filter(LawyerProfile.user_id.in_([r[0] for r in active_rows] or [0]))
+        for p in LawyerProfile.query.join(User, LawyerProfile.user_id == User.id)
+        .filter(
+            User.status == "active",
+            LawyerProfile.is_visible.is_(True),
+            LawyerProfile.user_id.in_(ad_lawyer_ids or [0]),
+        )
+        .options(joinedload(LawyerProfile.user), selectinload(LawyerProfile.categories))
     }
     active_lawyers = [
-        {"profile": profiles_by_id[lid], "answers": cnt}
-        for lid, cnt in active_rows
+        {"profile": profiles_by_id[lid], "answers": 0}
+        for lid in ad_lawyer_ids
         if lid in profiles_by_id
     ]
+    _random.shuffle(active_lawyers)
 
     # 새로 함께하는 변호사 — 최근 승인 순, 관리자 노출 설정(show_in_new) 반영 (가로 슬라이더)
     new_lawyers = (

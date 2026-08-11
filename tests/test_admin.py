@@ -318,6 +318,23 @@ class TestLawyerAds:
             .split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
         assert f"{name} 변호사" in ad_area and f"{other} 변호사" not in ad_area
 
+    def test_main_slider_is_ad_slot(self, app, client, login_as):
+        """메인 '지금 법률전문가와 상담하기' = main 슬롯 광고 — 지정 없으면 섹션 숨김."""
+        self._clear(app)  # 시드 광고(main 포함) 제거
+        c2 = app.test_client()
+        marker = '<h2 class="sec-title">지금 법률전문가'
+        html = c2.get("/").get_data(as_text=True)
+        assert marker not in html  # 광고 없으면 섹션 미렌더
+        uid, name = self._lawyer(app)
+        login_as(ADMIN)
+        self._add_ad(app, client, uid, slot="main")
+        with app.app_context():
+            invalidate_page_cache()
+        html = c2.get("/").get_data(as_text=True)
+        assert marker in html and f"{name} 변호사" in html
+        # 변호사 목록의 포토카드/AD리스트에는 안 섞인다
+        assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
+
     def test_admin_list_groups_by_category(self, app, client, login_as):
         self._clear(app)
         uid, name = self._lawyer(app)
@@ -550,13 +567,15 @@ class TestFirmsCrud:
             fid = FirmAd.query.first().id
         c2 = app.test_client()  # 비회원 문의
         r = c2.post(f"/api/firms/{fid}/inquiry",
-                    json={"name": "문의자", "phone": "010-1111-0000", "content": "상담 문의"})
+                    json={"phone": "010-1111-0000", "agree": True})
         assert r.status_code == 200
         login_as(ADMIN)
         html = client.get("/admin/firm-inquiries").get_data(as_text=True)
-        assert "문의자" in html
+        assert "010-1111-0000" in html  # 접수함에 연락처 + 로펌명 노출
         with app.app_context():
-            iid = FirmInquiry.query.filter_by(name="문의자").first().id
+            inq = FirmInquiry.query.filter_by(phone="010-1111-0000").first()
+            assert inq.firm_ad_id == fid
+            iid = inq.id
         r = client.post(f"/admin/firm-inquiries/{iid}/process", follow_redirects=True)
         assert "처리 완료" in r.get_data(as_text=True)
         with app.app_context():

@@ -627,6 +627,9 @@ def run_seed(app):
             (4, ["부동산/임대차", "민사일반"], "photocard"),  # 다분야 예시
             (2, [], "adlist"),  # 전체 노출 AD LAWYERS
             (3, ["이혼/가족"], "adlist"),
+            (0, [], "main"),  # 메인 '지금 법률전문가와 상담하기' 슬라이더
+            (2, [], "main"),
+            (5, [], "main"),
         ]
         for lidx, cat_names_, slot in lawyer_ad_demo:
             db.session.add(

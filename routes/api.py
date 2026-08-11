@@ -23,19 +23,26 @@ def contact_click(user_id):
 
 @bp.route("/firms/<int:firm_id>/inquiry", methods=["POST"])
 def firm_inquiry(firm_id):
-    """로펌 간편 문의 — 비회원 가능, 관리자 접수함으로 (§4-1)."""
+    """로펌 간편 상담 — 휴대폰 + 개인정보 동의만 (YK식), 비회원 가능, 관리자 접수함으로."""
     data = request.get_json(silent=True) or request.form
-    name = (data.get("name") or "").strip()
     phone = (data.get("phone") or "").strip()
-    content = (data.get("content") or "").strip()
-    if not (name and phone and content):
+    if not phone:
         return jsonify(
-            {"error": {"code": "MISSING_FIELDS", "message": "이름/연락처/내용은 필수입니다."}}
+            {"error": {"code": "MISSING_FIELDS", "message": "휴대폰 번호를 입력해주세요."}}
+        ), 400
+    if not data.get("agree"):
+        return jsonify(
+            {"error": {"code": "CONSENT_REQUIRED", "message": "개인정보 수집·제공에 동의해주세요."}}
         ), 400
     if db.session.get(FirmAd, firm_id) is None:
         return jsonify({"error": {"code": "NOT_FOUND", "message": "로펌 광고 없음"}}), 404
     db.session.add(
-        FirmInquiry(firm_ad_id=firm_id, name=name[:50], phone=phone[:20], content=content[:1000])
+        FirmInquiry(
+            firm_ad_id=firm_id,
+            name=(data.get("name") or "").strip()[:50] or None,
+            phone=phone[:20],
+            content=(data.get("content") or "").strip()[:1000] or "간편상담 신청 (개인정보 동의 완료)",
+        )
     )
     db.session.commit()
     return jsonify({"ok": True})

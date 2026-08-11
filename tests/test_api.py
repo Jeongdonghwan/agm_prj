@@ -39,15 +39,35 @@ class TestContactClick:
 
 
 class TestFirmInquiry:
-    def test_missing_fields_400(self, app, client):
+    def test_missing_phone_400(self, app, client):
         with app.app_context():
             fid = FirmAd.query.first().id
-        r = client.post(f"/api/firms/{fid}/inquiry", json={"name": "이름만"})
+        r = client.post(f"/api/firms/{fid}/inquiry", json={"agree": True})
         assert r.status_code == 400 and _err(r) == "MISSING_FIELDS"
+
+    def test_consent_required_400(self, app, client):
+        """YK식 — 개인정보 동의 없이는 접수 불가."""
+        with app.app_context():
+            fid = FirmAd.query.first().id
+        r = client.post(f"/api/firms/{fid}/inquiry", json={"phone": "010-1234-5678"})
+        assert r.status_code == 400 and _err(r) == "CONSENT_REQUIRED"
+
+    def test_phone_only_accepted(self, app, client):
+        """휴대폰 + 동의만으로 접수 — 이름 없이 저장."""
+        from models import FirmInquiry
+
+        with app.app_context():
+            fid = FirmAd.query.first().id
+        r = client.post(f"/api/firms/{fid}/inquiry",
+                        json={"phone": "010-7777-8888", "agree": True})
+        assert r.status_code == 200
+        with app.app_context():
+            i = FirmInquiry.query.filter_by(phone="010-7777-8888").first()
+            assert i is not None and i.name is None
 
     def test_missing_firm_404(self, client):
         r = client.post("/api/firms/999999/inquiry",
-                        json={"name": "n", "phone": "p", "content": "c"})
+                        json={"phone": "p", "agree": True})
         assert r.status_code == 404
 
 

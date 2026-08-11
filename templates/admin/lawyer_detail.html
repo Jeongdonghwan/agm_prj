@@ -32,7 +32,7 @@
     </td></tr>
     <tr><th>노출 광고</th><td colspan="3">
       {% for a in ads %}
-      <span class="badge blue">{% if a.category_ids %}{% for cid in a.category_ids %}{{ ad_cat_names.get(cid, cid) }}{% if not loop.last %}·{% endif %}{% endfor %}{% else %}전체{% endif %} · {{ '포토카드' if a.slot == 'photocard' else 'AD리스트' }}{% if not a.is_active %} (중지){% endif %}</span>
+      <span class="badge blue">{% if a.category_ids %}{% for cid in a.category_ids %}{{ ad_cat_names.get(cid, cid) }}{% if not loop.last %}·{% endif %}{% endfor %}{% else %}전체{% endif %} · {{ {'photocard': '포토카드', 'adlist': 'AD리스트', 'main': '메인 슬라이더'}.get(a.slot, a.slot) }}{% if not a.is_active %} (중지){% endif %}</span>
       {% else %}<span style="color:var(--ink-500)">지정된 광고 없음</span>{% endfor %}
     </td></tr>
   </table>

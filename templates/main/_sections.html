@@ -91,9 +91,10 @@
   </div>
 </section>
 
-<!-- 지금 법률전문가와 상담하기 (가로 슬라이더) -->
+<!-- 지금 법률전문가와 상담하기 — AD구좌(어드민 변호사 광고 '메인 상담하기 슬라이더'). 지정 없으면 섹션 숨김 -->
+{% if active_lawyers %}
 <section class="wrap">
-  <h2 class="sec-title">지금 법률전문가와 상담하기</h2>
+  <h2 class="sec-title">지금 법률전문가와 상담하기 <span style="font-size:11px;font-weight:600;color:var(--ink-500);border:1px solid var(--ink-200);border-radius:4px;padding:1px 6px">AD</span></h2>
   <div class="hs-wrap">
     <button class="hs-btn hs-prev" type="button" aria-label="이전"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
     <div class="hscroll">
@@ -106,13 +107,12 @@
         <div class="chips">{% for c in p.categories[:2] %}<span>{{ c.name }}</span>{% endfor %}</div>
         <span class="cta">프로필 보기</span>
       </a>
-      {% else %}
-      <p style="font-size:13px;color:var(--ink-500)">최근 활동 데이터가 없습니다.</p>
       {% endfor %}
     </div>
     <button class="hs-btn hs-next" type="button" aria-label="다음"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
   </div>
 </section>
+{% endif %}
 
 <!-- 새로 함께하는 변호사 (가로 슬라이더) -->
 <section class="wrap">

@@ -41,5 +41,19 @@
 .modal .btns .submit{background:var(--blue-600);color:#fff}
 .modal .btns .submit:hover{background:var(--blue-700)}
 .modal .btns .cancel{background:var(--blue-050);color:var(--ink-500)}
+/* YK식 간편상담 모달 */
+.modal.inq-simple{position:relative;text-align:center;padding:40px 28px 28px}
+.inq-simple .inq-x{position:absolute;top:14px;right:16px;font-size:17px;color:var(--ink-500);padding:4px 8px;line-height:1}
+.inq-simple h3{font-size:20px;line-height:1.4}
+.inq-simple h3 b{color:var(--blue-600)}
+.inq-simple .inq-sub{margin-top:10px;font-size:13.5px}
+.inq-simple .inq-label{display:block;text-align:left;font-size:13px;font-weight:800;margin-top:6px}
+.inq-simple .inq-notes{text-align:left;display:flex;flex-direction:column;gap:5px;font-size:11.5px;color:var(--ink-500);line-height:1.55;padding-left:14px}
+.inq-simple .inq-notes li{list-style:disc}
+.inq-simple .inq-agree{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;text-align:left;cursor:pointer;margin-top:2px}
+.inq-simple .inq-agree input{width:16px;height:16px;accent-color:var(--blue-600);flex-shrink:0}
+.inq-simple .inq-submit{background:var(--blue-600);color:#fff;font-size:15px;font-weight:800;padding:14px 0;border-radius:var(--radius-md);margin-top:4px}
+.inq-simple .inq-submit:disabled{background:var(--ink-200);color:#fff;cursor:not-allowed}
+.inq-simple .inq-submit:not(:disabled):hover{background:var(--blue-700)}
 
 @media (max-width:960px){.photo-strip{grid-template-columns:repeat(3,1fr)}}
