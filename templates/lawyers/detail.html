@@ -43,6 +43,13 @@
 <div class="wrap profile-layout">
   <!-- 좌측 본문 -->
   <div>
+    <!-- 모바일 전용: 프로필 사진을 최상단에 (PC는 우측 카드가 담당) -->
+    <div class="m-profile-top">
+      <div class="ph">{% if profile.photo_url %}<img src="{{ profile.photo_url }}" alt="{{ user.name }} 변호사">{% else %}{{ user.name[0] }}{% endif %}</div>
+      <b>{{ user.name }} 변호사</b>
+      {% if profile.firm_name %}<small>{{ profile.firm_name }}</small>{% endif %}
+    </div>
+
     <!-- 헤드라인 -->
     <h1 class="headline">{{ profile.headline }}<b>.</b></h1>
 

@@ -120,10 +120,19 @@ button{font-family:inherit;cursor:pointer;border:none;background:none}
 footer{border-top:1px solid var(--ink-200);margin-top:100px;padding:32px 0;font-size:12.5px;color:var(--ink-500)}
 footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
+/* 모바일 전용: 상단 프로필 사진 (PC는 우측 카드가 담당) */
+.m-profile-top{display:none}
 @media (max-width:960px){
   .profile-layout{grid-template-columns:1fr;gap:40px}
   .side{position:static}
   .basic{grid-template-columns:1fr;gap:24px}
   .headline{font-size:26px}
   .sec{margin-top:64px}
+  .m-profile-top{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:28px}
+  .m-profile-top .ph{width:120px;height:120px;border-radius:50%;overflow:hidden;background:linear-gradient(160deg,#E8ECF3,#F4F6FA);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#B0B8C1;box-shadow:var(--shadow-card)}
+  .m-profile-top .ph img{width:100%;height:100%;object-fit:cover}
+  .m-profile-top b{font-size:17px;font-weight:800;margin-top:6px}
+  .m-profile-top small{font-size:13px;color:var(--ink-500)}
+  /* 우측 카드의 대형 사진은 상단과 중복 — 모바일에선 숨김 */
+  .side .cc-photo{display:none}
 }

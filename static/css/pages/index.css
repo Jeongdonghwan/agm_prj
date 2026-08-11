@@ -43,7 +43,6 @@
 /* 커뮤니티 바로가기 롱 퀵메뉴 — 눈에 띄는 CTA (블루 필) */
 .comm-quick{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--blue-600),var(--blue-700));border-radius:var(--radius-md);padding:14px 16px;transition:.18s;box-shadow:0 4px 14px rgba(27,92,255,.25)}
 .comm-quick:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(27,92,255,.35)}
-.comm-quick img{width:40px;height:40px;object-fit:contain;flex-shrink:0;background:rgba(255,255,255,.9);border-radius:50%;padding:5px}
 .comm-quick .tx{flex:1;min-width:0}
 .comm-quick b{display:block;font-size:14.5px;font-weight:800;color:#fff}
 .comm-quick small{display:block;font-size:12px;color:rgba(255,255,255,.82);margin-top:2px}
@@ -161,11 +160,10 @@ section.wrap:last-of-type{padding-bottom:48px}
   .region-chips{gap:8px}
   .region-btn{padding:15px 4px;font-size:14px}
   /* 모바일에서는 커뮤니티 CTA를 더 크게 (가독성) */
-  .comm-quick{padding:18px 20px;gap:14px;border-radius:var(--radius-lg)}
-  .comm-quick img{width:52px;height:52px;padding:7px}
-  .comm-quick b{font-size:16.5px}
-  .comm-quick small{font-size:13px;margin-top:3px}
-  .comm-quick>svg{width:20px;height:20px}
+  .comm-quick{padding:20px 22px;gap:14px;border-radius:var(--radius-lg)}
+  .comm-quick b{font-size:18px}
+  .comm-quick small{font-size:13.5px;margin-top:4px}
+  .comm-quick>svg{width:22px;height:22px}
 }
 
 /* 좁은 화면: 분야 아이콘 4열이 컨테이너를 넘쳐 우측이 잘리던 문제 —

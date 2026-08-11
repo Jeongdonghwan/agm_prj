@@ -7,11 +7,6 @@ community_boards 테이블이 비어 있을 때만 넣는다(재실행 안전).
 
 # (그룹 라벨, [항목…]) — 항목: {"slug","label","topics","admin_only"} 게시판 | {"label","url"} 링크
 SEED_BOARD_TREE = [
-    ("안내", [
-        {"slug": "ad-inquiry", "label": "광고 및 협업 문의"},
-        {"slug": "notice-angimo", "label": "안기모 공지사항", "admin_only": True},
-        {"slug": "notice-community", "label": "커뮤니티 공지사항", "admin_only": True},
-    ]),
     ("상담소", [
         {"slug": "parole", "label": "가석방관련 상담신청"},
     ]),
@@ -57,6 +52,9 @@ SEED_BOARD_TREE = [
     ]),
     ("공지사항", [
         {"slug": "petition", "label": "징계청원 게시판"},
+        {"slug": "ad-inquiry", "label": "광고 및 협업 문의"},
+        {"slug": "notice-angimo", "label": "안기모 공지사항", "admin_only": True},
+        {"slug": "notice-community", "label": "커뮤니티 공지사항", "admin_only": True},
     ]),
     ("도움되는 사이트", [
         {"label": "전국 교정기관 주소", "url": "https://www.moj.go.kr/corrections/1125/subview.do"},

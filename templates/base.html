@@ -103,6 +103,11 @@
   </a>
 </nav>
 
+<!-- 플로팅: 위로가기 -->
+<button type="button" class="fab-top" id="fab-top" aria-label="맨 위로" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg>
+</button>
+
 <!-- 플로팅: 1:1 상담(카카오톡 채널) + 네이버 카페 바로가기 -->
 <a class="fab-consult" href="{{ kakao_consult_url }}" target="_blank" rel="noopener noreferrer">
   <svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 3C6.48 3 2 6.54 2 10.9c0 2.8 1.86 5.26 4.66 6.65-.15.52-.96 3.33-.99 3.55 0 0-.02.17.09.23.11.07.24.02.24.02.31-.05 3.57-2.34 4.13-2.74.6.09 1.22.13 1.87.13 5.52 0 10-3.54 10-7.84S17.52 3 12 3z"/></svg>
@@ -138,6 +143,15 @@
   if (!dd || !btn) return;
   btn.addEventListener('click', e => { e.stopPropagation(); dd.classList.toggle('open'); });
   document.addEventListener('click', () => dd.classList.remove('open'));
+})();
+// 위로가기 플로팅 — 스크롤 400 넘으면 표시
+(function () {
+  const btn = document.getElementById('fab-top');
+  if (!btn) return;
+  const sync = () => { btn.hidden = window.scrollY < 400; };
+  window.addEventListener('scroll', sync, { passive: true });
+  sync();
+  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 })();
 // 모바일 상단 GNB — 페이지 이동 후에도 활성 탭이 보이게 가로 스크롤 복원
 (function () {

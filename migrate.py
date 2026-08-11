@@ -149,6 +149,25 @@ def run():
             print(f"  * 커뮤니티 게시판 초기 시드 — {n}건")
             applied += 1
 
+        # 게시판 그룹 '안내'를 '공지사항'으로 통합 (있을 때만 — 재실행 안전)
+        from models import CommunityBoard
+
+        guide = CommunityBoard.query.filter_by(label="안내", parent_id=None).first()
+        if guide:
+            notice = CommunityBoard.query.filter_by(label="공지사항", parent_id=None).first()
+            if notice:
+                base_order = max(
+                    [c.sort_order or 0 for c in notice.children] or [0]
+                )
+                for i, child in enumerate(list(guide.children), start=1):
+                    child.parent_id = notice.id
+                    child.sort_order = base_order + i
+                db.session.flush()
+                db.session.delete(guide)
+                db.session.commit()
+                print("  * 게시판 그룹 '안내' → '공지사항' 통합")
+                applied += 1
+
         print(f"[migrate] 적용 {applied}건 / 이미 반영 {skipped}건 — 데이터는 보존됩니다.")
     return 0
 
