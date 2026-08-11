@@ -54,6 +54,15 @@
     {% endfor %}
   </div>
 
+  <div class="my-sec">
+    <div class="head">관심글 ({{ my_bookmarks | length }})</div>
+    {% for p in my_bookmarks %}
+    <div class="my-item"><a href="{{ url_for('community.detail', post_id=p.id) }}">★ {{ p.title }}</a><small>{{ p.category }} · {{ p.created_at.strftime('%Y.%m.%d') }}</small></div>
+    {% else %}
+    <div class="my-item"><span class="empty">관심글이 없습니다. 커뮤니티 글에서 [관심글]을 눌러 저장해보세요.</span></div>
+    {% endfor %}
+  </div>
+
   {% if current_user.role == 'user' %}
   <div class="my-sec">
     <div class="head">커뮤니티 인증 (접견예약확인)</div>

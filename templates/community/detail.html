@@ -53,6 +53,8 @@
 
     <div class="act-row">
       <button type="button" id="btn-like" class="{% if liked %}liked{% endif %}"><i data-lucide="thumbs-up"></i>추천 <span id="like-num">{{ post.likes }}</span></button>
+      <button type="button" id="btn-bookmark" class="{% if bookmarked %}liked{% endif %}"><i data-lucide="star"></i><span id="bm-label">{{ '관심글 해제' if bookmarked else '관심글' }}</span></button>
+      <button type="button" id="btn-share"><i data-lucide="link"></i>공유</button>
       <button type="button" id="btn-report"><i data-lucide="flag"></i>신고</button>
     </div>
 
@@ -63,6 +65,7 @@
         <div class="who">{{ author_name(c) }}<small>{{ c.created_at.strftime('%m.%d %H:%M') }}</small></div>
         <p>{{ c.content }}</p>
         <div class="acts">
+          <button type="button" class="btn-like-cmt{% if c.id in my_comment_likes %} on{% endif %}" data-id="{{ c.id }}">♥ <span class="cnt">{{ comment_like_counts.get(c.id, 0) }}</span></button>
           {% if can_write %}<button type="button" class="btn-reply" data-id="{{ c.id }}">답글</button>{% endif %}
           <button type="button" class="btn-report-cmt" data-id="{{ c.id }}">신고</button>
         </div>
@@ -70,6 +73,9 @@
         <div class="cmt reply">
           <div class="who">{{ author_name(r) }}<small>{{ r.created_at.strftime('%m.%d %H:%M') }}</small></div>
           <p>{{ r.content }}</p>
+          <div class="acts">
+            <button type="button" class="btn-like-cmt{% if r.id in my_comment_likes %} on{% endif %}" data-id="{{ r.id }}">♥ <span class="cnt">{{ comment_like_counts.get(r.id, 0) }}</span></button>
+          </div>
         </div>
         {% endfor %}
       </div>
@@ -125,6 +131,46 @@ document.getElementById('btn-like').addEventListener('click', async () => {
     alert(data.error ? data.error.message : '추천에 실패했습니다.');
   }
 });
+// 관심글 토글
+document.getElementById('btn-bookmark').addEventListener('click', async () => {
+  {% if not current_user %}
+  location.href = '{{ url_for('auth.login', next=request.path) }}';
+  return;
+  {% endif %}
+  const res = await fetch('{{ url_for('community.bookmark', post_id=post.id) }}', { method: 'POST' });
+  if (!res.ok) { alert('처리에 실패했습니다.'); return; }
+  const data = await res.json();
+  document.getElementById('btn-bookmark').classList.toggle('liked', data.bookmarked);
+  document.getElementById('bm-label').textContent = data.bookmarked ? '관심글 해제' : '관심글';
+});
+// 공유 — 현재 링크 복사
+document.getElementById('btn-share').addEventListener('click', async () => {
+  const url = location.origin + '{{ url_for('community.detail', post_id=post.id) }}';
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch (e) {  // http 환경 폴백
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+  }
+  alert('링크가 복사되었습니다.');
+});
+// 댓글 좋아요 (1인 1회)
+document.querySelectorAll('.btn-like-cmt').forEach(b =>
+  b.addEventListener('click', async () => {
+    {% if not current_user %}
+    location.href = '{{ url_for('auth.login', next=request.path) }}';
+    return;
+    {% endif %}
+    const res = await fetch(`/community/comments/${b.dataset.id}/like`, { method: 'POST' });
+    const data = await res.json().catch(() => null);
+    if (res.ok) {
+      b.querySelector('.cnt').textContent = data.likes;
+      b.classList.add('on');
+    } else {
+      alert(data && data.error ? data.error.message : '처리에 실패했습니다.');
+    }
+  }));
 // 신고
 async function sendReport(targetType, targetId) {
   {% if not current_user %}

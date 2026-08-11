@@ -159,8 +159,29 @@ def run():
             print(f"  * 커뮤니티 게시판 초기 시드 — {n}건")
             applied += 1
 
-        # 게시판 그룹 '안내'를 '공지사항'으로 통합 (있을 때만 — 재실행 안전)
+        # 커뮤니티 기본 카테고리(자유게시판 등)를 DB로 이관 — 잠금 토글용 (재실행 안전)
         from models import CommunityBoard
+
+        if (
+            CommunityBoard.query.count()
+            and CommunityBoard.query.filter_by(
+                label="커뮤니티 카테고리", parent_id=None
+            ).first() is None
+        ):
+            grp = CommunityBoard(label="커뮤니티 카테고리", sort_order=-1)
+            db.session.add(grp)
+            db.session.flush()
+            for i, (cslug, clabel) in enumerate(
+                [("free", "자유게시판"), ("care", "옥바라지 이야기"), ("story", "사연신청")]
+            ):
+                db.session.add(CommunityBoard(
+                    parent_id=grp.id, slug=cslug, label=clabel, topics=[], sort_order=i
+                ))
+            db.session.commit()
+            print("  * 커뮤니티 기본 카테고리 3종 DB 이관")
+            applied += 1
+
+        # 게시판 그룹 '안내'를 '공지사항'으로 통합 (있을 때만 — 재실행 안전)
 
         guide = CommunityBoard.query.filter_by(label="안내", parent_id=None).first()
         if guide:

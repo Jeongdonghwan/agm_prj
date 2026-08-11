@@ -2,6 +2,8 @@ from models.community import (
     CommunityBoard,
     CommunityComment,
     CommunityPost,
+    community_bookmarks,
+    community_comment_likes,
     community_likes,
 )
 from models.consultation import Consultation, ConsultationAnswer
@@ -33,6 +35,8 @@ __all__ = [
     "CommunityPost",
     "CommunityComment",
     "community_likes",
+    "community_bookmarks",
+    "community_comment_likes",
     "Category",
     "Region",
     "Banner",

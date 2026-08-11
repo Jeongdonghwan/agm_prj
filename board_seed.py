@@ -7,6 +7,13 @@ community_boards 테이블이 비어 있을 때만 넣는다(재실행 안전).
 
 # (그룹 라벨, [항목…]) — 항목: {"slug","label","topics","admin_only"} 게시판 | {"label","url"} 링크
 SEED_BOARD_TREE = [
+    # 커뮤니티 기본 카테고리 — 메뉴 그룹이 아니라 /community/? 카테고리 칩의 원본.
+    # admin_only 토글 = 해당 카테고리 글쓰기 잠금(관리자만 작성)
+    ("커뮤니티 카테고리", [
+        {"slug": "free", "label": "자유게시판"},
+        {"slug": "care", "label": "옥바라지 이야기"},
+        {"slug": "story", "label": "사연신청"},
+    ]),
     ("상담소", [
         {"slug": "parole", "label": "가석방관련 상담신청"},
     ]),

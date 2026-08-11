@@ -4,6 +4,7 @@ from flask import Blueprint, flash, g, redirect, render_template, request, sessi
 
 from extensions import db
 from models import CommunityComment, CommunityPost, Consultation
+from models.community import community_bookmarks
 from routes.decorators import login_required
 
 bp = Blueprint("mypage", __name__, url_prefix="/mypage")
@@ -33,12 +34,26 @@ def home():
         .limit(20)
         .all()
     )
+    my_bookmarks = (
+        CommunityPost.query.join(
+            community_bookmarks, CommunityPost.id == community_bookmarks.c.post_id
+        )
+        .filter(
+            community_bookmarks.c.user_id == g.user.id,
+            CommunityPost.status == "open",
+            CommunityPost.deleted_at.is_(None),
+        )
+        .order_by(CommunityPost.created_at.desc())
+        .limit(20)
+        .all()
+    )
     return render_template(
         "mypage/home.html",
         active_menu=None,
         my_consults=my_consults,
         my_posts=my_posts,
         my_comments=my_comments,
+        my_bookmarks=my_bookmarks,
     )
 
 

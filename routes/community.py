@@ -18,7 +18,11 @@ from sqlalchemy.orm import joinedload
 
 from extensions import db
 from models import CommunityBoard, CommunityComment, CommunityPost
-from models.community import community_likes
+from models.community import (
+    community_bookmarks,
+    community_comment_likes,
+    community_likes,
+)
 from routes.decorators import community_member_required, role_required
 from utils import mask_privacy
 
@@ -26,8 +30,9 @@ bp = Blueprint("community", __name__, url_prefix="/community")
 
 PER_PAGE = 15
 
-# 커뮤니티 카테고리 (전체 = 아래 카테고리 합침) — 칩 줄 기본 3종은 코드 고정
-COMMUNITY_CATS = ["자유게시판", "옥바라지 이야기", "사연신청"]
+# 커뮤니티 기본 카테고리 — DB(community_boards)의 '커뮤니티 카테고리' 그룹이 원본.
+# admin_only 토글 = 해당 카테고리 글쓰기 잠금. 아래는 DB 미이관 시 폴백.
+CATS_GROUP_LABEL = "커뮤니티 카테고리"
 _FIXED_BOARDS = {
     "free": {"label": "자유게시판", "topics": [], "admin_only": False},
     "care": {"label": "옥바라지 이야기", "topics": [], "admin_only": False},
@@ -40,9 +45,9 @@ INFO_BOARD_SLUGS = ("facility", "life", "forms")
 
 # ── 게시판 트리는 DB(community_boards)가 원본 — 어드민 [게시판 관리]에서 편집 ──
 def _board_data():
-    """DB 트리 → (메가메뉴, slug→게시판 dict). 요청당 1회 로드."""
+    """DB 트리 → (메가메뉴, slug→게시판 dict, 카테고리 dict). 요청당 1회 로드."""
     if not hasattr(g, "_board_data"):
-        menu, page_boards = [], {}
+        menu, page_boards, cats = [], {}, {}
         groups = (
             CommunityBoard.query.filter_by(parent_id=None, is_active=True)
             .options(joinedload(CommunityBoard.children))
@@ -50,6 +55,16 @@ def _board_data():
             .all()
         )
         for grp in groups:
+            if grp.label == CATS_GROUP_LABEL:
+                # 커뮤니티 카테고리 그룹 — 메뉴가 아니라 칩/글쓰기 카테고리의 원본
+                for it in grp.children:
+                    if it.is_active and it.slug:
+                        cats[it.slug] = {
+                            "label": it.label,
+                            "topics": [],
+                            "admin_only": bool(it.admin_only),
+                        }
+                continue
             items = []
             for it in grp.children:
                 if not it.is_active:
@@ -74,7 +89,9 @@ def _board_data():
                     })
             if items:
                 menu.append({"label": grp.label, "items": items})
-        g._board_data = (menu, page_boards)
+        if not cats:  # DB 미이관 폴백
+            cats = dict(_FIXED_BOARDS)
+        g._board_data = (menu, page_boards, cats)
     return g._board_data
 
 
@@ -88,6 +105,16 @@ def get_page_boards():
     return _board_data()[1]
 
 
+def get_cats():
+    """커뮤니티 기본 카테고리 (slug → board dict, DB 관리)."""
+    return _board_data()[2]
+
+
+def get_cat_labels():
+    """카테고리 칩 라벨 목록 (전체 = 이 카테고리들의 합)."""
+    return [b["label"] for b in get_cats().values()]
+
+
 def get_info_boards():
     """커뮤니티 칩 줄에 상시 노출하는 정보 게시판(교정시설/수용생활/양식)."""
     boards = get_page_boards()
@@ -95,8 +122,8 @@ def get_info_boards():
 
 
 def get_boards():
-    """글쓰기 폼용 전체 보드 (고정 카테고리 3종 + DB 게시판)."""
-    return {**_FIXED_BOARDS, **get_page_boards()}
+    """글쓰기 폼용 전체 보드 (카테고리 + DB 게시판)."""
+    return {**get_cats(), **get_page_boards()}
 
 
 def get_category_map():
@@ -162,8 +189,9 @@ def writable_boards(user):
 def writable_board_groups(user):
     """글쓰기 폼 게시판 선택용 — [(그룹 라벨, [(key, board), …])] (optgroup 렌더)."""
     allowed = writable_boards(user)
-    groups = [["커뮤니티", [(k, allowed[k]) for k in _FIXED_BOARDS if k in allowed]]]
-    used = set(_FIXED_BOARDS)
+    cats = get_cats()
+    groups = [["커뮤니티", [(k, allowed[k]) for k in cats if k in allowed]]]
+    used = set(cats)
     for grp in get_menu():
         items = []
         for it in grp["items"]:
@@ -248,7 +276,7 @@ def menu():
     return render_template(
         "community/menu.html",
         active_menu="community",
-        categories=COMMUNITY_CATS,
+        categories=get_cat_labels(),
         recent=recent,
         author_name=author_name,
     )
@@ -259,7 +287,7 @@ def menu():
 def list_():
     """커뮤니티 — 전체(자유게시판+옥바라지 이야기) / 카테고리 칩."""
     category = request.args.get("category")
-    if category not in COMMUNITY_CATS:
+    if category not in get_cat_labels():
         category = None
     # 칩은 한 축 — 카테고리를 고르면 정렬은 최신으로 되돌려 '인기'와 동시 선택되지 않게 한다
     sort = "recent" if category else request.args.get("sort", "recent")
@@ -271,7 +299,7 @@ def list_():
     if category:
         q = q.filter_by(category=category)
     else:
-        q = q.filter(CommunityPost.category.in_(COMMUNITY_CATS))
+        q = q.filter(CommunityPost.category.in_(get_cat_labels()))
 
     if sort == "popular":
         q = q.order_by((CommunityPost.views + CommunityPost.likes * 3).desc())
@@ -297,7 +325,7 @@ def list_():
         total=total,
         page=page,
         has_next=total > page * PER_PAGE,
-        categories=COMMUNITY_CATS,
+        categories=get_cat_labels(),
         category=category,
         info_boards=get_info_boards(),
         topic=None,
@@ -352,7 +380,7 @@ def board(key):
         notices=notices,
         board_key=key,
         board=b,
-        categories=COMMUNITY_CATS,
+        categories=get_cat_labels(),
         category=None,
         info_boards=get_info_boards(),
         topic=topic,
@@ -546,7 +574,7 @@ def detail(post_id):
     ):
         replies.setdefault(r.parent_id, []).append(r)
 
-    liked = False
+    liked = bookmarked = False
     if g.user:
         liked = bool(
             db.session.execute(
@@ -556,6 +584,36 @@ def detail(post_id):
                 )
             ).first()
         )
+        bookmarked = bool(
+            db.session.execute(
+                community_bookmarks.select().where(
+                    community_bookmarks.c.post_id == p.id,
+                    community_bookmarks.c.user_id == g.user.id,
+                )
+            ).first()
+        )
+
+    # 댓글 좋아요 수 + 내가 누른 댓글
+    cids = [c.id for c in comments] + [r.id for rs in replies.values() for r in rs]
+    comment_like_counts = dict(
+        db.session.query(
+            community_comment_likes.c.comment_id, db.func.count()
+        )
+        .filter(community_comment_likes.c.comment_id.in_(cids or [0]))
+        .group_by(community_comment_likes.c.comment_id)
+        .all()
+    )
+    my_comment_likes = set()
+    if g.user and cids:
+        my_comment_likes = {
+            row[0]
+            for row in db.session.execute(
+                community_comment_likes.select().where(
+                    community_comment_likes.c.comment_id.in_(cids),
+                    community_comment_likes.c.user_id == g.user.id,
+                )
+            )
+        }
     can_write = g.user and g.user.role in ("user", "admin")
     is_owner = bool(g.user and g.user.id == p.user_id and not p.is_notice)
     return render_template(
@@ -565,12 +623,72 @@ def detail(post_id):
         comments=comments,
         replies=replies,
         liked=liked,
+        bookmarked=bookmarked,
+        comment_like_counts=comment_like_counts,
+        my_comment_likes=my_comment_likes,
         can_write=can_write,
         is_owner=is_owner,
         nickname_required=bool(g.user and _require_nickname()),
         author_name=author_name,
         first_image=first_image,
     )
+
+
+@bp.route("/<int:post_id>/bookmark", methods=["POST"])
+@role_required("user", "admin")
+@community_member_required
+def bookmark(post_id):
+    """관심글 토글 — 저장/해제."""
+    p = CommunityPost.query.filter_by(id=post_id, status="open").filter(
+        CommunityPost.deleted_at.is_(None)
+    ).first()
+    if p is None:
+        abort(404)
+    cond = (
+        (community_bookmarks.c.post_id == post_id)
+        & (community_bookmarks.c.user_id == g.user.id)
+    )
+    exists = db.session.execute(community_bookmarks.select().where(cond)).first()
+    if exists:
+        db.session.execute(community_bookmarks.delete().where(cond))
+        saved = False
+    else:
+        db.session.execute(
+            community_bookmarks.insert().values(post_id=post_id, user_id=g.user.id)
+        )
+        saved = True
+    db.session.commit()
+    from flask import jsonify
+
+    return jsonify({"ok": True, "bookmarked": saved})
+
+
+@bp.route("/comments/<int:comment_id>/like", methods=["POST"])
+@role_required("user", "admin")
+@community_member_required
+def comment_like(comment_id):
+    """댓글 좋아요 — 1인 1회."""
+    from flask import jsonify
+
+    c = CommunityComment.query.filter_by(id=comment_id).filter(
+        CommunityComment.deleted_at.is_(None)
+    ).first()
+    if c is None:
+        abort(404)
+    cond = (
+        (community_comment_likes.c.comment_id == comment_id)
+        & (community_comment_likes.c.user_id == g.user.id)
+    )
+    if db.session.execute(community_comment_likes.select().where(cond)).first():
+        return jsonify({"error": {"code": "ALREADY_LIKED", "message": "이미 좋아요한 댓글입니다."}}), 409
+    db.session.execute(
+        community_comment_likes.insert().values(comment_id=comment_id, user_id=g.user.id)
+    )
+    db.session.commit()
+    count = db.session.query(db.func.count()).select_from(community_comment_likes).filter(
+        community_comment_likes.c.comment_id == comment_id
+    ).scalar()
+    return jsonify({"ok": True, "likes": count})
 
 
 @bp.route("/<int:post_id>/comments", methods=["POST"])

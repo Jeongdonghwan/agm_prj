@@ -184,6 +184,7 @@
 .cmt .acts{margin-top:6px;display:flex;gap:10px;font-size:12px;color:var(--ink-500)}
 .cmt .acts button{font-size:12px;color:var(--ink-500)}
 .cmt .acts button:hover{color:var(--blue-600)}
+.cmt .acts .btn-like-cmt.on{color:var(--red-500);font-weight:800}
 .cmt-form{margin-top:16px}
 .cmt-form textarea{width:100%;border:none;background:var(--blue-050);border-radius:var(--radius-md);padding:13px 16px;font-size:14px;font-family:inherit;outline:none;resize:vertical}
 .cmt-form textarea:focus{outline:2px solid var(--blue-600);background:#fff}

@@ -239,6 +239,85 @@ class TestBoardMenuPage:
         assert 'class="on"' in chunk
 
 
+class TestBookmarkShareCommentLike:
+    """관심글 토글·마이페이지 노출·댓글 좋아요 1인 1회."""
+
+    def _post_id(self, app):
+        with app.app_context():
+            return CommunityPost.query.filter_by(status="open", is_notice=False).first().id
+
+    def test_bookmark_toggle_and_mypage(self, app, client, login_as):
+        pid = self._post_id(app)
+        login_as("user1@example.com")
+        r = client.post(f"/community/{pid}/bookmark")
+        assert r.status_code == 200 and r.get_json()["bookmarked"] is True
+        # 상세에 관심글 해제 표시 + 마이페이지 관심글 목록
+        assert "관심글 해제" in client.get(f"/community/{pid}").get_data(as_text=True)
+        with app.app_context():
+            title = db.session.get(CommunityPost, pid).title
+        assert title in client.get("/mypage/").get_data(as_text=True)
+        # 다시 누르면 해제
+        r = client.post(f"/community/{pid}/bookmark")
+        assert r.get_json()["bookmarked"] is False
+
+    def test_share_button_present(self, app, client, login_as):
+        pid = self._post_id(app)
+        login_as("user1@example.com")
+        html = client.get(f"/community/{pid}").get_data(as_text=True)
+        assert 'id="btn-share"' in html and "링크가 복사되었습니다" in html
+
+    def test_comment_like_once(self, app, client, login_as):
+        from models import CommunityComment, User
+
+        pid = self._post_id(app)
+        with app.app_context():
+            uid = User.query.filter_by(email="user1@example.com").first().id
+            c = CommunityComment(post_id=pid, user_id=uid, content="좋아요 대상")
+            db.session.add(c)
+            db.session.commit()
+            cid = c.id
+        login_as("user1@example.com")
+        r = client.post(f"/community/comments/{cid}/like")
+        assert r.status_code == 200 and r.get_json()["likes"] == 1
+        assert client.post(f"/community/comments/{cid}/like").status_code == 409  # 1인 1회
+        html = client.get(f"/community/{pid}").get_data(as_text=True)
+        assert "btn-like-cmt on" in html  # 내가 누른 댓글 표시
+
+
+class TestCategoryLock:
+    """카테고리 잠금 — 어드민 게시판 관리(admin_only)로 일반회원 글쓰기 차단."""
+
+    def _lock(self, app, slug, locked=True):
+        from models import CommunityBoard
+
+        with app.app_context():
+            b = CommunityBoard.query.filter_by(slug=slug).first()
+            b.admin_only = locked
+            db.session.commit()
+
+    def test_locked_category_blocks_user(self, app, client, login_as):
+        self._lock(app, "free", True)
+        _set_nickname(app, "user1@example.com", "잠금체크")
+        login_as("user1@example.com")
+        # 글쓰기 폼에서 숨김
+        sel = client.get("/community/write").get_data(as_text=True) \
+            .split('id="board-select"', 1)[1].split("</select>", 1)[0]
+        assert "자유게시판" not in sel
+        # 직접 POST도 차단
+        r = _write(client, category="자유게시판", title="잠긴 카테고리 글")
+        assert "관리자만 작성" in r.get_data(as_text=True)
+        with app.app_context():
+            assert CommunityPost.query.filter_by(title="잠긴 카테고리 글").count() == 0
+        # 잠금 해제하면 정상 작성
+        self._lock(app, "free", False)
+        assert _write(client, category="자유게시판", title="해제 후 글").status_code == 302
+
+    def test_cats_group_editable_in_admin(self, client, login_as):
+        login_as("admin@angimo.kr")
+        html = client.get("/admin/boards").get_data(as_text=True)
+        assert "커뮤니티 카테고리" in html and "자유게시판" in html
+
+
 class TestLawyerRandomOrder:
     """일반 변호사 목록 — 방문마다 랜덤, 같은 시드로는 페이지 이어짐."""
 

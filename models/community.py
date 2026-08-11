@@ -39,6 +39,24 @@ community_likes = db.Table(
     db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
 )
 
+# 관심글(북마크) — 글당 1회 토글
+community_bookmarks = db.Table(
+    "community_bookmarks",
+    db.Column(
+        "post_id", db.Integer, db.ForeignKey("community_posts.id"), primary_key=True
+    ),
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+)
+
+# 댓글 좋아요 — 댓글당 1인 1회
+community_comment_likes = db.Table(
+    "community_comment_likes",
+    db.Column(
+        "comment_id", db.Integer, db.ForeignKey("community_comments.id"), primary_key=True
+    ),
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+)
+
 
 class CommunityPost(db.Model):
     __tablename__ = "community_posts"
