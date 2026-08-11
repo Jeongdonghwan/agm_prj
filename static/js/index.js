@@ -43,11 +43,6 @@ function initRolling(containerSel, slideClass, curId, intervalMs) {
   const next = document.getElementById('hero-next');
   if (prev) prev.addEventListener('click', e => { e.preventDefault(); show(i - 1); restart(); });
   if (next) next.addEventListener('click', e => { e.preventDefault(); show(i + 1); restart(); });
-  // 우하단 인디케이터(1/2)를 눌러도 다음 배너로
-  const ind = container.querySelector('.indicator');
-  if (ind && slides.length > 1) {
-    ind.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); show(i + 1); restart(); });
-  }
 })();
 // B안 우측 배너는 고정 1장 — 롤링 없음
 
