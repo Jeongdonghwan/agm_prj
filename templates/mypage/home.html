@@ -55,6 +55,15 @@
   </div>
 
   <div class="my-sec">
+    <div class="head">관심 변호사 ({{ my_lawyers | length }})</div>
+    {% for p in my_lawyers %}
+    <div class="my-item"><a href="{{ url_for('lawyers.detail', user_id=p.user_id) }}">★ {{ p.user.name }} 변호사</a><small>{{ p.firm_name or '' }}</small></div>
+    {% else %}
+    <div class="my-item"><span class="empty">관심 변호사가 없습니다. 프로필의 ★를 눌러 저장해보세요.</span></div>
+    {% endfor %}
+  </div>
+
+  <div class="my-sec">
     <div class="head">관심글 ({{ my_bookmarks | length }})</div>
     {% for p in my_bookmarks %}
     <div class="my-item"><a href="{{ url_for('community.detail', post_id=p.id) }}">★ {{ p.title }}</a><small>{{ p.category }} · {{ p.created_at.strftime('%Y.%m.%d') }}</small></div>

@@ -3,8 +3,9 @@ from datetime import datetime
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
 
 from extensions import db
-from models import CommunityComment, CommunityPost, Consultation
+from models import CommunityComment, CommunityPost, Consultation, LawyerProfile
 from models.community import community_bookmarks
+from models.lawyer import lawyer_bookmarks
 from routes.decorators import login_required
 
 bp = Blueprint("mypage", __name__, url_prefix="/mypage")
@@ -47,6 +48,13 @@ def home():
         .limit(20)
         .all()
     )
+    my_lawyers = (
+        LawyerProfile.query.join(
+            lawyer_bookmarks, LawyerProfile.user_id == lawyer_bookmarks.c.lawyer_id
+        )
+        .filter(lawyer_bookmarks.c.user_id == g.user.id)
+        .all()
+    )
     return render_template(
         "mypage/home.html",
         active_menu=None,
@@ -54,6 +62,7 @@ def home():
         my_posts=my_posts,
         my_comments=my_comments,
         my_bookmarks=my_bookmarks,
+        my_lawyers=my_lawyers,
     )
 
 

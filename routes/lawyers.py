@@ -15,6 +15,7 @@ from models import (
     Region,
     User,
 )
+from models.lawyer import lawyer_bookmarks
 from utils import cached_page
 
 bp = Blueprint("lawyers", __name__, url_prefix="/lawyers")
@@ -270,6 +271,18 @@ def detail(user_id, slug=None):
     ).filter(LawyerPost.deleted_at.is_(None)).count()
     answer_count = ConsultationAnswer.query.filter_by(lawyer_id=user_id).count()
 
+    from flask import g
+
+    bookmarked = bool(
+        g.get("user")
+        and db.session.execute(
+            lawyer_bookmarks.select().where(
+                lawyer_bookmarks.c.user_id == g.user.id,
+                lawyer_bookmarks.c.lawyer_id == user_id,
+            )
+        ).first()
+    )
+
     return render_template(
         "lawyers/detail.html",
         profile=profile,
@@ -277,5 +290,32 @@ def detail(user_id, slug=None):
         solve_posts=solve_posts,
         solve_total=solve_total,
         answer_count=answer_count,
+        bookmarked=bookmarked,
         canonical_slug=canonical_slug,
     )
+
+
+@bp.route("/<int:user_id>/bookmark", methods=["POST"])
+def bookmark(user_id):
+    """관심 변호사 토글 — 로그인 회원(변호사·관리자 포함) 저장/해제."""
+    from flask import g, jsonify
+
+    if g.get("user") is None:
+        return jsonify({"error": {"code": "UNAUTHORIZED", "message": "로그인이 필요합니다."}}), 401
+    profile = LawyerProfile.query.filter_by(user_id=user_id).first()
+    if profile is None:
+        abort(404)
+    cond = (
+        (lawyer_bookmarks.c.user_id == g.user.id)
+        & (lawyer_bookmarks.c.lawyer_id == user_id)
+    )
+    if db.session.execute(lawyer_bookmarks.select().where(cond)).first():
+        db.session.execute(lawyer_bookmarks.delete().where(cond))
+        saved = False
+    else:
+        db.session.execute(
+            lawyer_bookmarks.insert().values(user_id=g.user.id, lawyer_id=user_id)
+        )
+        saved = True
+    db.session.commit()
+    return jsonify({"ok": True, "bookmarked": saved})

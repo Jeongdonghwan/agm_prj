@@ -106,6 +106,36 @@ class TestSearch:
         assert 'id="gsearch-suggest"' in html  # 자동완성 드롭다운
 
 
+class TestLawyerBookmark:
+    """관심 변호사(★) 토글 + 마이페이지 노출 + 프로필 공유 버튼."""
+
+    def _lawyer_id(self, app):
+        with app.app_context():
+            return LawyerProfile.query.first().user_id
+
+    def test_toggle_and_mypage(self, app, client, login_as):
+        lid = self._lawyer_id(app)
+        login_as("user1@example.com")
+        r = client.post(f"/lawyers/{lid}/bookmark")
+        assert r.status_code == 200 and r.get_json()["bookmarked"] is True
+        # 프로필에 ★ 활성 + 마이페이지 관심 변호사 목록
+        html = client.get(f"/lawyers/{lid}", follow_redirects=True).get_data(as_text=True)
+        assert "btn-fav on" in html and "btn-share-lawyer" in html
+        with app.app_context():
+            name = LawyerProfile.query.filter_by(user_id=lid).first().user.name
+        assert f"{name} 변호사" in client.get("/mypage/").get_data(as_text=True)
+        # 재클릭 = 해제
+        assert client.post(f"/lawyers/{lid}/bookmark").get_json()["bookmarked"] is False
+
+    def test_anonymous_401(self, app, client):
+        lid = self._lawyer_id(app)
+        assert client.post(f"/lawyers/{lid}/bookmark").status_code == 401
+
+    def test_missing_lawyer_404(self, client, login_as):
+        login_as("user1@example.com")
+        assert client.post("/lawyers/999999/bookmark").status_code == 404
+
+
 class TestNickname:
     def test_check_banned_and_duplicate(self, app, client):
         r = client.get("/api/me/nickname/check?value=관리자짱")

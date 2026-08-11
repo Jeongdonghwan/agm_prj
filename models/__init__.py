@@ -8,7 +8,12 @@ from models.community import (
 )
 from models.consultation import Consultation, ConsultationAnswer
 from models.content import LawyerPost, LegalCase, News
-from models.lawyer import LawyerProfile, LawyerVerificationFile, lawyer_categories
+from models.lawyer import (
+    LawyerProfile,
+    LawyerVerificationFile,
+    lawyer_bookmarks,
+    lawyer_categories,
+)
 from models.ops import (
     AdminLog,
     Banner,
@@ -26,6 +31,7 @@ __all__ = [
     "LawyerProfile",
     "LawyerVerificationFile",
     "lawyer_categories",
+    "lawyer_bookmarks",
     "Consultation",
     "ConsultationAnswer",
     "LawyerPost",

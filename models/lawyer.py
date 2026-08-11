@@ -2,6 +2,13 @@ from sqlalchemy import func
 
 from extensions import db
 
+# 관심 변호사 — 회원이 저장한 프로필 (마이페이지 노출)
+lawyer_bookmarks = db.Table(
+    "lawyer_bookmarks",
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+    db.Column("lawyer_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
+)
+
 lawyer_categories = db.Table(
     "lawyer_categories",
     db.Column("user_id", db.Integer, db.ForeignKey("users.id"), primary_key=True),
