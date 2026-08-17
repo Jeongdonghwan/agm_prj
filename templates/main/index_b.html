@@ -23,7 +23,8 @@
 <!-- 히어로 B: 좌 네이비 배너 + 우 EVENT 배너 -->
 <div class="hero-b wrap">
   <div class="hero-b-grid">
-    <div class="hero-navy" id="hero-banner" data-static="1">
+    {% set hero_has_img = hero_banners | selectattr('image') | list | length > 0 %}
+    <div class="hero-navy{% if hero_has_img %} has-img{% endif %}" id="hero-banner" data-static="1">
       <span class="ad">AD</span>
       {% for b in hero_banners %}
       <a class="slide hero-slide{% if loop.first %} on{% endif %}{% if b.image %} img-slide{% endif %}" {% if b.link %}href="{{ b.link }}"{% endif %}>

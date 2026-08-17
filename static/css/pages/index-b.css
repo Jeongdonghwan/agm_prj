@@ -63,4 +63,10 @@
   .svc-cards{grid-template-columns:repeat(2,1fr)}
   .svc-card:last-child{grid-column:1/-1}  /* 카드 5종 홀수 배치 해소 */
   .hero-b .comm-quick{display:flex;margin-top:14px}
+  /* 이미지 배너가 있으면 칸을 권장 비율(750×360)에 맞춰 — 좌우 잘림 방지 */
+  .hero-navy.has-img{min-height:0;aspect-ratio:750/360}
+  /* 텍스트 슬라이드가 섞여 있어도 낮아진 칸에 들어가게 */
+  .hero-navy.has-img .slide{padding:0 24px}
+  .hero-navy.has-img h2{font-size:20px}
+  .hero-navy.has-img p{margin-top:8px;font-size:12.5px}
 }
