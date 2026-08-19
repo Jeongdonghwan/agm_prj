@@ -53,7 +53,7 @@ def create_app(config_class=Config):
     LOGIN_WALL_EXEMPT = (
         "/static", "/uploads", "/favicon",
         "/login", "/logout", "/signup", "/auth", "/admin",
-        "/main-a", "/main-b", "/policy", "/find-account",
+        "/main-a", "/main-b", "/policy", "/docs", "/find-account",
         "/robots.txt", "/sitemap.xml",
         "/api/search-suggest",  # 메인 헤더 검색 자동완성
     )

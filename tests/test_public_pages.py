@@ -12,6 +12,7 @@ from utils import invalidate_page_cache
 PUBLIC_PATHS = [
     "/", "/main-a", "/login", "/signup", "/signup/lawyer", "/admin/login",
     "/find-account", "/policy/counsel", "/policy/community",
+    "/docs/about", "/docs/terms", "/docs/privacy",
 ]
 MEMBER_PATHS = [
     "/lawyers/", "/counsel/", "/posts", "/cases", "/news", "/firms",
@@ -88,6 +89,34 @@ class TestFilters:
     def test_posts_type_tabs(self, client):
         for t in ("case", "guide", "video", "essay"):
             assert client.get(f"/posts?type={t}").status_code == 200
+
+
+class TestFooterDocs:
+    """푸터 문서 — 회사소개·이용약관·개인정보처리방침 + 운영정책 5종."""
+
+    def test_footer_links_all_resolve(self, client):
+        html = client.get("/").get_data(as_text=True)
+        foot = html.split("<footer", 1)[1]
+        assert 'href="#"' not in foot  # 죽은 링크 없음
+        for href in re.findall(r'href="(/[^"#]*)"', foot):
+            assert client.get(href, follow_redirects=False).status_code < 400, href
+
+    def test_legal_docs_render(self, client):
+        for key, frag in (("about", "중개하지 않습니다"),
+                          ("terms", "제1조 (목적)"),
+                          ("privacy", "수집하는 항목")):
+            html = client.get(f"/docs/{key}").get_data(as_text=True)
+            assert frag in html, key
+        assert client.get("/docs/unknown").status_code == 404
+
+    def test_doc_tabs_stay_in_group(self, client):
+        """약관 묶음 탭에 운영정책이 섞이지 않는다(반대도 동일)."""
+        legal = client.get("/docs/terms").get_data(as_text=True)
+        tabs = legal.split('class="policy-tabs"', 1)[1].split("</nav>", 1)[0]
+        assert "회사소개" in tabs and "커뮤니티" not in tabs
+        pol = client.get("/policy/community").get_data(as_text=True)
+        tabs = pol.split('class="policy-tabs"', 1)[1].split("</nav>", 1)[0]
+        assert "커뮤니티" in tabs and "이용약관" not in tabs
 
 
 class TestSeoEndpoints:
