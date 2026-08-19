@@ -8,10 +8,13 @@ from extensions import db
 from models import LawyerProfile, LegalCase, News, User
 from utils import invalidate_page_cache
 
-# 커뮤니티는 승인 회원 전용으로 전환 — 공개 목록에서 제외 (게이트는 test_membership.py)
+# 로그인 월: 비회원은 메인·인증·정책만 접근 가능, 나머지는 로그인 후 열람
 PUBLIC_PATHS = [
-    "/", "/main-a", "/lawyers/", "/counsel/", "/posts", "/cases", "/news", "/firms",
-    "/login", "/signup", "/signup/lawyer", "/admin/login",
+    "/", "/main-a", "/login", "/signup", "/signup/lawyer", "/admin/login",
+    "/find-account", "/policy/counsel", "/policy/community",
+]
+MEMBER_PATHS = [
+    "/lawyers/", "/counsel/", "/posts", "/cases", "/news", "/firms",
 ]
 
 
@@ -20,7 +23,21 @@ def test_public_pages_200(client, path):
     assert client.get(path).status_code == 200
 
 
+@pytest.mark.parametrize("path", MEMBER_PATHS)
+def test_member_pages_wall_then_200(client, login_as, path):
+    """로그인 월 — 비회원은 로그인으로, 로그인하면 200."""
+    r = client.get(path, follow_redirects=False)
+    assert r.status_code == 302 and "/login" in r.headers["Location"], path
+    login_as("user1@example.com")
+    assert client.get(path).status_code == 200
+    client.get("/logout")
+
+
 class TestSlugAndDetail:
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
     def test_lawyer_detail_slug_and_jsonld(self, app, client):
         with app.app_context():
             uid = (
@@ -50,6 +67,10 @@ class TestSlugAndDetail:
 
 
 class TestFilters:
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
     def test_cases_category_json_contains(self, app, client):
         with app.app_context():
             case = LegalCase.query.filter(LegalCase.category_ids.isnot(None)).first()
@@ -88,6 +109,10 @@ class TestSeoEndpoints:
 
 class TestLayout:
     """헤더 메뉴 순서 · 메인 고정 배너 · 광고 포토카드 · 구 A안 숨김."""
+
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
 
     def test_design_a_is_hidden(self, client):
         """구 디자인 A안은 검색 제외 + 메인은 B안 마크업."""
@@ -288,34 +313,33 @@ class TestNoStoreHeaders:
         login_as("admin@angimo.kr")
         assert client.get("/admin/posts").headers.get("Cache-Control") == "no-store"
 
-    def test_lawyer_admin_no_store_but_public_list_untouched(self, client, login_as):
+    def test_lawyer_admin_no_store(self, client, login_as):
         login_as("lawyer1@angimo.kr")
         assert client.get("/lawyer/").headers.get("Cache-Control") == "no-store"
-        client.get("/logout")
-        # 공개 변호사 목록(/lawyers)은 사설 경로가 아니므로 미부착
-        assert client.get("/lawyers/").headers.get("Cache-Control") != "no-store"
 
     def test_public_pages_not_no_store(self, client):
-        for path in ("/", "/counsel/", "/cases"):
+        for path in ("/", "/main-a", "/policy/counsel"):
             assert client.get(path).headers.get("Cache-Control") != "no-store", path
 
 
 class TestPageCache:
+    """로그인 월 이후 비로그인 캐시 대상은 메인(/) — 판례 데이터가 메인 탭에 노출된다."""
+
     def test_anon_cached_until_invalidate(self, app, client):
         """비로그인 GET은 캐시 — ORM 직접 변경은 안 보이다가 invalidate 후 반영."""
-        assert "캐시확인용판례" not in client.get("/cases").get_data(as_text=True)
+        assert "캐시확인용판례" not in client.get("/").get_data(as_text=True)
         with app.app_context():
             db.session.add(LegalCase(title="캐시확인용판례", summary="s", content="c",
                                      case_type="civil"))
             db.session.commit()
         # 여전히 캐시된 응답
-        assert "캐시확인용판례" not in client.get("/cases").get_data(as_text=True)
+        assert "캐시확인용판례" not in client.get("/").get_data(as_text=True)
         with app.app_context():
             invalidate_page_cache()
-        assert "캐시확인용판례" in client.get("/cases").get_data(as_text=True)
+        assert "캐시확인용판례" in client.get("/").get_data(as_text=True)
 
     def test_logged_in_bypasses_cache(self, app, client, login_as):
-        client.get("/cases")  # (비로그인 캐시 적재)
+        client.get("/")  # (비로그인 캐시 적재)
         with app.app_context():
             db.session.add(LegalCase(title="로그인우회판례", summary="s", content="c",
                                      case_type="civil"))

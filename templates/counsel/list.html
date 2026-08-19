@@ -13,8 +13,8 @@
   <div>
     <div class="qa-head"><h1>나와 비슷한 문제에 대한<br>답변을 찾아보세요<b>.</b></h1></div>
     <div class="qa-sort">
+      <a href="{{ url_for('counsel.list_', sort='recent') }}" class="{% if sort not in ('recent_answer', 'views') %}on{% endif %}">최신 질문순</a>
       <a href="{{ url_for('counsel.list_', sort='recent_answer') }}" class="{% if sort == 'recent_answer' %}on{% endif %}">최신 답변순</a>
-      <a href="{{ url_for('counsel.list_', sort='recent') }}" class="{% if sort == 'recent' %}on{% endif %}">최신 질문순</a>
       <a href="{{ url_for('counsel.list_', sort='views') }}" class="{% if sort == 'views' %}on{% endif %}">조회순</a>
     </div>
 

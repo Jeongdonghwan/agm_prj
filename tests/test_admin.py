@@ -21,6 +21,16 @@ from utils import invalidate_page_cache
 
 ADMIN = "admin@angimo.kr"
 
+def _member_client(app):
+    """공개 화면 검증용 — 로그인 월 이후 일반 회원 세션을 주입한 별도 클라이언트."""
+    c = app.test_client()
+    with app.app_context():
+        uid = User.query.filter_by(email="user1@example.com").first().id
+    with c.session_transaction() as sess:
+        sess["user_id"] = uid
+    return c
+
+
 
 def _signup_pending_lawyer(app, client_factory, sample_file, email="applaw@example.com"):
     """가입 플로우로 pending 변호사 + 인증 서류 생성 (별도 클라이언트 사용)."""
@@ -89,7 +99,7 @@ class TestUserManagement:
         with app.app_context():
             u = db.session.get(User, uid)
             assert u.status == "suspended" and u.status_reason == "욕설 반복"
-        # 정지 회원 로그인 차단
+        # 정지 회원 로그인 차단 (로그인 화면은 로그인 월 예외 — 익명 클라이언트)
         c2 = app.test_client()
         r = c2.post("/login", data={"email": "user3@example.com", "password": "user-1234"})
         assert "정지된 계정" in r.get_data(as_text=True)
@@ -166,7 +176,7 @@ class TestLawyerSearchAndDetail:
             assert db.session.get(LawyerProfile, uid).headline == "관리자가 수정한 헤드라인"
             log = AdminLog.query.filter_by(action="lawyer_profile_edit").first()
             assert log is not None
-        html = app.test_client().get(f"/lawyers/{uid}", follow_redirects=True).get_data(as_text=True)
+        html = _member_client(app).get(f"/lawyers/{uid}", follow_redirects=True).get_data(as_text=True)
         assert "관리자가 수정한 헤드라인" in html
 
     def test_detail_validation(self, app, client, login_as):
@@ -213,7 +223,7 @@ class TestLawyerAds:
         login_as(ADMIN)
         r = self._add_ad(app, client, uid, category_ids=["1"])
         assert "변호사 광고가 저장되었습니다" in r.get_data(as_text=True)
-        c2 = app.test_client()
+        c2 = _member_client(app)
         # 지정 분야에는 노출
         html = c2.get("/lawyers/?category=1").get_data(as_text=True)
         assert 'class="sa-grid"' in html and f"{name} 변호사" in html
@@ -233,7 +243,7 @@ class TestLawyerAds:
         self._add_ad(app, client, uid, category_ids=[str(a), str(b)])
         with app.app_context():
             assert LawyerAd.query.first().category_ids == [a, b]
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert f"{name} 변호사" in c2.get(f"/lawyers/?category={a}").get_data(as_text=True)
         assert f"{name} 변호사" in c2.get(f"/lawyers/?category={b}").get_data(as_text=True)
         assert 'class="sa-grid"' not in c2.get(f"/lawyers/?category={other}").get_data(as_text=True)
@@ -247,7 +257,7 @@ class TestLawyerAds:
         uid, name = self._lawyer(app)
         login_as(ADMIN)
         self._add_ad(app, client, uid)
-        c2 = app.test_client()
+        c2 = _member_client(app)
         for path in ("/lawyers/", "/lawyers/?category=1", "/lawyers/?category=7"):
             assert f"{name} 변호사" in c2.get(path).get_data(as_text=True), path
 
@@ -257,7 +267,7 @@ class TestLawyerAds:
         uid, name = self._lawyer(app)
         login_as(ADMIN)
         self._add_ad(app, client, uid, slot="photocard")
-        c2 = app.test_client()
+        c2 = _member_client(app)
         html = c2.get("/lawyers/").get_data(as_text=True)
         assert 'class="sa-grid"' in html and "AD LAWYERS" not in html
         # AD리스트도 추가하면 둘 다
@@ -270,7 +280,7 @@ class TestLawyerAds:
         uid, name = self._lawyer(app)
         login_as(ADMIN)
         self._add_ad(app, client, uid, is_active="0")  # 중지
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert 'class="sa-grid"' not in c2.get("/lawyers/").get_data(as_text=True)
         self._clear(app)
         self._add_ad(app, client, uid, ends_at="2020-01-01T00:00")  # 기간 만료
@@ -290,7 +300,7 @@ class TestLawyerAds:
             assert ad.starts_at.hour == 0
             assert (ad.ends_at.hour, ad.ends_at.minute) == (23, 59)
         # 종료일이 오늘이어도 당일 내내 노출
-        assert f"{name} 변호사" in app.test_client().get("/lawyers/").get_data(as_text=True)
+        assert f"{name} 변호사" in _member_client(app).get("/lawyers/").get_data(as_text=True)
 
     def test_adlist_has_no_headcount_limit(self, app, client, login_as):
         """AD LAWYERS는 인원 제한 없이 지정한 만큼 전부 노출."""
@@ -303,7 +313,7 @@ class TestLawyerAds:
         for uid, name in ids:
             names.append(name)
             self._add_ad(app, client, uid, slot="adlist")
-        html = app.test_client().get("/lawyers/").get_data(as_text=True)
+        html = _member_client(app).get("/lawyers/").get_data(as_text=True)
         ad_area = html.split("AD LAWYERS", 1)[1].split("plain-label", 1)[0]
         for name in names:
             assert f"{name} 변호사" in ad_area, name
@@ -314,14 +324,14 @@ class TestLawyerAds:
         _, other = self._lawyer(app, "lawyer2@angimo.kr")
         login_as(ADMIN)
         self._add_ad(app, client, uid)
-        ad_area = app.test_client().get("/lawyers/").get_data(as_text=True) \
+        ad_area = _member_client(app).get("/lawyers/").get_data(as_text=True) \
             .split('class="sa-grid"', 1)[1].split("sec-title", 1)[0]
         assert f"{name} 변호사" in ad_area and f"{other} 변호사" not in ad_area
 
     def test_main_slider_is_ad_slot(self, app, client, login_as):
         """메인 '지금 법률전문가와 상담하기' = main 슬롯 광고 — 지정 없으면 섹션 숨김."""
         self._clear(app)  # 시드 광고(main 포함) 제거
-        c2 = app.test_client()
+        c2 = _member_client(app)
         marker = '<h2 class="sec-title">지금 법률전문가'
         html = c2.get("/").get_data(as_text=True)
         assert marker not in html  # 광고 없으면 섹션 미렌더
@@ -355,7 +365,7 @@ class TestLawyerAds:
         client.post(f"/admin/lawyer-ads/{ad_id}/delete")
         with app.app_context():
             assert LawyerAd.query.count() == 0
-        assert 'class="sa-grid"' not in app.test_client().get("/lawyers/").get_data(as_text=True)
+        assert 'class="sa-grid"' not in _member_client(app).get("/lawyers/").get_data(as_text=True)
 
     def test_menu_is_under_ad_group(self, client, login_as):
         login_as(ADMIN)
@@ -382,7 +392,7 @@ class TestLawyerApproval:
             log = AdminLog.query.filter_by(action="lawyer_approve").order_by(
                 AdminLog.id.desc()).first()
             assert log and log.target == f"user:{uid}"
-        # 승인 후 로그인 → 변호사 대시보드
+        # 승인 후 로그인 → 변호사 대시보드 (로그인 화면은 익명 접근)
         c2 = app.test_client()
         r = c2.post("/login", data={"email": "applaw@example.com", "password": "pw-12345678"},
                     follow_redirects=False)
@@ -404,7 +414,7 @@ class TestLawyerApproval:
         with app.app_context():
             assert db.session.get(LawyerProfile, uid).is_visible is False
         # 공개 상세도 404
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert c2.get(f"/lawyers/{uid}", follow_redirects=True).status_code == 404
 
     def test_toggle_new(self, app, client, login_as):
@@ -463,7 +473,7 @@ class TestPostReview:
             p = db.session.get(LawyerPost, pid)
             assert p.status == "published" and p.published_at is not None
         # 공개 목록 노출 + 분야 필터 매칭 (관리자 액션이 페이지 캐시도 무효화)
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert "검수용 포스트" in c2.get("/posts?type=case").get_data(as_text=True)
         assert "검수용 포스트" in c2.get("/posts?type=case&category=1").get_data(as_text=True)
         assert "검수용 포스트" not in c2.get("/posts?type=case&category=7").get_data(as_text=True)
@@ -490,7 +500,7 @@ class TestCasesCrud:
             assert case and case.category_ids == [1]
             cid = case.id
         # 공개 페이지 노출 (캐시 무효화 확인)
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert "신규 판례입니다" in c2.get("/cases").get_data(as_text=True)
         # 수정
         client.post(f"/admin/cases/{cid}/edit", data={
@@ -517,7 +527,7 @@ class TestNewsCrud:
             assert n.hashtags == ["이혼", "상속"]
             assert n.thumbnail_url and n.thumbnail_url.startswith("/uploads/news/")
             nid = n.id
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert "신규 뉴스입니다" in c2.get("/news").get_data(as_text=True)
         client.post(f"/admin/news/{nid}/delete")
         with app.app_context():
@@ -556,7 +566,7 @@ class TestFirmsCrud:
             assert len(f.links) == 2 and f.links[0]["label"] == "홈페이지"
             assert len(f.photos) == 2
             fid = f.id
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert "테스트로펌" in c2.get("/firms").get_data(as_text=True)
         client.post(f"/admin/firms/{fid}/delete")
         with app.app_context():
@@ -565,7 +575,7 @@ class TestFirmsCrud:
     def test_inquiry_flow(self, app, client, login_as):
         with app.app_context():
             fid = FirmAd.query.first().id
-        c2 = app.test_client()  # 비회원 문의
+        c2 = _member_client(app)  # 비회원 문의
         r = c2.post(f"/api/firms/{fid}/inquiry",
                     json={"phone": "010-1111-0000", "agree": True})
         assert r.status_code == 200
@@ -590,7 +600,7 @@ class TestBoardsModeration:
         client.post(f"/admin/consultations/{cid}/hide")
         with app.app_context():
             assert db.session.get(Consultation, cid).status == "hidden"
-        c2 = app.test_client()
+        c2 = _member_client(app)
         assert c2.get(f"/counsel/{cid}", follow_redirects=True).status_code == 404
         # admin은 hidden 열람 가능
         assert client.get(f"/counsel/{cid}", follow_redirects=True).status_code == 200
@@ -611,7 +621,7 @@ class TestBoardsModeration:
         # 커뮤니티는 승인 회원 전용 — 일반 회원 시점으로 확인
         with app.app_context():
             member_id = User.query.filter_by(email="user1@example.com").first().id
-        c2 = app.test_client()
+        c2 = _member_client(app)
         with c2.session_transaction() as sess:
             sess["user_id"] = member_id
         html = c2.get("/community/").get_data(as_text=True)
@@ -656,7 +666,7 @@ def test_admin_logs_page(client, login_as):
 
 def test_cache_invalidated_by_admin_action(app, client, login_as):
     """비로그인 캐시된 목록이 관리자 쓰기 후 즉시 갱신되는지 (_log → invalidate)."""
-    anon = app.test_client()
+    anon = _member_client(app)
     assert "캐시 검증 판례" not in anon.get("/cases").get_data(as_text=True)  # 캐시 적재
     login_as(ADMIN)
     client.post("/admin/cases/new", data={

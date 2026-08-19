@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """상담사례 Q&A — 작성/마스킹/비공개/수정·삭제 규칙/정렬."""
+import pytest
+
 from extensions import db
 from models import Consultation, ConsultationAnswer, User
 
@@ -23,6 +25,17 @@ def _add_answer(app, consult_id, lawyer_id, content="변호사 답변"):
 
 
 class TestList:
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
+    def test_default_sort_is_recent(self, client):
+        """기본 정렬 = 최신 질문순 (탭 첫 번째, on)."""
+        html = client.get("/counsel/").get_data(as_text=True)
+        tabs = html.split('class="qa-sort"', 1)[1].split("</div>", 1)[0]
+        first = tabs.split("<a ", 2)[1]
+        assert "최신 질문순" in first and 'class="on"' in first
+
     def test_200_with_sorts(self, client):
         for sort in ("recent_answer", "recent", "views"):
             assert client.get(f"/counsel/?sort={sort}").status_code == 200
@@ -34,6 +47,7 @@ class TestList:
         assert "qa-ans" in first_item
 
     def test_anon_write_redirects_login(self, client):
+        client.get("/logout")
         r = client.get("/counsel/write", follow_redirects=False)
         assert r.status_code == 302 and "/login" in r.headers["Location"]
 
@@ -67,10 +81,11 @@ class TestPrivate:
         cid = self._private_id(client, login_as)
         assert client.get(f"/counsel/{cid}", follow_redirects=True).status_code == 200
 
-    def test_anon_403(self, client, login_as):
+    def test_anon_redirected_to_login(self, client, login_as):
         cid = self._private_id(client, login_as)
         client.get("/logout")
-        assert client.get(f"/counsel/{cid}", follow_redirects=True).status_code == 403
+        r = client.get(f"/counsel/{cid}", follow_redirects=False)
+        assert r.status_code == 302 and "/login" in r.headers["Location"]
 
     def test_other_user_403(self, client, login_as):
         cid = self._private_id(client, login_as)
@@ -86,7 +101,7 @@ class TestPrivate:
 
     def test_private_not_in_list(self, client, login_as):
         self._private_id(client, login_as)
-        client.get("/logout")
+        login_as("user3@example.com")  # 타인 시점 목록
         assert "비공개 질문" not in client.get("/counsel/").get_data(as_text=True)
 
 
@@ -133,6 +148,10 @@ class TestEditDelete:
 
 
 class TestDetail:
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
     def test_slug_301_and_views(self, app, client):
         with app.app_context():
             c = Consultation.query.filter_by(is_public=True, status="open").first()

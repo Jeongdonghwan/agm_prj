@@ -21,7 +21,10 @@
 
   {% for f in items %}
   <div class="firm-card">
-    <h2><b>[{{ f.firm_name }}]</b> {{ f.headline }}</h2>
+    {# 제목은 로펌 홈페이지로(링크칩 중 '홈페이지' 우선, 없으면 첫 링크), 링크가 없으면 카드 클릭=상담 #}
+    {% set links = f.links or [] %}
+    {% set home_link = (links | selectattr('label', 'equalto', '홈페이지') | list | first) or (links | first) %}
+    <h2>{% if home_link %}<a href="{{ home_link.url }}" target="_blank" rel="noopener noreferrer"><b>[{{ f.firm_name }}]</b> {{ f.headline }}</a>{% else %}<b>[{{ f.firm_name }}]</b> {{ f.headline }}{% endif %}</h2>
     {% if f.description %}<p class="desc">{{ f.description }}</p>{% endif %}
     <div class="consult-band">
       <div class="t"><i data-lucide="phone-call"></i>로펌에 간편 상담을 신청해 보세요</div>

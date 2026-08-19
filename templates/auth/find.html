@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}아이디·비밀번호 찾기 | {{ site_name }}{% endblock %}
+{% block meta %}<meta name="robots" content="noindex">{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pages/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1 class="auth-title">아이디·비밀번호 찾기</h1>
+
+    <div class="auth-tabs">
+      <a href="{{ url_for('auth.find_account', tab='id') }}" class="{% if tab == 'id' %}on{% endif %}">아이디 찾기</a>
+      <a href="{{ url_for('auth.find_account', tab='pw') }}" class="{% if tab == 'pw' %}on{% endif %}">비밀번호 재설정</a>
+    </div>
+
+    {% if tab == 'pw' %}
+    <form class="auth-form" method="post">
+      <input type="hidden" name="mode" value="reset_pw">
+      <div>
+        <label>이메일 <span class="req">*</span></label>
+        <input type="email" name="email" value="{{ form.get('email', '') }}" required autofocus>
+      </div>
+      <div>
+        <label>휴대폰 번호 <span class="req">*</span></label>
+        <input type="tel" name="phone" value="{{ form.get('phone', '') }}" placeholder="가입 시 등록한 번호" required>
+      </div>
+      <div>
+        <label>새 비밀번호 <span class="req">*</span></label>
+        <input type="password" name="new_password" placeholder="8자 이상" required minlength="8">
+      </div>
+      <div>
+        <label>새 비밀번호 확인 <span class="req">*</span></label>
+        <input type="password" name="new_password2" required>
+      </div>
+      <button class="btn-submit" type="submit">비밀번호 변경</button>
+    </form>
+    {% else %}
+    <form class="auth-form" method="post">
+      <input type="hidden" name="mode" value="find_id">
+      <div>
+        <label>이름 <span class="req">*</span></label>
+        <input type="text" name="name" value="{{ form.get('name', '') }}" required autofocus>
+      </div>
+      <div>
+        <label>휴대폰 번호 <span class="req">*</span></label>
+        <input type="tel" name="phone" value="{{ form.get('phone', '') }}" placeholder="가입 시 등록한 번호" required>
+      </div>
+      <button class="btn-submit" type="submit">아이디 찾기</button>
+    </form>
+
+    {% if found_emails %}
+    <div class="find-result">
+      <b>가입된 이메일을 찾았습니다</b>
+      {% for e in found_emails %}<div class="em">{{ e }}</div>{% endfor %}
+      <a href="{{ url_for('auth.login') }}">로그인하러 가기 →</a>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="auth-foot">
+      <a href="{{ url_for('auth.login') }}">로그인</a> · <a href="{{ url_for('auth.signup') }}">회원가입</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

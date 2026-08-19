@@ -30,7 +30,7 @@ def _slug(text: str) -> str:
 
 @bp.route("/")
 def list_():
-    sort = request.args.get("sort", "recent_answer")
+    sort = request.args.get("sort", "recent")  # 기본: 최신 질문순
     page = max(request.args.get("page", 1, type=int), 1)
 
     q = (
@@ -40,7 +40,7 @@ def list_():
     )
     if sort == "views":
         q = q.order_by(Consultation.views.desc())
-    elif sort == "recent":
+    elif sort != "recent_answer":  # 기본 recent — 최신 질문순
         q = q.order_by(Consultation.created_at.desc())
     else:  # 최신 답변순: 답변 있는 글(최근 답변순) 먼저, 무답변 글은 뒤(최신 질문순)
         last_answer = (

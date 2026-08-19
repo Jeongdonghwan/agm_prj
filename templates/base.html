@@ -128,6 +128,11 @@
     <div class="foot-links">
       <a href="#">회사소개</a><a href="#">이용약관</a><a href="#">개인정보처리방침</a><a href="{{ url_for('community.board', key='notice-angimo') }}">공지사항</a><a href="{{ url_for('community.board', key='ad-inquiry') }}">제휴문의</a>
     </div>
+    <div class="foot-links policies">
+      {% for pkey, plabel in [('counsel', '상담신청 운영정책'), ('content', '콘텐츠 운영정책'), ('search', '검색결과 표시 정책'), ('blind', '게시물 임시 블라인드 정책'), ('community', '커뮤니티 운영정책')] %}
+      <a href="{{ url_for('main.policy', key=pkey) }}">{{ plabel }}</a>
+      {% endfor %}
+    </div>
     <div class="info">
       상호: {{ site_name }} | 대표: OOO | 사업자등록번호: 000-00-00000<br>
       주소: 인천광역시 OO구 OO로 000 | 이메일: contact@angimo.co.kr<br>

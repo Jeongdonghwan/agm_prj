@@ -23,6 +23,10 @@
 
 .btn-submit{width:100%;background:var(--blue-600);color:#fff;font-size:15px;font-weight:800;padding:14px 0;border-radius:var(--radius-md);margin-top:8px}
 .btn-submit:hover{background:var(--blue-700)}
+.find-result{margin-top:18px;background:var(--blue-050);border-radius:var(--radius-md);padding:16px 18px;font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.find-result b{color:var(--blue-900)}
+.find-result .em{font-size:15px;font-weight:800;letter-spacing:.3px}
+.find-result a{color:var(--blue-600);font-weight:700;margin-top:4px}
 .auth-foot{margin-top:18px;text-align:center;font-size:13px;color:var(--ink-500)}
 .auth-foot a{color:var(--blue-600);font-weight:700}
 

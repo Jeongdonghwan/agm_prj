@@ -129,6 +129,62 @@ def logout():
     return redirect(url_for("main.index"))
 
 
+def _mask_email(email: str) -> str:
+    """ab***@domain.com 형태 마스킹."""
+    local, _, domain = email.partition("@")
+    shown = local[:2] if len(local) > 2 else local[:1]
+    return f"{shown}{'*' * max(len(local) - len(shown), 1)}@{domain}"
+
+
+@bp.route("/find-account", methods=["GET", "POST"])
+def find_account():
+    """아이디(이메일) 찾기 / 비밀번호 재설정 — 이름·휴대폰 대조 방식(데모).
+
+    실서비스 전환 시 휴대폰 본인인증 또는 이메일 인증으로 교체할 것.
+    """
+    tab = request.values.get("tab", "id")
+    found_emails = None
+    if request.method == "POST":
+        mode = request.form.get("mode")
+        phone = request.form.get("phone", "").strip()
+        if mode == "find_id":
+            tab = "id"
+            name = request.form.get("name", "").strip()
+            if not name or not phone:
+                flash("이름과 휴대폰 번호를 입력해주세요.", "error")
+            else:
+                users = User.query.filter_by(name=name, phone=phone).filter(
+                    User.deleted_at.is_(None), User.status != "withdrawn"
+                ).all()
+                if users:
+                    found_emails = [_mask_email(u.email) for u in users]
+                else:
+                    flash("일치하는 계정을 찾지 못했습니다. 이름·휴대폰 번호를 확인해주세요.", "error")
+        elif mode == "reset_pw":
+            tab = "pw"
+            email = request.form.get("email", "").strip()
+            new_pw = request.form.get("new_password", "")
+            user = User.query.filter_by(email=email, phone=phone).filter(
+                User.deleted_at.is_(None), User.status != "withdrawn"
+            ).first()
+            if user is None:
+                flash("이메일과 휴대폰 번호가 일치하는 계정이 없습니다.", "error")
+            elif len(new_pw) < 8:
+                flash("새 비밀번호는 8자 이상이어야 합니다.", "error")
+            elif new_pw != request.form.get("new_password2", ""):
+                flash("비밀번호 확인이 일치하지 않습니다.", "error")
+            else:
+                user.set_password(new_pw)
+                db.session.commit()
+                cache.delete(_fail_key(email))  # 잠금 카운터 초기화
+                flash("비밀번호가 변경되었습니다. 새 비밀번호로 로그인해주세요.", "success")
+                return redirect(url_for("auth.login"))
+    return render_template(
+        "auth/find.html", active_menu=None, tab=tab, found_emails=found_emails,
+        form=request.form,
+    )
+
+
 VISIT_PROOF_EXTENSIONS = {"jpg", "jpeg", "png"}
 
 

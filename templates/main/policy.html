@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} | {{ site_name }}{% endblock %}
+{% block meta %}
+<meta name="description" content="{{ site_name }} {{ title }} — 이용 기준과 처리 절차를 안내합니다.">
+{% endblock %}
+
+{% block content %}
+<div class="wrap policy-page">
+  <nav class="policy-tabs">
+    {% for key, (t, _) in policies.items() %}
+    <a href="{{ url_for('main.policy', key=key) }}" class="{% if key == current %}on{% endif %}">{{ t.replace(' 운영정책', '').replace('에 관한', '') }}</a>
+    {% endfor %}
+  </nav>
+
+  <h1>{{ title }}</h1>
+  <p class="policy-updated">시행일: 2026년 8월 17일</p>
+
+  {% for head, body in sections %}
+  <section>
+    <h2>{{ loop.index }}. {{ head }}</h2>
+    <p>{{ body }}</p>
+  </section>
+  {% endfor %}
+
+  <div class="policy-foot">
+    본 정책에 대한 문의는 <b>contact@angimo.co.kr</b> 또는 커뮤니티의 [광고 및 협업 문의] 게시판으로 접수해주세요.
+    정책은 서비스 운영 상황에 따라 개정될 수 있으며, 개정 시 본 페이지에 시행일과 함께 공지합니다.
+  </div>
+</div>
+{% endblock %}

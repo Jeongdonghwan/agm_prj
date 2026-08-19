@@ -48,6 +48,36 @@ def create_app(config_class=Config):
             else:
                 g.user = user
 
+    # 로그인 월: 메인·인증·정책 등 최소한만 공개, 나머지 페이지는 로그인 필요.
+    # /admin·/lawyer는 각자의 데코레이터가 알맞은 로그인 화면으로 보낸다.
+    LOGIN_WALL_EXEMPT = (
+        "/static", "/uploads", "/favicon",
+        "/login", "/logout", "/signup", "/auth", "/admin",
+        "/main-a", "/main-b", "/policy", "/find-account",
+        "/robots.txt", "/sitemap.xml",
+        "/api/search-suggest",  # 메인 헤더 검색 자동완성
+    )
+
+    @app.before_request
+    def login_wall():
+        if g.get("user") is not None:
+            return None
+        path = request.path
+        if path == "/" or path.startswith(LOGIN_WALL_EXEMPT):
+            return None
+        # 변호사 어드민(/lawyer, /lawyer/…)은 자체 가드가 처리 — /lawyers(목록)와 구분
+        if path == "/lawyer" or path.startswith("/lawyer/"):
+            return None
+        if path.startswith("/api/"):
+            from flask import jsonify
+
+            return jsonify(
+                {"error": {"code": "UNAUTHORIZED", "message": "로그인이 필요합니다."}}
+            ), 401
+        from flask import redirect, url_for
+
+        return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
+
     @app.after_request
     def no_store_for_private(resp):
         # 로그인 사용자·어드민/변호사/마이페이지 응답은 브라우저 캐시 금지 —

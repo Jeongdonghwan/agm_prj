@@ -327,14 +327,20 @@ class TestLawyerRandomOrder:
         area = html.split("plain-label", 1)[1] if "plain-label" in html else html
         return re.findall(r"<b>([가-힣]+) 변호사</b>", area)
 
-    def test_same_seed_is_stable_and_paginates(self, client):
+    def test_same_seed_is_stable_and_paginates(self, client, login_as):
         import re
-        h1 = client.get("/lawyers/?seed=42").get_data(as_text=True)
-        h2 = client.get("/lawyers/?seed=42").get_data(as_text=True)
-        names1 = re.findall(r"([가-힣]{2,4}) 변호사", h1.split("LAWYERS", 1)[1]) if "LAWYERS" in h1 else []
-        names2 = re.findall(r"([가-힣]{2,4}) 변호사", h2.split("LAWYERS", 1)[1]) if "LAWYERS" in h2 else []
+        login_as("user1@example.com")
+
+        def plain_names(html):
+            # 일반 목록(plain-label 이후)만 — 광고 구좌는 매 요청 랜덤이라 제외
+            area = html.split("plain-label", 1)[1] if "plain-label" in html else ""
+            return re.findall(r"([가-힣]{2,4}) 변호사", area)
+
+        names1 = plain_names(client.get("/lawyers/?seed=42").get_data(as_text=True))
+        names2 = plain_names(client.get("/lawyers/?seed=42").get_data(as_text=True))
         assert names1 and names1 == names2  # 같은 시드 = 같은 순서
         # 더보기 링크에 시드가 이어진다
+        h1 = client.get("/lawyers/?seed=42").get_data(as_text=True)
         if "more-btn" in h1:
             assert "seed=42" in h1.split('class="more-btn"', 1)[1][:200]
 

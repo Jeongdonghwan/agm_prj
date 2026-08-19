@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pytest
 """경량 /api — 연락 클릭, 로펌 문의, 닉네임, 추천, 신고 + 에러 규약."""
 from extensions import db
 from models import CommunityPost, FirmAd, LawyerProfile, User
@@ -16,7 +17,19 @@ def _post_id(app):
 
 
 class TestContactClick:
-    def test_anonymous_ok_and_counted(self, app, client):
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
+    def test_anonymous_gets_401(self, app, client):
+        """로그인 월 — 비로그인 API 호출은 401."""
+        client.get("/logout")
+        with app.app_context():
+            uid = LawyerProfile.query.first().user_id
+        assert client.post(f"/api/lawyers/{uid}/contact-click",
+                           json={"type": "phone"}).status_code == 401
+
+    def test_logged_in_counted(self, app, client):
         with app.app_context():
             prof = LawyerProfile.query.first()
             uid, before = prof.user_id, prof.contact_click_count or 0
@@ -39,6 +52,10 @@ class TestContactClick:
 
 
 class TestFirmInquiry:
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
     def test_missing_phone_400(self, app, client):
         with app.app_context():
             fid = FirmAd.query.first().id
@@ -73,6 +90,11 @@ class TestFirmInquiry:
 
 class TestSearch:
     """해시태그(분야)·변호사 검색 + 자동완성."""
+
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
 
     def test_suggest_returns_categories_and_lawyers(self, client):
         data = client.get("/api/search-suggest?q=형사").get_json()
@@ -127,9 +149,11 @@ class TestLawyerBookmark:
         # 재클릭 = 해제
         assert client.post(f"/lawyers/{lid}/bookmark").get_json()["bookmarked"] is False
 
-    def test_anonymous_401(self, app, client):
+    def test_anonymous_redirected(self, app, client):
+        client.get("/logout")
         lid = self._lawyer_id(app)
-        assert client.post(f"/lawyers/{lid}/bookmark").status_code == 401
+        r = client.post(f"/lawyers/{lid}/bookmark", follow_redirects=False)
+        assert r.status_code in (302, 401)  # 로그인 월
 
     def test_missing_lawyer_404(self, client, login_as):
         login_as("user1@example.com")
@@ -137,6 +161,10 @@ class TestLawyerBookmark:
 
 
 class TestNickname:
+    @pytest.fixture(autouse=True)
+    def _login(self, login_as):
+        login_as("user1@example.com")
+
     def test_check_banned_and_duplicate(self, app, client):
         r = client.get("/api/me/nickname/check?value=관리자짱")
         assert r.get_json()["available"] is False
@@ -148,6 +176,7 @@ class TestNickname:
         assert r.get_json()["available"] is True
 
     def test_set_requires_login(self, client):
+        client.get("/logout")
         r = client.put("/api/me/nickname", json={"value": "새닉네임"})
         assert r.status_code == 401 and _err(r) == "UNAUTHORIZED"
 

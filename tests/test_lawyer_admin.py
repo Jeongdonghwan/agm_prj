@@ -149,7 +149,8 @@ class TestProfile:
 
 
 class TestVisibility:
-    def test_incomplete_profile_hidden_from_list(self, app, client):
+    def test_incomplete_profile_hidden_from_list(self, app, client, login_as):
+        login_as("user1@example.com")
         with app.app_context():
             prof = db.session.get(LawyerProfile, _lawyer(app, 1))
             name = prof.user.name
@@ -160,7 +161,8 @@ class TestVisibility:
         list_section = html.split('sec-title">변호사')[1]
         assert name not in list_section
 
-    def test_invisible_detail_404(self, app, client):
+    def test_invisible_detail_404(self, app, client, login_as):
+        login_as("user1@example.com")
         uid = _lawyer(app, 1)
         with app.app_context():
             db.session.get(LawyerProfile, uid).is_visible = False
@@ -191,8 +193,8 @@ class TestAnswers:
                         data={"consultation_id": cid, "content": "두 번째 답변"},
                         follow_redirects=True)
         assert "답변이 등록되었습니다" in r.get_data(as_text=True)
-        # 공개 상세에 두 답변 노출
-        client.get("/logout")
+        # 공개 상세에 두 답변 노출 (일반 회원 시점 — 비로그인은 로그인 월)
+        login_as("user1@example.com")
         html = client.get(f"/counsel/{cid}", follow_redirects=True).get_data(as_text=True)
         assert "성실한 답변입니다" in html and "두 번째 답변" in html
 

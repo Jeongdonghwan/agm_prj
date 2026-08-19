@@ -11,6 +11,7 @@
 .ad-label em{font-style:normal;border:1px solid var(--ink-200);border-radius:4px;padding:0 5px;font-size:10px}
 .firm-card{padding:26px 0;border-bottom:1px solid var(--ink-200);cursor:pointer}
 .firm-card h2{font-size:20px;font-weight:800;letter-spacing:-.4px}
+.firm-card h2 a:hover{text-decoration:underline;text-underline-offset:4px}
 .firm-card h2 b{color:var(--blue-600)}
 .firm-card .desc{margin-top:10px;font-size:14px;color:var(--ink-500);line-height:1.65;max-width:640px}
 .consult-band{margin-top:16px;background:var(--blue-050);border:1px solid var(--blue-100);border-radius:var(--radius-md);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;max-width:640px}

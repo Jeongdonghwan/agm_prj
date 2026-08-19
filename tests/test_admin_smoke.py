@@ -310,7 +310,7 @@ def test_lawyer_post_full_cycle(app, client, login_as):
     with app.app_context():
         assert db.session.get(LawyerPost, pid).status == "published"
     assert "사이클 점검 사례(보완)" in (
-        app.test_client().get("/posts?type=case").get_data(as_text=True)
+        client.get("/posts?type=case").get_data(as_text=True)  # 관리자 세션(로그인 월)
     )
 
 
