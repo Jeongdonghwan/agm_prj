@@ -234,7 +234,7 @@ class TestLayout:
         login_as("admin@angimo.kr")
         html = client.get("/admin/banners/new").get_data(as_text=True)
         assert 'name="image_mobile"' in html
-        for hint in ("1140×460", "750×360", "2000×260", "1600×200"):
+        for hint in ("1568×560", "750×360", "720×560", "2000×260", "1600×200"):
             assert hint in html, hint
         assert "관리용 메모" in html and "메인카피" not in html
 

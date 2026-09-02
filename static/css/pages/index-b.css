@@ -1,9 +1,10 @@
 /* ===== 메인 디자인 B — 네이비 히어로 + EVENT 사이드 배너 + 원형 퀵메뉴 ===== */
 .hero-b{padding:24px 0 8px}
-.hero-b-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+/* 히어로가 사이드보다 크게 — 좁은 폭에서는 사이드가 먼저 줄어든다 */
+.hero-b-grid{display:grid;grid-template-columns:1fr minmax(300px,360px);gap:16px;align-items:stretch}
 
 /* 좌측 네이비 롤링 배너 */
-.hero-navy{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(150deg,#123B7E 0%,var(--blue-900) 75%);min-height:230px;display:block}
+.hero-navy{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(150deg,#123B7E 0%,var(--blue-900) 75%);min-height:280px;display:block}
 .hero-navy::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.05)}
 .hero-navy .ad{position:absolute;top:14px;right:14px;font-size:11px;color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.4);border-radius:4px;padding:1px 6px;z-index:3}
 .hero-navy .slide{display:none;position:absolute;inset:0;padding:0 44px;flex-direction:column;justify-content:center}
@@ -13,7 +14,7 @@
 .hero-navy h2 .pt{color:#8FB3FF;display:block}
 .hero-navy p{margin-top:12px;font-size:14px;color:rgba(255,255,255,.75);font-weight:500}
 .hero-navy .indicator{position:absolute;bottom:14px;right:18px;background:rgba(255,255,255,.18);color:#fff;border-radius:999px;font-size:11.5px;font-weight:600;padding:4px 12px;z-index:4;letter-spacing:1px}
-/* 이미지 배너 슬라이드 — 이미지가 칸을 꽉 채움 (권장: PC 1140×460 / 모바일 750×360) */
+/* 이미지 배너 슬라이드 — 이미지가 칸을 꽉 채움 (권장: PC 1568×560 / 모바일 750×360) */
 .hero-navy .slide.img-slide{padding:0}
 .hero-navy .slide.img-slide picture,.hero-navy .slide.img-slide img{width:100%;height:100%;object-fit:cover;display:block}
 /* 우하단 컨트롤 — < 1/2 > */
@@ -24,20 +25,20 @@
 .hero-ctrl .cnt{font-size:11.5px;font-weight:600;letter-spacing:1px;padding:0 4px;user-select:none}
 
 /* 우측 커뮤니티 배너 (반반 분할 — 라이트 톤, 좌 텍스트 + 우 일러스트. 고정 1장) */
-.side-event{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(150deg,#FDFEFF 0%,var(--blue-050) 55%,#E4EDFF 100%);min-height:230px;color:var(--ink-900)}
+.side-event{position:relative;border-radius:20px;overflow:hidden;background:linear-gradient(150deg,#FDFEFF 0%,var(--blue-050) 55%,#E4EDFF 100%);min-height:280px;color:var(--ink-900)}
 .side-event::after{content:"";position:absolute;right:-46px;bottom:-46px;width:150px;height:150px;border-radius:50%;background:rgba(27,92,255,.07)}
-.side-event .side-slide{display:none;position:absolute;inset:0;align-items:center;justify-content:space-between;gap:18px;padding:0 40px;z-index:1}
+.side-event .side-slide{display:none;position:absolute;inset:0;align-items:center;justify-content:space-between;gap:12px;padding:0 24px;z-index:1}
 .side-event .side-slide.on{display:flex;animation:heroBFade .45s ease}
 .side-event .tx{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
 .side-event .ev{font-size:11.5px;font-weight:700;color:var(--ink-500);letter-spacing:.6px}
-.side-event h3{margin-top:8px;font-size:21px;font-weight:800;line-height:1.35;letter-spacing:-.6px;color:var(--ink-900)}
-.side-event h3 b{display:block;font-size:27px;color:var(--blue-600);letter-spacing:-.8px}
-.side-event .tx p{margin-top:10px;font-size:13.5px;color:var(--ink-500);font-weight:500}
-.side-event .go{margin-top:16px;font-size:12.5px;font-weight:800;color:#fff;background:var(--blue-900);border-radius:999px;padding:9px 18px;box-shadow:0 4px 12px rgba(10,42,94,.22)}
+.side-event h3{margin-top:8px;font-size:18px;font-weight:800;line-height:1.35;letter-spacing:-.6px;color:var(--ink-900)}
+.side-event h3 b{display:block;font-size:22px;color:var(--blue-600);letter-spacing:-.8px}
+.side-event .tx p{margin-top:8px;font-size:12.5px;color:var(--ink-500);font-weight:500}
+.side-event .go{margin-top:14px;font-size:12px;font-weight:800;color:#fff;background:var(--blue-900);border-radius:999px;padding:9px 18px;box-shadow:0 4px 12px rgba(10,42,94,.22)}
 .side-event .side-slide:hover .go{background:var(--blue-600)}
-.side-event .art{position:relative;flex-shrink:0;width:172px;height:172px;display:flex;align-items:center;justify-content:center}
+.side-event .art{position:relative;flex-shrink:0;width:110px;height:110px;display:flex;align-items:center;justify-content:center}
 .side-event .art img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 10px 18px rgba(10,42,94,.12));animation:heroFloat 3.6s ease-in-out infinite}
-/* 이미지 배너 — 칸 전체 채움 (권장: PC 1140×460) */
+/* 이미지 배너 — 칸 전체 채움 (권장: PC 720×560) */
 .side-event .side-slide.img-slide{padding:0}
 .side-event .side-slide.img-slide picture,.side-event .side-slide.img-slide img{width:100%;height:100%;object-fit:cover;display:block;animation:none;filter:none}
 
