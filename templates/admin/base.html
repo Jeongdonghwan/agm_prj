@@ -25,4 +25,5 @@
 {% if 'reports' in admin_allowed %}<a href="{{ url_for('admin.reports') }}" class="{% if admin_active == 'reports' %}on{% endif %}"><i data-lucide="flag"></i>신고 처리</a>{% endif %}
 {% if 'inquiries' in admin_allowed %}<a href="{{ url_for('admin.firm_inquiries') }}" class="{% if admin_active == 'inquiries' %}on{% endif %}"><i data-lucide="inbox"></i>문의 접수함</a>{% endif %}
 {% if 'logs' in admin_allowed %}<a href="{{ url_for('admin.logs') }}" class="{% if admin_active == 'logs' %}on{% endif %}"><i data-lucide="scroll-text"></i>운영 로그</a>{% endif %}
+{% if 'settings' in admin_allowed %}<a href="{{ url_for('admin.settings') }}" class="{% if admin_active == 'settings' %}on{% endif %}"><i data-lucide="settings"></i>사이트 설정{% if freeze_on %} <span class="badge red" style="margin-left:auto">점검중</span>{% endif %}</a>{% endif %}
 {% endblock %}

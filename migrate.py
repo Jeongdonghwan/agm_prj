@@ -11,6 +11,10 @@ seed.py는 drop_all로 전체를 지우므로 운영/개발 데이터가 있으�
 """
 import sys
 
+# 윈도 콘솔(cp949)에서도 한글 로그 때문에 죽지 않게
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 from sqlalchemy import text
 
 from app import create_app

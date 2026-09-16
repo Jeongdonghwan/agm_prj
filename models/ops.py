@@ -124,3 +124,13 @@ class AdminLog(db.Model):
     created_at = db.Column(db.DateTime, server_default=func.now())
 
     admin = db.relationship("User")
+
+
+class SiteSetting(db.Model):
+    """사이트 전역 설정 — 키/값. 점검(프리즈) 모드 on/off·안내 문구 등."""
+
+    __tablename__ = "site_settings"
+
+    key = db.Column(db.String(50), primary_key=True)
+    value = db.Column(db.String(500))
+    updated_at = db.Column(db.DateTime, server_default=func.now(), onupdate=func.now())

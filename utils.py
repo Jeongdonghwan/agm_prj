@@ -94,3 +94,50 @@ def invalidate_page_cache():
     from extensions import cache
 
     cache.set("page_ver", (cache.get("page_ver") or 1) + 1, timeout=0)
+
+
+# ── 사이트 전역 설정(site_settings) — 점검 모드 등 ──────────────────────────
+FREEZE_KEY = "freeze_mode"
+FREEZE_MSG_KEY = "freeze_message"
+FREEZE_DEFAULT_MSG = "현재 서비스 점검 중입니다. 잠시 후 다시 이용해주세요."
+
+
+def get_site_settings():
+    """site_settings 전체를 dict로 — 요청당 1회만 조회."""
+    from flask import g
+
+    if not hasattr(g, "_site_settings"):
+        from extensions import db
+        from models import SiteSetting
+
+        try:
+            rows = {s.key: s.value for s in SiteSetting.query.all()}
+        except Exception:  # 마이그레이션 전(테이블 없음)에도 화면이 죽지 않게
+            db.session.rollback()
+            rows = {}
+        g._site_settings = rows
+    return g._site_settings
+
+
+def is_frozen():
+    """점검(프리즈) 모드 여부."""
+    return get_site_settings().get(FREEZE_KEY) == "1"
+
+
+def freeze_message():
+    return get_site_settings().get(FREEZE_MSG_KEY) or FREEZE_DEFAULT_MSG
+
+
+# 점검 모드에서도 살려두는 경로 — 관리자가 해제하러 들어올 수 있어야 하고,
+# 로그인/로그아웃은 '기능'이 아니라 출입문이라 막지 않는다.
+FREEZE_EXEMPT_PATHS = ("/admin", "/login", "/logout", "/static", "/uploads")
+
+
+def freeze_exempt():
+    """지금 요청이 점검 모드의 예외인가 — 관리자 본인이거나 예외 경로."""
+    from flask import g, request
+
+    user = g.get("user")
+    if user is not None and user.role == "admin":
+        return True
+    return request.path.startswith(FREEZE_EXEMPT_PATHS)

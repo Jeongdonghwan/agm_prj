@@ -28,7 +28,8 @@
 }
 </script>
 </head>
-<body>
+<body{% if freeze_locked %} class="frozen"{% endif %}>
+{% include "_freeze_bar.html" %}
 
 <!-- 프로필 내부 탭 (미니멀) -->
 <div class="p-tabs"><div class="wrap">

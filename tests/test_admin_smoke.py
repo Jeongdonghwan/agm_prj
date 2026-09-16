@@ -31,6 +31,7 @@ ADMIN_PAGES = [
     "/admin/reports",
     "/admin/firm-inquiries",
     "/admin/logs",
+    "/admin/settings",
 ]
 
 

@@ -23,6 +23,7 @@ from models.ops import (
     LawyerAd,
     Region,
     Report,
+    SiteSetting,
 )
 from models.user import User
 
@@ -51,4 +52,5 @@ __all__ = [
     "FirmInquiry",
     "Report",
     "AdminLog",
+    "SiteSetting",
 ]

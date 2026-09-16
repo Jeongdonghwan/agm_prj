@@ -78,6 +78,23 @@ def create_app(config_class=Config):
 
         return redirect(url_for("auth.login", next=request.full_path.rstrip("?")))
 
+    @app.before_request
+    def freeze_guard():
+        """점검(프리즈) 모드 — 화면은 CSS로 막고, 서버에서도 쓰기를 한 번 더 차단."""
+        from utils import freeze_exempt, freeze_message, is_frozen
+
+        if freeze_exempt():
+            return None
+        if request.method in ("GET", "HEAD", "OPTIONS") or not is_frozen():
+            return None
+        from flask import flash, jsonify, redirect
+
+        msg = freeze_message()
+        if request.path.startswith("/api/"):
+            return jsonify({"error": {"code": "SERVICE_FROZEN", "message": msg}}), 503
+        flash(msg, "error")
+        return redirect(request.referrer or "/")
+
     @app.after_request
     def no_store_for_private(resp):
         # 로그인 사용자·어드민/변호사/마이페이지 응답은 브라우저 캐시 금지 —
@@ -97,9 +114,15 @@ def create_app(config_class=Config):
     def inject_globals():
         from routes.admin import admin_allowed_keys
         from routes.community import get_menu
+        from utils import freeze_exempt, freeze_message, is_frozen
 
         user = g.get("user")
+        frozen = is_frozen()
         return {
+            # 점검 모드 — 관리자·로그인 화면은 정상 동작(해제하러 들어올 수 있어야 한다)
+            "freeze_on": frozen,
+            "freeze_locked": frozen and not freeze_exempt(),
+            "freeze_msg": freeze_message() if frozen else "",
             "admin_allowed": (
                 admin_allowed_keys(user) if user and user.role == "admin" else set()
             ),

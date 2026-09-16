@@ -56,6 +56,7 @@ ADMIN_MENUS = [
     ("reports", "신고 처리"),
     ("inquiries", "문의 접수함"),
     ("logs", "운영 로그"),
+    ("settings", "사이트 설정"),
 ]
 
 # URL 첫 세그먼트(/admin/<seg>/…) → 권한 키. 대시보드('')는 공통.
@@ -73,6 +74,7 @@ _PATH_PERMS = {
     "firms": "firms", "firm-inquiries": "inquiries",
     "reports": "reports",
     "logs": "logs",
+    "settings": "settings",
 }
 
 
@@ -1315,6 +1317,41 @@ def board_delete(board_id):
     db.session.commit()
     flash("삭제했습니다. 해당 게시판의 글은 DB에 남지만 화면에서는 접근할 수 없습니다.", "success")
     return redirect(url_for("admin.boards"))
+
+
+# ─────────────────────────── 사이트 설정 (점검 모드) ───────────────────────────
+@bp.route("/settings", methods=["GET", "POST"])
+@role_required("admin")
+def settings():
+    """점검(프리즈) 모드 on/off + 안내 문구."""
+    from models import SiteSetting
+    from utils import FREEZE_DEFAULT_MSG, FREEZE_KEY, FREEZE_MSG_KEY
+
+    def _put(key, value):
+        row = db.session.get(SiteSetting, key)
+        if row is None:
+            row = SiteSetting(key=key)
+            db.session.add(row)
+        row.value = value
+
+    if request.method == "POST":
+        on = request.form.get("freeze_mode") == "1"
+        msg = request.form.get("freeze_message", "").strip()[:500]
+        _put(FREEZE_KEY, "1" if on else "0")
+        _put(FREEZE_MSG_KEY, msg)
+        _log("site_freeze", "site:freeze", {"on": on})
+        db.session.commit()
+        flash("점검 모드를 켰습니다. 방문자에게는 화면만 보입니다." if on
+              else "점검 모드를 해제했습니다. 서비스가 정상 동작합니다.", "success")
+        return redirect(url_for("admin.settings"))
+
+    rows = {s.key: s.value for s in SiteSetting.query.all()}
+    return render_template(
+        "admin/settings.html",
+        freeze_mode=rows.get(FREEZE_KEY) == "1",
+        freeze_message=rows.get(FREEZE_MSG_KEY) or "",
+        default_message=FREEZE_DEFAULT_MSG,
+    )
 
 
 # ─────────────────────────── 신고 처리 ───────────────────────────

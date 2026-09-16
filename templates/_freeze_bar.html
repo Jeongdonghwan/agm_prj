@@ -1,0 +1,13 @@
+{# 점검(프리즈) 모드 안내 띠 — base.html·변호사 프로필 등 모든 레이아웃에서 include.
+   freeze_locked(일반 방문자)면 화면 전체가 비활성(body.frozen), 관리자면 안내만 표시 #}
+{% if freeze_on %}
+<div class="freeze-bar {% if not freeze_locked %}admin{% endif %}">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+  {% if freeze_locked %}
+  <span>{{ freeze_msg }}</span>
+  {% else %}
+  <span><b>점검 모드가 켜져 있습니다.</b> 방문자에게는 화면만 보이고 모든 기능이 멈춥니다. 관리자는 정상 이용할 수 있습니다.</span>
+  <a href="{{ url_for('admin.settings') }}">설정에서 해제 →</a>
+  {% endif %}
+</div>
+{% endif %}

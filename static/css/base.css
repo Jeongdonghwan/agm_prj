@@ -149,3 +149,16 @@ footer.site .info{opacity:.55;line-height:1.8}
   .pc-only{display:none!important}
   .m-only{display:flex!important}
 }
+
+/* ===== 점검(프리즈) 모드 ===== */
+/* 방문자 화면 전체 비활성 — 링크·버튼·폼 무반응. 스크롤·텍스트 선택은 그대로 */
+body.frozen{pointer-events:none;user-select:none}
+body.frozen .freeze-bar{pointer-events:auto;user-select:text}
+.freeze-bar{position:sticky;top:0;z-index:400;display:flex;align-items:center;justify-content:center;gap:8px;
+  background:#191F28;color:#fff;font-size:13px;font-weight:600;padding:11px 16px;text-align:center;line-height:1.5}
+.freeze-bar svg{width:16px;height:16px;flex-shrink:0;color:#FFD43B}
+.freeze-bar.admin{background:var(--blue-900)}
+.freeze-bar.admin a{color:#8FB3FF;font-weight:800;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
+@media (max-width:560px){
+  .freeze-bar{font-size:12px;padding:10px 12px;flex-wrap:wrap;gap:4px}
+}

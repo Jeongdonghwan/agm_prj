@@ -12,7 +12,9 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/file-input.css') }}">
 {% block styles %}{% endblock %}
 </head>
-<body>
+<body{% if freeze_locked %} class="frozen"{% endif %}>
+
+{% include "_freeze_bar.html" %}
 
 {% block top_strip %}{% endblock %}
 
